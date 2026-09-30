@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dhamet_engine:
+    path: packages/dhamet_engine
 
 dev_dependencies:
   flutter_test:
