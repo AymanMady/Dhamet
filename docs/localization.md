@@ -57,8 +57,9 @@ locuteurs natifs.
 
 Aucune source ne dit quel camp joue avec les bâtonnets et quel camp joue
 avec les crottes. L'application nomme donc les camps **Blancs** et
-**Noirs**. Elle dessine un bâtonnet sur les pièces claires et un anneau sur
-les foncées, par simple choix visuel.
+**Noirs**. Elle représente les Blancs par des bâtonnets plantés dans le
+sable et les Noirs par des cailloux, comme sur l'image de référence du
+design : c'est un choix visuel, pas une règle.
 
 ## Ajouter ou modifier un texte
 

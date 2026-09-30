@@ -23,10 +23,12 @@ dames.
   reprise d'une partie interrompue fonctionnent sans Internet.
 - **Langues :** arabe (RTL), français, anglais et hassaniya (mécanisme en
   place, traduction à faire par des locuteurs natifs).
-- **Design :** identité mauritanienne sobre, avec le sable, la terre,
-  l'indigo et l'or. Le plateau est tracé comme dans le sable. Les deux camps
-  se distinguent par la forme de leurs pièces (bâtonnet ou anneau), pas
-  seulement par la couleur.
+- **Design :** une partie jouée sur le sable, comme au village. Le plateau
+  est tracé au doigt dans un carré de sable lissé ; les Blancs sont des
+  bâtonnets plantés, les Noirs des cailloux ; un Sultan reçoit une seconde
+  pièce. Les deux camps se distinguent par la forme de leurs pièces, pas
+  seulement par la couleur. Tout est dessiné par le code, sans image : voir
+  [docs/design.md](docs/design.md).
 
 ## Règles
 
@@ -70,7 +72,8 @@ dhamet/
 │   ├── l10n/            Fichiers ARB (fr, en, ar, ar_MR) et code généré
 │   └── features/
 │       ├── game/        domain (mode, session, interaction), data (sauvegarde),
-│       │                presentation (écrans, plateau, contrôleur)
+│       │                presentation (écrans, contrôleur, et le design :
+│       │                board, pieces, hud, animations — voir docs/design.md)
 │       ├── ai/          Adaptateur vers dhamet_ai (isolate)
 │       ├── multiplayer/ Client REST/WebSocket, salon, salle, partie en ligne
 │       ├── profile/     Classement
