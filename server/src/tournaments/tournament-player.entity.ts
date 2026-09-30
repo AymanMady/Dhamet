@@ -1,12 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Tournament } from './tournament.entity';
 
@@ -34,7 +26,7 @@ export class TournamentPlayer {
   @Column({ type: 'real', default: 0 })
   score!: number;
 
-  /** Registration order, which is also the seeding order. */
-  @CreateDateColumn()
-  joinedAt!: Date;
+  /** 1 for the first player registered, and so on: the pairing order. */
+  @Column({ type: 'integer' })
+  seed!: number;
 }

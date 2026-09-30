@@ -111,7 +111,7 @@ export class TournamentsService implements OnModuleInit, GameLifecycleListener {
         throw new BadRequestException('At least two players are needed');
       }
       const seeds = [...tournament.players]
-        .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())
+        .sort((a, b) => a.seed - b.seed)
         .map((player) => player.user);
       const matches = this.dataSource.getRepository(TournamentMatch);
       const rounds = roundRobin(seeds);

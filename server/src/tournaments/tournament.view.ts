@@ -28,9 +28,7 @@ export interface TournamentView {
 
 /** [tournament] with its creator, players (and users) and matches (and users) loaded. */
 export function toTournamentView(tournament: Tournament): TournamentView {
-  const players = [...tournament.players].sort(
-    (a, b) => b.score - a.score || a.joinedAt.getTime() - b.joinedAt.getTime(),
-  );
+  const players = [...tournament.players].sort((a, b) => b.score - a.score || a.seed - b.seed);
   const rounds = new Map<number, TournamentView['rounds'][number]>();
   const matches = [...tournament.matches].sort(
     (a, b) => a.round - b.round || a.white.username.localeCompare(b.white.username),
