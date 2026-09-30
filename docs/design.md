@@ -3,26 +3,50 @@
 Le design reproduit une image de référence générée avec Gemini : une partie
 jouée dans le sable devant des maisons en banco. On y voit des bâtonnets
 plantés, des cailloux et des planches de bois patiné en guise de boutons.
-L'image sert de **référence artistique** et n'est pas embarquée dans
-l'application. Tout est redessiné par le code (`CustomPainter`), sans
-aucune image bitmap. Le rendu reste net à toutes les tailles, et chaque
-élément reste interactif.
+
+L'application utilise **l'image elle-même**, découpée en morceaux : la scène
+sert de fond d'écran, et le bâtonnet, le caillou, le sable et la planche
+deviennent les pièces et les matières du jeu. Le tracé du plateau, les
+indications et les animations restent dessinés par le code, pour rester
+exactement alignés sur les intersections et interactifs.
+
+## Découpage de l'image
+
+`tool/cut_design_assets.py` découpe l'image de référence et écrit les
+morceaux dans `assets/images/` :
+
+```bash
+python3 tool/cut_design_assets.py design.jpeg assets/images
+```
+
+| Fichier | Tiré de | Traitement | Usage |
+|---|---|---|---|
+| `scene.jpg` | la scène de jeu | Les deux planches « NEW GAME » et les icônes du coin sont effacées (inpainting) | Fond de l'accueil et des écrans de jeu, recadré pour couvrir l'écran |
+| `stick.png` | le bâtonnet P1 | Détouré sur transparence ; on garde le haut, la partie qui dépasse du sable | Pièces blanches |
+| `pebble.png` | le caillou P2 | Détouré sur transparence | Pièces noires |
+| `sand.jpg` | la texture T1 | Lumière égalisée, texture reconstruite en mosaïque raccordable, teinte accordée au sable de la scène | Aire de jeu, menu pause |
+| `plank.png` | la planche « NEW GAME » | Texte effacé, forme arrondie détourée | Boutons, étirés sans déformer leurs extrémités |
+
+L'application charge ces images au démarrage (`GameArt`,
+`core/art/game_art.dart`) et les transmet aux widgets (`GameArtScope`). Si
+elles manquent, par exemple dans les tests, la version dessinée par le code
+reprend la main : même mise en page, même interaction.
 
 ## De l'image au code
 
 | Élément de l'image | Rendu | Où |
 |---|---|---|
-| Sable (grain, taches, rides du vent, petits cailloux) | Procédural, déterministe (graine) | `core/widgets/sand/sand_texture.dart` (`paintSand`, `SandPainter`) |
-| Arrière-plan flou (ciel, murs en banco) | Horizon peint et flouté, brume qui le fond dans le sable, vignettage | `core/widgets/sand/sand_background.dart` |
-| Aire de jeu lissée à la main | Carré au bord irrégulier, bourrelet de sable | `board/board_surface_painter.dart` |
+| Scène (sable, murs en banco flous, bras du joueur) | Photo découpée, voile crépusculaire en thème sombre, vignettage. À défaut : horizon peint et flouté | `core/widgets/sand/sand_background.dart` |
+| Sable | Texture découpée, répétée environ deux fois sur le plateau. À défaut : grain, taches et rides procéduraux | `core/widgets/sand/sand_texture.dart` |
+| Aire de jeu lissée à la main | Carré au bord irrégulier, bourrelet de sable ; elle masque le quadrillage de la photo | `board/board_surface_painter.dart` |
 | Lignes tracées au doigt | Sillons ombrés et éclairés, légèrement tremblés, qui dépassent aux extrémités. Les lignes traditionnellement non tracées (rangées 2, 4, 6, 8 et colonnes b, d, f, h) sont plus légères | `board/board_surface_painter.dart` |
 | Trous (positions) | Petit creux à chaque intersection | `board/sand_marks.dart` |
-| Bâtonnets (pièces claires) | Bâtonnet planté debout : écorce, nœud, pointe taillée, petit tas de sable au pied, ombre portée | `pieces/piece_renderer.dart` |
-| Cailloux (pièces foncées) | Caillou au contour irrégulier : dôme éclairé, mouchetures, ombre de contact | `pieces/piece_renderer.dart` |
-| Lumière | Soleil en haut à gauche, ombres vers le bas à droite (`BoardGeometry.shadowDirection`) | tous les peintres |
-| Planches « NEW GAME » | `WoodButton` : planche patinée, veinage, nœud, clous, texte gravé ; elle s'enfonce quand on appuie | `core/widgets/wood_button.dart` |
+| Bâtonnets (pièces claires) | Bâtonnet découpé, planté debout : légèrement élargi et bordé de sombre pour rester lisible, petit tas de sable au pied, ombre portée | `pieces/piece_renderer.dart` |
+| Cailloux (pièces foncées) | Caillou découpé, légèrement tourné ou teinté selon la pièce, ombre de contact | `pieces/piece_renderer.dart` |
+| Lumière | Soleil en haut à gauche, comme sur la photo ; ombres vers le bas à droite (`BoardGeometry.shadowDirection`) | tous les peintres |
+| Planches « NEW GAME » | `WoodButton` : planche découpée, texte gravé par-dessus ; elle s'enfonce quand on appuie | `core/widgets/wood_button.dart` |
 | Petites icônes du coin (bâtonnets, cailloux) | Compteurs de pièces et de Sultans dans les panneaux des joueurs | `hud/game_panels.dart` |
-| Main qui saisit une pièce | Pas de main dessinée : la pièce sélectionnée se soulève (ombre détachée, légère mise à l'échelle) | `board/board_layers.dart` |
+| Main qui saisit une pièce | Visible dans le fond ; sur le plateau, la pièce sélectionnée se soulève (ombre détachée, légère mise à l'échelle) | `board/board_layers.dart` |
 
 Chaque pièce a ses petites imperfections (inclinaison, longueur, teinte,
 contour), tirées d'une graine (`PieceLook`). `PieceVariants` garde cette
@@ -31,8 +55,8 @@ forme d'une intersection à l'autre. Ce suivi est purement visuel, le moteur
 ne connaît pas l'identité des pièces.
 
 **Sultan.** Sur le sable, on superpose un second pion (docs/rules.md § 8).
-L'application dessine donc deux bâtonnets croisés, liés par une cordelette
-indigo, ou un caillou clair posé sur le caillou sombre. C'est un choix
+L'application montre donc deux bâtonnets croisés, liés par une cordelette
+indigo, ou un second caillou, éclairci, posé sur le premier. C'est un choix
 visuel, pas une règle.
 
 ## Architecture
@@ -55,7 +79,8 @@ animations/  MoveTimeline (chronologie pure, testée), effets de sable
 
 Tous ces dossiers sont dans `lib/features/game/presentation/`. Ce qui est
 partagé au-delà du jeu se trouve dans `lib/core/widgets/` : le sable,
-`SandBackground`, `SandPlate`, `WoodButton` et `RasterizedPaint`. Les couleurs de la scène sont
+`SandBackground`, `SandPlate`, `WoodButton`, `RasterizedPaint` et
+`GameArt`. Les couleurs de la scène sont
 dans `BoardPalette` (`app/theme/app_theme.dart`), avec deux ambiances :
 **midi** (thème clair) et **crépuscule** (thème sombre). Les matières des
 pièces et des planches sont dans `AppColors`.

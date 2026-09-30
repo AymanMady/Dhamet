@@ -23,12 +23,13 @@ dames.
   reprise d'une partie interrompue fonctionnent sans Internet.
 - **Langues :** arabe (RTL), français, anglais et hassaniya (mécanisme en
   place, traduction à faire par des locuteurs natifs).
-- **Design :** une partie jouée sur le sable, comme au village. Le plateau
-  est tracé au doigt dans un carré de sable lissé ; les Blancs sont des
-  bâtonnets plantés, les Noirs des cailloux ; un Sultan reçoit une seconde
-  pièce. Les deux camps se distinguent par la forme de leurs pièces, pas
-  seulement par la couleur. Tout est dessiné par le code, sans image : voir
-  [docs/design.md](docs/design.md).
+- **Design :** une partie jouée sur le sable, comme au village. Le fond,
+  les pièces, le sable et les planches sont découpés dans l'image de
+  référence du design (`tool/cut_design_assets.py`). Le plateau est tracé
+  au doigt dans un carré de sable lissé ; les Blancs sont des bâtonnets
+  plantés, les Noirs des cailloux ; un Sultan reçoit une seconde pièce. Les
+  deux camps se distinguent par la forme de leurs pièces, pas seulement par
+  la couleur. Voir [docs/design.md](docs/design.md).
 
 ## Règles
 
@@ -84,7 +85,7 @@ dhamet/
 ├── server/              Serveur NestJS autoritaire (voir server/README.md)
 │   └── engine_bridge/   Le moteur Dart compilé en JavaScript pour Node
 ├── docs/                rules.md, multiplayer.md (contrat client/serveur), localization.md
-└── tool/                l10n_status.dart
+└── tool/                l10n_status.dart, cut_design_assets.py (découpe de l'image du design)
 ```
 
 Principes :
