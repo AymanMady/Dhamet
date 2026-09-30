@@ -35,6 +35,7 @@ flutter:
   generate: true
   assets:
     - assets/fonts/OFL-ReemKufi.txt
+    - assets/images/
   fonts:
     - family: ReemKufi
       fonts:
