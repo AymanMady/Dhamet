@@ -1,0 +1,197 @@
+# Multijoueur — contrat client / serveur
+
+Ce document est le **contrat** entre l'application Flutter (`lib/`) et le
+serveur NestJS (`server/`). Toute évolution du protocole doit d'abord être
+reportée ici.
+
+## Principes
+
+- **Le serveur fait autorité.** Il ne fait jamais confiance au client : il
+  revérifie l'authentification, l'appartenance au salon, le tour, la
+  légalité du coup, les captures et l'état de la partie.
+- **Les règles ont une seule source.** Le serveur utilise le moteur Dart
+  (`packages/dhamet_engine`) compilé en JavaScript, via le pont
+  `server/engine_bridge`. Il n'existe pas de second moteur à maintenir.
+- **Formats de données.** `Move`, `GameState`, `DhametRules`, `GameResult`
+  et `Game` utilisent le JSON du moteur (voir `README.md`, section
+  « Sauvegarde »).
+- **Règles en ligne.** Les parties en ligne se jouent en
+  `DhametRules.standard`, et `UndoPolicy.disabled` s'applique toujours.
+  L'annulation est impossible en ligne.
+
+## Authentification (REST)
+
+Préfixe : `/api`. Le corps et les réponses sont en JSON. Les routes
+protégées attendent l'en-tête `Authorization: Bearer <token>` (JWT).
+
+| Méthode | Route | Corps | Réponse |
+|---|---|---|---|
+| POST | `/api/auth/register` | `{username, password}` | `201 {token, user}` |
+| POST | `/api/auth/login` | `{username, password}` | `200 {token, user}` |
+| POST | `/api/auth/guest` | `{username?}` | `201 {token, user}` (compte invité, sans mot de passe) |
+| GET | `/api/users/me` | — | `200 user` |
+| GET | `/api/users/:id` | — | `200 user` (profil public) |
+
+`user` = `{id, username, isGuest, rating, wins, losses, draws, gamesPlayed, createdAt}`.
+
+- `username` : de 3 à 20 caractères parmi `[A-Za-z0-9_]`, unique sans tenir
+  compte de la casse.
+- `password` : au moins 8 caractères.
+- Un invité sans `username` reçoit un nom `invite_XXXX`.
+
+Erreurs : `{statusCode, message, error}` au format Nest. Codes utilisés :
+400 (données invalides), 401 (non authentifié), 404, 409 (nom déjà pris).
+
+## Classement et parties (REST)
+
+| Méthode | Route | Réponse |
+|---|---|---|
+| GET | `/api/leaderboard?limit=50&offset=0` | `200 [{rank, user}]`, trié par `rating` décroissant |
+| GET | `/api/users/:id/games?limit=20` | `200 [gameSummary]` |
+| GET | `/api/games/:id` | `200 {summary, game}`, où `game` est le JSON `Game` du moteur (pour revoir la partie) |
+
+`gameSummary` = `{id, roomCode, white: user, black: user, status, result, rated, startedAt, finishedAt, plyCount}`.
+
+- `status` vaut `"playing"`, `"finished"` ou `"aborted"`.
+- `result` est un `GameResult` du moteur ou `null`.
+
+### Classement Elo
+
+- Tout nouveau compte démarre à **1200**.
+- Seules les parties `rated` comptent, c'est-à-dire les salons créés avec
+  `rated: true` entre deux comptes non invités.
+- La mise à jour se fait à la fin de la partie, avec **K = 32** :
+  `score` vaut 1 pour une victoire, 0,5 pour une nulle et 0 pour une
+  défaite, et `attendu = 1 / (1 + 10^((Rb - Ra)/400))`.
+- `wins`, `losses` et `draws` sont mis à jour pour **toute** partie en ligne
+  terminée, classée ou non.
+
+## Tournois (REST) — architecture extensible
+
+| Méthode | Route | Corps | Réponse |
+|---|---|---|---|
+| POST | `/api/tournaments` | `{name, format, maxPlayers}` | `201 tournament` |
+| GET | `/api/tournaments` | — | `200 [tournament]` |
+| GET | `/api/tournaments/:id` | — | `200 tournament` (joueurs, rondes, classement) |
+| POST | `/api/tournaments/:id/join` | — | `200 tournament` |
+| POST | `/api/tournaments/:id/start` | — | `200 tournament` (créateur seulement) |
+
+- `format` vaut `"roundRobin"` (seul format implémenté) ou
+  `"singleElimination"` (réservé, qui renvoie 400 pour l'instant).
+- Au démarrage, le serveur génère les rondes par la méthode du cercle. Pour
+  chaque rencontre, il crée un **salon privé classé**, dont le code figure
+  dans `tournament.rounds[].matches[].roomCode`.
+- Le résultat d'une partie de tournoi met à jour `matches[].result` et le
+  classement : 1 point pour une victoire, 0,5 pour une nulle.
+
+`tournament` = `{id, name, format, status, maxPlayers, createdBy: user, players: [{user, score}], rounds: [{number, matches: [{id, white: user, black: user, roomCode, gameId, result}]}], createdAt}`.
+
+`status` vaut `"registering"`, `"running"` ou `"finished"`.
+
+## Temps réel (WebSocket)
+
+Connexion : `ws://<hôte>:<port>/ws?token=<JWT>`, en WebSocket brut (pas de
+Socket.IO). Un jeton absent ou invalide provoque la fermeture avec le code
+`4401`.
+
+Chaque message, dans un sens comme dans l'autre, est un objet JSON
+`{"event": "<nom>", "data": {...}}`.
+
+### Événements client → serveur
+
+| Événement | `data` | Effet |
+|---|---|---|
+| `room:create` | `{color?: "white"\|"black"\|"random", rated?: bool, timeControl?: {initialSeconds, incrementSeconds}}` | Crée un salon privé. Réponse `room:updated`. |
+| `room:join` | `{code}` | Rejoint un salon en attente. Réponse `room:updated` à tous les membres. |
+| `room:leave` | `{code}` | Quitte le salon. Pendant une partie, cela équivaut à un abandon. |
+| `room:ready` | `{code, ready}` | Quand les deux joueurs sont prêts, la partie démarre (`game:started`). |
+| `room:rejoin` | `{code}` | Reconnexion. Réponse `game:sync`, ou `room:updated` si aucune partie n'est en cours. |
+| `game:move` | `{code, ply, move}` | `ply` est le nombre de coups déjà joués attendu par le client, et `move` un `Move` JSON. |
+| `game:resign` | `{code}` | Abandon. |
+| `game:sync` | `{code}` | Demande l'état complet. Réponse `game:sync`. |
+| `ping` | `{}` | Réponse `pong`. |
+
+### Événements serveur → client
+
+| Événement | `data` |
+|---|---|
+| `room:updated` | `{room}` |
+| `game:started` | `{room, gameId, game}`, où `game` est le JSON `Game` initial |
+| `game:moved` | `{code, gameId, ply, move, clocks?}`. `ply` est le nombre de coups **après** ce coup. Chaque client applique `move` avec son propre moteur ; en cas d'écart, il envoie `game:sync`. |
+| `game:sync` | `{room, gameId, game, clocks?}`, avec le JSON `Game` complet |
+| `game:over` | `{code, gameId, result, ratingChanges?: {<userId>: delta}}` |
+| `player:disconnected` | `{code, userId, graceSeconds}` |
+| `player:reconnected` | `{code, userId}` |
+| `pong` | `{}` |
+| `error` | `{code, message, event}` |
+
+- `room` = `{code, status, hostId, rated, timeControl, players: [{user, color, ready, connected}], gameId}`.
+- `room.status` vaut `"waiting"`, `"playing"` ou `"finished"`.
+- `clocks` = `{white: ms, black: ms}`, présent seulement avec une
+  `timeControl`.
+
+### Codes d'erreur (`error.data.code`)
+
+`UNAUTHENTICATED`, `ROOM_NOT_FOUND`, `ROOM_FULL`, `NOT_IN_ROOM`,
+`GAME_NOT_STARTED`, `GAME_OVER`, `NOT_YOUR_TURN`, `STALE_PLY`,
+`ILLEGAL_MOVE`, `INVALID_MESSAGE`.
+
+### Codes de salon
+
+Un code compte 6 caractères pris dans `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`,
+sans `I`, `O`, `0` ni `1` pour éviter les confusions. Exemple : `ABC123`
+n'est pas possible, mais `ABC234` l'est. Le code est unique parmi les
+salons actifs.
+
+### Validation d'un coup (`game:move`)
+
+Le serveur refuse le coup avec le code d'erreur correspondant si l'une de
+ces conditions n'est pas remplie :
+
+1. l'utilisateur est authentifié et membre du salon ;
+2. une partie est en cours et n'est pas terminée (sinon `GAME_OVER`) ;
+3. la couleur de l'utilisateur est celle du trait (sinon `NOT_YOUR_TURN`) ;
+4. `ply` est égal au nombre de coups joués (sinon `STALE_PLY`, et le client
+   doit se resynchroniser) ;
+5. le coup fait partie des coups légaux calculés par le moteur, ce qui
+   couvre les prises obligatoires et la rafle maximale (sinon
+   `ILLEGAL_MOVE`).
+
+Une fois le coup accepté, le serveur l'applique avec le moteur, l'horodate,
+le sauvegarde et diffuse `game:moved`. Si la partie se termine, il diffuse
+aussi `game:over` et met à jour le classement.
+
+### Reconnexion
+
+1. **Déconnexion d'un joueur pendant une partie** : le serveur le marque
+   `connected: false` et diffuse `player:disconnected` avec
+   `graceSeconds = 60`.
+2. **Retour dans le délai** : le joueur se reconnecte avec le même compte
+   et envoie `room:rejoin`. Il reçoit `game:sync` et l'adversaire reçoit
+   `player:reconnected`.
+3. **Délai expiré** : la partie se termine par **abandon** du joueur
+   absent (`GameEndReason.resignation`).
+
+La pendule continue de tourner pendant la déconnexion.
+
+### Pendule (optionnelle)
+
+Sans `timeControl`, il n'y a pas de limite de temps : le Dhamet n'en a pas
+traditionnellement. Avec une `timeControl`, le temps du joueur au trait
+décroît. Quand il atteint zéro, la partie se termine par
+`GameEndReason.timeout` (`Game.loseOnTime`). Il s'agit d'une règle
+**propre à l'application**.
+
+## Modèle de données (PostgreSQL)
+
+| Entité | Contenu |
+|---|---|
+| `User` | id, username, passwordHash (vide pour un invité), isGuest, avatar, rating, wins, losses, draws, createdAt |
+| `Game` | id, roomCode, rated, status, gameJson (JSON `Game` du moteur), resultJson, timeControl, tournamentMatchId, startedAt, finishedAt |
+| `GamePlayer` | gameId, userId, color, ratingBefore, ratingAfter |
+| `Move` | id, gameId, ply, userId, moveJson, playedAt |
+| `Room` | code, hostId, status, rated, timeControl, createdAt. Les salons actifs vivent en mémoire ; la table sert à l'historique. |
+| `Ranking` | historique Elo : userId, gameId, ratingBefore, ratingAfter, createdAt |
+| `Tournament` | id, name, format, status, maxPlayers, createdById, createdAt |
+| `TournamentPlayer` | tournamentId, userId, score |
+| `TournamentMatch` | id, tournamentId, round, whiteId, blackId, roomCode, gameId, resultJson |
