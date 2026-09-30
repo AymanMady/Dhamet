@@ -418,7 +418,7 @@ class _ActionBar extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: canUndo ? onUndo : null,
             icon: const Icon(Icons.undo),
-            label: Text(l10n.undo, overflow: TextOverflow.ellipsis),
+            label: FittedBox(fit: BoxFit.scaleDown, child: Text(l10n.undo)),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -426,7 +426,7 @@ class _ActionBar extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: canRedo ? onRedo : null,
             icon: const Icon(Icons.redo),
-            label: Text(l10n.redo, overflow: TextOverflow.ellipsis),
+            label: FittedBox(fit: BoxFit.scaleDown, child: Text(l10n.redo)),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -435,15 +435,18 @@ class _ActionBar extends StatelessWidget {
               ? FilledButton.icon(
                   onPressed: onShowResult,
                   icon: const Icon(Icons.emoji_events_outlined),
-                  label: Text(
-                    l10n.resultVictory,
-                    overflow: TextOverflow.ellipsis,
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(l10n.showResult),
                   ),
                 )
               : OutlinedButton.icon(
                   onPressed: onResign,
                   icon: const Icon(Icons.flag_outlined),
-                  label: Text(l10n.resign, overflow: TextOverflow.ellipsis),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(l10n.resign),
+                  ),
                 ),
         ),
       ],

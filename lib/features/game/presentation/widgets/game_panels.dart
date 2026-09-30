@@ -68,10 +68,29 @@ class PlayerPanel extends StatelessWidget {
             ),
           ),
           if (active)
-            Chip(
-              avatar: const Icon(Icons.play_arrow, size: 18),
-              label: Text(l10n.toMove),
-              visualDensity: VisualDensity.compact,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                borderRadius: AppRadius.button,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.play_arrow, size: 16, color: scheme.onPrimary),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    l10n.toMove,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: scheme.onPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ?trailing,
         ],

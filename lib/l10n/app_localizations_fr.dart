@@ -255,6 +255,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get playAgain => 'Rejouer';
 
   @override
+  String get showResult => 'Voir le résultat';
+
+  @override
   String get backHome => 'Retour à l\'accueil';
 
   @override

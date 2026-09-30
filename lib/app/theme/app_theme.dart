@@ -115,9 +115,15 @@ abstract final class AppTheme {
     BoardPalette board,
   ) {
     final base = ThemeData(colorScheme: scheme, useMaterial3: true);
+    final textTheme = AppTypography.textTheme(base.textTheme);
+    // Button labels derive from the theme so they share its font.
+    final buttonText = textTheme.labelLarge?.copyWith(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+    );
     return base.copyWith(
       scaffoldBackgroundColor: scaffold,
-      textTheme: AppTypography.textTheme(base.textTheme),
+      textTheme: textTheme,
       extensions: [board],
       appBarTheme: AppBarTheme(
         backgroundColor: scaffold,
@@ -131,7 +137,7 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           minimumSize: const Size(64, AppSpacing.minTouchTarget),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          textStyle: buttonText,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -139,7 +145,7 @@ abstract final class AppTheme {
           minimumSize: const Size(64, AppSpacing.minTouchTarget),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
           side: BorderSide(color: scheme.outline),
-          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          textStyle: buttonText,
         ),
       ),
       cardTheme: CardThemeData(

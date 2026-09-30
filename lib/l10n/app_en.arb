@@ -66,6 +66,7 @@
   "reasonAgreement": "Draw by agreement.",
   "movesCount": "{count, plural, =0{no moves} =1{1 move} other{{count} moves}}",
   "playAgain": "Play again",
+  "showResult": "See the result",
   "backHome": "Back to home",
   "viewGame": "View the game",
   "replayTitle": "Game replay",

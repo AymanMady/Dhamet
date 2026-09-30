@@ -41,6 +41,7 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: SegmentedButton<ThemeMode>(
+                  showSelectedIcon: false,
                   segments: [
                     ButtonSegment(
                       value: ThemeMode.system,

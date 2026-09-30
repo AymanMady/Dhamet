@@ -53,6 +53,7 @@ class _AiSetupScreenState extends ConsumerState<AiSetupScreen> {
             Text(l10n.sideTitle, style: theme.textTheme.titleLarge),
             const SizedBox(height: AppSpacing.sm),
             SegmentedButton<_SideChoice>(
+              showSelectedIcon: false,
               segments: [
                 ButtonSegment(
                   value: _SideChoice.white,

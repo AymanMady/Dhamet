@@ -27,9 +27,6 @@ abstract final class AppTypography {
       fontWeight: FontWeight.w600,
     ),
     titleLarge: base.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-    labelLarge: base.labelLarge?.copyWith(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-    ),
+    labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w600),
   );
 }

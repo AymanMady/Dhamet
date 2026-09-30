@@ -497,6 +497,12 @@ abstract class AppLocalizations {
   /// **'Rejouer'**
   String get playAgain;
 
+  /// No description provided for @showResult.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le résultat'**
+  String get showResult;
+
   /// No description provided for @backHome.
   ///
   /// In fr, this message translates to:

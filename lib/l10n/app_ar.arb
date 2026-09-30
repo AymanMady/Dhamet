@@ -66,6 +66,7 @@
   "reasonAgreement": "تعادل بالاتفاق.",
   "movesCount": "{count, plural, zero{لا نقلات} one{نقلة واحدة} two{نقلتان} few{{count} نقلات} many{{count} نقلة} other{{count} نقلة}}",
   "playAgain": "العب مجددًا",
+  "showResult": "عرض النتيجة",
   "backHome": "العودة إلى الرئيسية",
   "viewGame": "مشاهدة اللعبة",
   "replayTitle": "إعادة مشاهدة اللعبة",

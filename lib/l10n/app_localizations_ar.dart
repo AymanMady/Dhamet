@@ -266,6 +266,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get playAgain => 'العب مجددًا';
 
   @override
+  String get showResult => 'عرض النتيجة';
+
+  @override
   String get backHome => 'العودة إلى الرئيسية';
 
   @override

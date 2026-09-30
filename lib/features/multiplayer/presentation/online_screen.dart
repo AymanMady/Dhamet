@@ -210,6 +210,7 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
       Text(l10n.onlineCreateRoom, style: theme.textTheme.titleLarge),
       const SizedBox(height: AppSpacing.sm),
       SegmentedButton<Player?>(
+        showSelectedIcon: false,
         segments: [
           ButtonSegment(
             value: Player.white,
