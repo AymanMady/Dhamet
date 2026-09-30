@@ -60,7 +60,7 @@ void main() {
       expect(session.selected, isNull);
     });
 
-    test('several sequences to the same point wait for a choice', () {
+    test('equivalent capture sequences need no choice', () {
       controller.startFrom(
         position({
           'c3': Piece.whitePawn,
@@ -70,15 +70,34 @@ void main() {
           'd3': Piece.blackPawn,
         }),
       );
-      controller
-        ..tap(sq('c3'))
-        ..tap(sq('c3'));
-      var session = container.read(gameControllerProvider)!;
-      expect(session.pendingChoices, hasLength(2));
-      controller.choose(session.pendingChoices.last);
-      session = container.read(gameControllerProvider)!;
-      expect(session.state.plyCount, 1);
+      controller.tap(sq('c3'));
+      expect(
+        container.read(gameControllerProvider)!.selectedMoves,
+        hasLength(1),
+      );
+      controller.tap(sq('c3'));
+      final session = container.read(gameControllerProvider)!;
       expect(session.pendingChoices, isEmpty);
+      expect(session.state.plyCount, 1);
+      expect(session.state.lastMove!.captureCount, 4);
+    });
+
+    test('a pending choice is played with choose', () {
+      controller.startLocal();
+      final session = container.read(gameControllerProvider)!;
+      final moves = session.state.legalMoves;
+      // Simulate two distinct options offered to the player.
+      container.read(gameControllerProvider.notifier).state = session.copyWith(
+        pendingChoices: moves.take(2).toList(),
+      );
+      controller.choose(moves[1]);
+      expect(container.read(gameControllerProvider)!.state.lastMove, moves[1]);
+      controller.choose(moves[0]);
+      expect(
+        container.read(gameControllerProvider)!.state.plyCount,
+        1,
+        reason: 'a move no longer offered is ignored',
+      );
     });
 
     test('undo and redo one move at a time', () {

@@ -32,8 +32,9 @@ void main() {
     expect((outcome as SelectPiece).position, sq('f4'));
   });
 
-  test('several sequences ending on the same point ask for a choice', () {
-    // Two loops return the pawn to c3 (see the engine capture tests).
+  test('equivalent sequences to the same point are played directly', () {
+    // Two loops return the pawn to c3, taking the same four pieces in a
+    // different order: same outcome, no choice to make.
     final state = position({
       'c3': Piece.whitePawn,
       'c4': Piece.blackPawn,
@@ -41,9 +42,32 @@ void main() {
       'e4': Piece.blackPawn,
       'd3': Piece.blackPawn,
     });
+    expect(state.legalMovesFrom(sq('c3')), hasLength(2));
     final outcome = resolveTap(state, sq('c3'), sq('c3'));
-    expect(outcome, isA<ChooseMove>());
-    expect((outcome as ChooseMove).moves, hasLength(2));
+    expect(outcome, isA<PlayMove>());
+    expect((outcome as PlayMove).move.captureCount, 4);
+  });
+
+  group('distinctOutcomes', () {
+    Move capture(List<String> path, List<String> captured) => Move(
+      piece: Piece.whiteSultan,
+      from: sq('e5'),
+      path: [for (final p in path) sq(p)],
+      captured: [for (final p in captured) sq(p)],
+    );
+
+    test('merges sequences taking the same pieces to the same point', () {
+      final a = capture(['c3', 'a1'], ['d4', 'b2']);
+      final b = capture(['b2', 'a1'], ['d4', 'b2']);
+      expect(distinctOutcomes([a, b]), [a]);
+    });
+
+    test('keeps sequences taking different pieces or ending elsewhere', () {
+      final a = capture(['c3', 'a1'], ['d4', 'b2']);
+      final b = capture(['c3', 'a1'], ['d4', 'c2']);
+      final c = capture(['c3', 'b1'], ['d4', 'b2']);
+      expect(distinctOutcomes([a, b, c]), [a, b, c]);
+    });
   });
 
   test('only legal moves are ever proposed', () {

@@ -106,7 +106,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                       selected: _selected,
                       targets: _selected == null
                           ? const []
-                          : _state.legalMovesFrom(_selected!),
+                          : distinctOutcomes(_state.legalMovesFrom(_selected!)),
                       onTap: _step.isExercise ? _onTap : null,
                       showCoordinates: true,
                       animate:

@@ -77,7 +77,7 @@ class OnlineState {
 
   List<Move> get selectedMoves => selected == null || game == null
       ? const []
-      : game!.state.legalMovesFrom(selected!);
+      : distinctOutcomes(game!.state.legalMovesFrom(selected!));
 
   /// Remaining time of [player] now, in milliseconds.
   int? remainingMs(Player player, DateTime now) {

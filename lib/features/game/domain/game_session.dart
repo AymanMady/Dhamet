@@ -1,6 +1,7 @@
 import 'package:dhamet_engine/dhamet_engine.dart';
 import 'package:flutter/foundation.dart';
 
+import 'board_interaction.dart';
 import 'game_mode.dart';
 
 /// A game being played in the app: the engine [game] plus what the user
@@ -58,9 +59,10 @@ class GameSession {
       for (final move in state.legalMoves) move.from,
   };
 
-  /// Legal moves of the selected piece.
-  List<Move> get selectedMoves =>
-      selected == null ? const [] : state.legalMovesFrom(selected!);
+  /// Legal moves of the selected piece, one per distinct outcome.
+  List<Move> get selectedMoves => selected == null
+      ? const []
+      : distinctOutcomes(state.legalMovesFrom(selected!));
 
   GameSession copyWith({
     Game? game,
