@@ -36,6 +36,11 @@ final class CaptureResolver {
     final piece = board.pieceAt(from);
     if (piece == null) return const [];
     final movement = _movements.of(piece.type);
+    // The first jump does not depend on the piece having left [from], so
+    // most pieces are ruled out without copying the board.
+    if (movement.captureSteps(board, from, piece.owner).isEmpty) {
+      return const [];
+    }
     final search = _SearchBoard(board, rules.capturedPieceRemoval)
       ..vacate(from);
     final sequences = <Move>[];
