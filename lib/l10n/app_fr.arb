@@ -1,0 +1,304 @@
+{
+  "@@locale": "fr",
+  "appName": "Dhamet",
+  "@appName": {
+    "description": "Latin name of the game (the Arabic name ظامت is always shown too)."
+  },
+  "appTagline": "Jeu traditionnel mauritanien",
+  "homeNewGame": "Nouvelle partie",
+  "homePlayAi": "Jouer contre l'IA",
+  "homePlayFriend": "Jouer avec un ami",
+  "homePlayOnline": "Jouer en ligne",
+  "homeHowToPlay": "Comment jouer",
+  "homeHistory": "Historique",
+  "homeSettings": "Paramètres",
+  "homeResume": "Reprendre la partie",
+  "homeResumeDetails": "{mode} · coup {moveNumber}",
+  "@homeResumeDetails": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      },
+      "moveNumber": {
+        "type": "int"
+      }
+    }
+  },
+  "modeTitle": "Mode de jeu",
+  "modeLocal": "Joueur contre joueur",
+  "modeLocalDescription": "À deux sur le même appareil",
+  "modeAi": "Joueur contre IA",
+  "modeAiDescription": "Affrontez l'ordinateur",
+  "aiSetupTitle": "Contre l'IA",
+  "difficultyTitle": "Difficulté",
+  "difficultyEasy": "Facile",
+  "difficultyMedium": "Moyen",
+  "difficultyHard": "Difficile",
+  "difficultyExpert": "Expert",
+  "difficultyEasyDescription": "Pour découvrir le jeu",
+  "difficultyMediumDescription": "Un adversaire honnête",
+  "difficultyHardDescription": "Il ne laisse rien passer",
+  "difficultyExpertDescription": "Réfléchit longtemps et joue fort",
+  "sideTitle": "Votre camp",
+  "sideRandom": "Au hasard",
+  "whiteStarts": "Les Blancs commencent.",
+  "startGame": "Commencer",
+  "playerWhite": "Blancs",
+  "playerBlack": "Noirs",
+  "playerYou": "Vous",
+  "playerAi": "IA · {level}",
+  "@playerAi": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "turnOf": "Au tour des {player}",
+  "@turnOf": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "yourTurn": "À vous de jouer",
+  "aiThinking": "L'IA réfléchit…",
+  "toMove": "Au trait",
+  "mustCapture": "Prise obligatoire : prenez le plus de pièces possible.",
+  "piecesCount": "{count, plural, =0{aucune pièce} =1{1 pièce} other{{count} pièces}}",
+  "@piecesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sultansCount": "{count, plural, =0{aucun Sultan} =1{1 Sultan} other{{count} Sultans}}",
+  "@sultansCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lastMoveLabel": "Dernier coup : {move}",
+  "@lastMoveLabel": {
+    "placeholders": {
+      "move": {
+        "type": "String"
+      }
+    }
+  },
+  "chooseCapture": "Plusieurs rafles mènent ici : choisissez-en une.",
+  "captureOption": "{notation} · {count, plural, =1{1 prise} other{{count} prises}}",
+  "@captureOption": {
+    "placeholders": {
+      "notation": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "confirm": "Confirmer",
+  "cancel": "Annuler",
+  "undo": "Annuler le coup",
+  "redo": "Rétablir",
+  "resign": "Abandonner",
+  "restart": "Recommencer",
+  "resignTitle": "Abandonner la partie ?",
+  "resignBody": "La victoire sera donnée à l'adversaire.",
+  "restartTitle": "Recommencer ?",
+  "restartBody": "La partie en cours sera abandonnée.",
+  "resultVictory": "Victoire",
+  "resultDefeat": "Défaite",
+  "resultDraw": "Égalité",
+  "resultWinner": "Les {player} gagnent",
+  "@resultWinner": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonElimination": "Toutes les pièces adverses ont été prises.",
+  "reasonBlocked": "Le camp adverse ne peut plus jouer.",
+  "reasonResignation": "Abandon.",
+  "reasonTimeout": "Temps écoulé.",
+  "reasonRepetition": "Même position répétée.",
+  "reasonAgreement": "Nulle d'un commun accord.",
+  "movesCount": "{count, plural, =0{aucun coup} =1{1 coup} other{{count} coups}}",
+  "@movesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playAgain": "Rejouer",
+  "backHome": "Retour à l'accueil",
+  "viewGame": "Voir la partie",
+  "replayTitle": "Revoir la partie",
+  "replayStart": "Position initiale",
+  "replayPosition": "Coup {ply} sur {total}",
+  "@replayPosition": {
+    "placeholders": {
+      "ply": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "replayFirst": "Début",
+  "replayPrevious": "Coup précédent",
+  "replayNext": "Coup suivant",
+  "replayLast": "Fin",
+  "settingsTitle": "Paramètres",
+  "settingsSectionGame": "Jeu",
+  "settingsSectionDisplay": "Affichage",
+  "settingsSectionPrivacy": "Confidentialité",
+  "settingsSectionAdvanced": "Avancé",
+  "settingsLanguage": "Langue",
+  "languageSystem": "Langue de l'appareil",
+  "settingsTheme": "Thème",
+  "themeSystem": "Automatique",
+  "themeLight": "Clair",
+  "themeDark": "Sombre",
+  "settingsSound": "Sons",
+  "settingsHaptics": "Vibrations",
+  "settingsAnimations": "Animations",
+  "settingsAnimationsDescription": "Désactivez-les pour des déplacements instantanés.",
+  "settingsCoordinates": "Afficher les coordonnées",
+  "settingsHints": "Montrer les coups possibles",
+  "settingsAnalytics": "Statistiques d'usage anonymes",
+  "settingsAnalyticsDescription": "Rien n'est envoyé sans votre accord.",
+  "settingsDeveloper": "Mode développeur",
+  "settingsDeveloperDescription": "Coordonnées, coups légaux, état de la partie, temps de l'IA.",
+  "settingsPerformanceOverlay": "Afficher les performances (FPS)",
+  "settingsServerUrl": "Adresse du serveur",
+  "settingsAbout": "À propos",
+  "aboutBody": "Dhamet (ظامت) est le jeu de dames traditionnel de Mauritanie. Les règles appliquées et leurs sources sont documentées ; certaines restent à confirmer auprès des joueurs.",
+  "devPanelTitle": "Développeur",
+  "devLegalMoves": "Coups légaux ({count})",
+  "@devLegalMoves": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "devAiTime": "Temps de l'IA : {milliseconds} ms",
+  "@devAiTime": {
+    "placeholders": {
+      "milliseconds": {
+        "type": "int"
+      }
+    }
+  },
+  "devPly": "Demi-coups joués : {ply}",
+  "@devPly": {
+    "placeholders": {
+      "ply": {
+        "type": "int"
+      }
+    }
+  },
+  "devState": "État de la partie (JSON)",
+  "historyTitle": "Historique",
+  "historyEmpty": "Aucune partie terminée pour l'instant.",
+  "historyAgainstAi": "Contre l'IA · {level}",
+  "@historyAgainstAi": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "historyLocal": "À deux",
+  "historyDelete": "Supprimer",
+  "historyWon": "Gagnée",
+  "historyLost": "Perdue",
+  "historyDrawn": "Nulle",
+  "statsTitle": "Statistiques",
+  "statsAgainstAi": "Contre l'IA",
+  "statsAllGames": "Toutes les parties",
+  "statsGamesPlayed": "Parties jouées",
+  "statsWins": "Victoires",
+  "statsLosses": "Défaites",
+  "statsDraws": "Égalités",
+  "statsWinRate": "Taux de victoire",
+  "statsPiecesCaptured": "Pièces prises",
+  "statsSultansCreated": "Sultans obtenus",
+  "statsLongestGame": "Plus longue partie",
+  "tutorialTitle": "Comment jouer",
+  "tutorialStep": "Étape {step} sur {total}",
+  "@tutorialStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tutorialNext": "Suivant",
+  "tutorialPrevious": "Précédent",
+  "tutorialFinish": "Terminer",
+  "tutorialWellDone": "Bravo !",
+  "tutorialTryAgain": "Ce n'est pas le coup attendu. Réessayez.",
+  "tutorialReset": "Recommencer l'exercice",
+  "tutorialBoardTitle": "Le plateau",
+  "tutorialBoardBody": "Le Dhamet se joue sur les 81 intersections d'une grille de 9 × 9 lignes, tracée comme quatre plateaux d'alquerque. Les diagonales ne passent que par un point sur deux, les points « vastes ». Les autres points, « étroits », n'ont pas de diagonale.",
+  "tutorialPiecesTitle": "Les pièces",
+  "tutorialPiecesBody": "Chaque camp a 40 pièces ; seule l'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l'autre avec des crottes de chameau : ici, les pièces claires portent un trait et les foncées un anneau.",
+  "tutorialMoveTitle": "Le déplacement",
+  "tutorialMoveBody": "Un pion avance d'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Il ne recule jamais et ne se déplace pas sur le côté. Avancez le pion blanc.",
+  "tutorialCaptureTitle": "La prise",
+  "tutorialCaptureBody": "On prend en sautant par-dessus une pièce adverse voisine, vers l'intersection libre juste derrière, dans toutes les directions, même en arrière. Prendre est obligatoire. Prenez le pion noir.",
+  "tutorialRafleTitle": "La rafle",
+  "tutorialRafleBody": "Si le pion peut encore prendre après une prise, il continue : c'est une rafle. Les pièces prises sont retirées aussitôt, et il faut toujours jouer la rafle qui prend le plus de pièces. Réalisez la rafle de cinq pièces.",
+  "tutorialPromotionTitle": "La promotion",
+  "tutorialPromotionBody": "Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Menez le pion jusqu'à la dernière rangée.",
+  "tutorialSultanTitle": "Le Sultan",
+  "tutorialSultanBody": "Le Sultan se déplace d'autant d'intersections qu'il veut le long d'une ligne, en avant comme en arrière. Il prend une pièce à distance si l'intersection derrière elle est libre. Prenez le pion noir avec le Sultan.",
+  "tutorialVictoryTitle": "La victoire",
+  "tutorialVictoryBody": "On gagne en prenant toutes les pièces adverses, ou quand l'adversaire ne peut plus jouer. Prenez la dernière pièce noire.",
+  "tutorialSpecialTitle": "Règles particulières",
+  "tutorialSpecialBody": "Quand plusieurs prises sont possibles, la plus longue est obligatoire. Dans la tradition, une rafle incomplète peut être « soufflée » par l'adversaire ; ici, l'application impose directement le bon coup. Quelques règles restent à confirmer et sont réglables. Jouez la prise la plus longue.",
+  "semanticsIntersection": "{position}",
+  "@semanticsIntersection": {
+    "placeholders": {
+      "position": {
+        "type": "String"
+      }
+    }
+  },
+  "semanticsPiece": "{position}, {piece}",
+  "@semanticsPiece": {
+    "placeholders": {
+      "position": {
+        "type": "String"
+      },
+      "piece": {
+        "type": "String"
+      }
+    }
+  },
+  "semanticsTarget": "{label}, destination possible",
+  "@semanticsTarget": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "pieceWhitePawn": "pion blanc",
+  "pieceBlackPawn": "pion noir",
+  "pieceWhiteSultan": "Sultan blanc",
+  "pieceBlackSultan": "Sultan noir"
+}

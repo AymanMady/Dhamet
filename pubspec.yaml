@@ -11,6 +11,15 @@ dependencies:
     sdk: flutter
   dhamet_engine:
     path: packages/dhamet_engine
+  flutter_riverpod: ^3.4.3
+  go_router: ^18.0.2
+  shared_preferences: ^2.5.5
+  path_provider: ^2.1.6
+  intl: ^0.20.3
+  http: ^1.6.0
+  web_socket_channel: ^3.0.3
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -19,3 +28,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
+  assets:
+    - assets/fonts/OFL-ReemKufi.txt
+  fonts:
+    - family: ReemKufi
+      fonts:
+        - asset: assets/fonts/ReemKufi.ttf
