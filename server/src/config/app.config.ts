@@ -25,6 +25,12 @@ export interface Settings {
   corsOrigins: string[] | true;
   /** Rate limit of the auth routes: `limit` requests per `ttlSeconds` and client. */
   authThrottle: { ttlSeconds: number; limit: number };
+  /**
+   * Express `trust proxy`: which reverse proxies to believe when reading the
+   * client address (the auth rate limit is per address). `false` takes the
+   * address of the socket, which behind a proxy is the proxy's.
+   */
+  trustProxy: boolean | number | string;
 }
 
 type Env = Record<string, string | undefined>;
@@ -61,6 +67,7 @@ export function readSettings(env: Env): Settings {
       ttlSeconds: number(env, 'AUTH_THROTTLE_TTL_SECONDS', 60, { min: 1, max: 86400 }),
       limit: number(env, 'AUTH_THROTTLE_LIMIT', 20, { min: 1, max: 1_000_000, integer: true }),
     },
+    trustProxy: trustProxy(env),
   };
 }
 
@@ -100,6 +107,18 @@ function number(
     throw new Error(`${name} must be a number between ${range.min} and ${range.max}`);
   }
   return value;
+}
+
+/**
+ * `TRUST_PROXY`: `true`/`false`, a number of proxy hops, or the addresses and
+ * subnets of the proxies as Express reads them (`loopback, 10.0.0.0/8`).
+ */
+function trustProxy(env: Env): boolean | number | string {
+  const raw = env.TRUST_PROXY?.trim();
+  if (!raw || raw === 'false') return false;
+  if (raw === 'true') return true;
+  if (/^\d+$/.test(raw)) return number(env, 'TRUST_PROXY', 0, { min: 0, max: 10, integer: true });
+  return raw;
 }
 
 function flag(env: Env, name: string, fallback: boolean): boolean {

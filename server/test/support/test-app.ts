@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { AddressInfo } from 'node:net';
 import request from 'supertest';
@@ -21,13 +21,15 @@ export class TestApp {
   private accounts = 0;
 
   private constructor(
-    readonly app: INestApplication,
+    readonly app: NestExpressApplication,
     readonly wsUrl: string,
   ) {}
 
   static async start(): Promise<TestApp> {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    const app = moduleRef.createNestApplication({ logger: ['error', 'warn'] });
+    const app = moduleRef.createNestApplication<NestExpressApplication>({
+      logger: ['error', 'warn'],
+    });
     configureApp(app);
     await app.listen(0, '127.0.0.1');
     const { port } = app.getHttpServer().address() as AddressInfo;
