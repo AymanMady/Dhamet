@@ -141,7 +141,7 @@ Il n'est jamais activé par défaut.
 | IA | `cd packages/dhamet_ai && dart test` | 71 tests : légalité, rafle maximale, positions tactiques prouvées par recherche exhaustive, temps, isolate |
 | App | `flutter test` | 69 tests : interaction, contrôleurs, sauvegarde sur disque, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur |
 | App + serveur réel | `flutter test test/integration --dart-define=DHAMET_SERVER=http://localhost:3999` | Deux clients jouent une partie classée à travers le serveur (voir l'en-tête du fichier) |
-| Serveur | `cd server && npm test && npm run test:e2e` | 70 tests unitaires et 58 tests de bout en bout |
+| Serveur | `cd server && npm test && npm run test:e2e` | 72 tests unitaires et 60 tests de bout en bout |
 
 Mesures de performance :
 
@@ -223,7 +223,11 @@ moins de 1 µs pour annuler ou rétablir.
 
 - **Protocole :** [docs/multiplayer.md](docs/multiplayer.md).
 - **Serveur :** [server/README.md](server/README.md) (installation, Docker,
-  écarts au contrat).
+  déploiement, écarts au contrat).
+- **Mise en ligne :** Render, par le Blueprint [render.yaml](render.yaml) :
+  service Docker sur une seule instance et PostgreSQL 16. Le serveur garde
+  les parties en mémoire, ce qui exclut Vercel (voir
+  [server/README.md](server/README.md#déploiement-render)).
 - **Pile serveur :**
   - NestJS 11 et WebSocket brut sur `/ws` ;
   - PostgreSQL 16 (sql.js en mémoire pour les tests) ;

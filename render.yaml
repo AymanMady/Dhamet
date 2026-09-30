@@ -1,0 +1,52 @@
+# Render Blueprint: the Dhamet server (server/) and its PostgreSQL database.
+# Render dashboard → New → Blueprint → this repository. See server/README.md,
+# "Déploiement".
+#
+# The server holds rooms, clocks and live games in memory: it runs as a
+# single instance, without autoscaling, and a deploy or a restart ends the
+# games in progress.
+
+services:
+  - type: web
+    name: dhamet-server
+    runtime: docker
+    # The image compiles the Dart engine of packages/: the build context is
+    # the repository root.
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - server/**
+        - packages/dhamet_engine/**
+        - render.yaml
+      ignoredPaths:
+        - server/**/*.md
+        - server/test/**
+        - server/**/*.spec.ts
+    envVars:
+      # Internal URL of the database below (private network, no TLS needed).
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dhamet-db
+          property: connectionString
+      # Generated once; changing it signs every player out, and guests,
+      # whose token is their only credential, lose their account.
+      - key: JWT_SECRET
+        generateValue: true
+      # Client → Cloudflare → Render load balancer → internal proxy → server.
+      - key: TRUST_PROXY
+        value: '3'
+
+databases:
+  - name: dhamet-db
+    databaseName: dhamet
+    user: dhamet
+    region: frankfurt
+    plan: 0.1c-256mb
+    # The version of docker-compose.yml, on which the migrations are tested.
+    postgresMajorVersion: '16'

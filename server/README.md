@@ -10,6 +10,8 @@ listés plus bas.
   mémoire pour les tests automatisés.
 - **Les règles viennent uniquement du moteur Dart** (`packages/dhamet_engine`),
   compilé en JavaScript. Il n'y a pas de second moteur.
+- Mise en ligne : Render, décrite par [`render.yaml`](../render.yaml) (voir
+  [Déploiement](#déploiement-render)).
 
 ## Démarrage rapide
 
@@ -165,11 +167,75 @@ Voir [`.env.example`](.env.example).
 | `DB_MIGRATIONS_RUN` / `DB_SYNCHRONIZE` | `true` / `false` | gestion du schéma |
 | `RECONNECT_GRACE_SECONDS` | 60 | délai de reconnexion (décimales permises) |
 | `CORS_ORIGINS` | `*` | origines autorisées, séparées par des virgules |
-| `AUTH_THROTTLE_LIMIT` / `AUTH_THROTTLE_TTL_SECONDS` | 20 / 60 | limite de débit de `/api/auth/*` |
+| `AUTH_THROTTLE_LIMIT` / `AUTH_THROTTLE_TTL_SECONDS` | 20 / 60 | limite de débit de `/api/auth/*`, par adresse de client |
+| `TRUST_PROXY` | `false` | proxys à croire pour lire l'adresse du client (`trust proxy` d'Express) : `true`/`false`, nombre de sauts, ou adresses et sous-réseaux (`loopback, 10.0.0.0/8`) ; `3` sur Render |
 | `DB_HOST_PORT`, `API_PORT` | 5436, 3000 | ports publiés par docker compose |
 
 Le port PostgreSQL publié par `docker-compose.yml` est **5436** : 5432 et
 5433 sont déjà pris par d'autres projets sur la machine de développement.
+
+## Déploiement (Render)
+
+Le serveur garde en mémoire les salons, les pendules et les parties en
+cours, et chaque joueur garde une connexion WebSocket pendant toute la
+partie. Il lui faut donc **un processus permanent, sur une seule
+instance**. C'est pourquoi il tourne sur Render (service Docker) et pas sur
+Vercel. Sur Vercel, NestJS devient une *Function* dont les instances
+naissent et meurent selon le trafic. Les WebSocket y sont en bêta et coupés
+au bout de 5 min (13 min sur le plan Pro). Une reconnexion peut arriver sur
+une autre instance, qui ne connaît pas le salon, et chaque nouvelle instance
+passerait les parties en cours en `aborted`.
+
+Le Blueprint [`render.yaml`](../render.yaml), à la racine du dépôt, décrit :
+
+- **`dhamet-server`** : l'image de `server/Dockerfile`, construite depuis la
+  racine du dépôt (le moteur Dart est compilé pendant la construction). Une
+  seule instance, région Francfort (la plus proche de la Mauritanie parmi
+  celles de Render), health check `GET /api/health` ;
+- **`dhamet-db`** : PostgreSQL 16, relié par `DATABASE_URL` (URL interne,
+  sans TLS sur le réseau privé de Render) ;
+- `JWT_SECRET`, généré une fois par Render, et `TRUST_PROXY=3`.
+
+Mise en ligne :
+
+1. Pousser la branche sur GitHub ou GitLab.
+2. Render → **New → Blueprint**, puis choisir le dépôt et la branche. Render
+   affiche les ressources et leur coût avant de créer la base et le service.
+3. Au premier démarrage, le serveur applique les migrations.
+   `https://<service>.onrender.com/api/health` doit répondre
+   `{"status":"ok"}`.
+4. Dans l'app : Paramètres → Adresse du serveur →
+   `https://<service>.onrender.com`. Le client en déduit `wss://…/ws`.
+
+Ensuite, Render redéploie à chaque commit qui touche `server/`,
+`packages/dhamet_engine/` ou `render.yaml` (`autoDeployTrigger: commit`).
+Les commits qui ne changent que de la documentation ou des tests ne
+déclenchent rien.
+
+À savoir :
+
+- **Un déploiement ou un redémarrage interrompt les parties en cours.**
+  Mieux vaut déployer quand personne ne joue. Au démarrage, les parties
+  interrompues passent en `aborted` et chaque rencontre de tournoi sans
+  résultat reçoit un nouveau salon.
+- **Plans.** Le service est en `0.5c-512mb` et la base en `0.1c-256mb`,
+  tous deux payants ; on peut les changer dans `render.yaml` ou dans le
+  tableau de bord. Les plans `free` ne conviennent qu'à un essai : le
+  service s'endort après 15 min sans trafic, et la base gratuite expire au
+  bout de 30 jours, sans sauvegarde.
+- **`TRUST_PROXY=3`.** Sur Render, une requête traverse Cloudflare, le
+  répartiteur de charge, puis un proxy interne. Chacun ajoute une adresse à
+  `X-Forwarded-For`. Avec 3, Express lit l'adresse du client, et une
+  adresse forgée par le client (à gauche de la liste) est ignorée. Sans ce
+  réglage, l'adresse vue est celle du dernier proxy : **tous les joueurs
+  partageraient la même limite** de `/api/auth/*`.
+- **Keepalive.** Le client envoie `ping` toutes les 25 s. Render ne coupe
+  pas une connexion WebSocket active.
+- **Base externe** (Neon, Supabase…) : mettre son URL dans `DATABASE_URL`,
+  avec `?sslmode=verify-full`.
+- **Autre hébergeur Docker** (Railway, Fly.io…) : même image
+  (`docker build -f server/Dockerfile .` depuis la racine du dépôt), une
+  seule instance, et un `TRUST_PROXY` adapté aux proxys de l'hébergeur.
 
 ## Tests
 
@@ -191,7 +257,9 @@ Le port PostgreSQL publié par `docker-compose.yml` est **5436** : 5432 et
   rejoué par le moteur ; reconnexion dans le délai (`game:sync`,
   `player:reconnected`) et forfait au-delà ; pendule qui tombe
   (`timeout`) ; tournoi (création, inscriptions, départ, salons, résultat et
-  classement, fin du tournoi) ; fermeture `4401` sans jeton valide.
+  classement, fin du tournoi) ; fermeture `4401` sans jeton valide ;
+  `GET /api/health` ; limite de débit de `/api/auth/*` par adresse de
+  client derrière trois proxys (`TRUST_PROXY=3`), adresse forgée ignorée.
 
 ## Deviations from docs/multiplayer.md
 
@@ -269,10 +337,15 @@ Choix faits là où le contrat est muet ou ambigu :
     restées en cours lors de l'exécution précédente.
 14. **Invités** : `invite_` suivi de 4 caractères `[a-z0-9]` (plus en cas
     de collision). Sans mot de passe, leur jeton est leur seul identifiant.
+15. **`GET /api/health`** (hors contrat) répond `{"status":"ok"}` pour les
+    health checks de l'hébergeur. Il n'interroge pas la base : le serveur
+    n'écoute qu'après avoir joint la base et appliqué les migrations, et un
+    échec ferait redémarrer l'instance, donc perdre les parties en cours.
 
 ## Limites connues
 
-- Une seule instance de serveur (salons, pendules et files en mémoire).
+- Une seule instance de serveur (salons, pendules et files en mémoire) :
+  un déploiement interrompt les parties en cours.
 - Pas de proposition de nulle en ligne (`end.draw` est NEEDS_VERIFICATION
   et désactivé dans `DhametRules.standard`) ; le demi-point de nulle est
   prévu dans le classement et les tournois, mais ne peut pas survenir avec
