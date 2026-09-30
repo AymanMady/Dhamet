@@ -3,3 +3,6 @@ template-arb-file: app_fr.arb
 output-localization-file: app_localizations.dart
 output-class: AppLocalizations
 nullable-getter: false
+# Messages still to translate per language (Hassaniya: most of them fall
+# back to Arabic until reviewed by native speakers).
+untranslated-messages-file: docs/l10n_untranslated.json

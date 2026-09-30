@@ -567,3 +567,17 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get pieceBlackSultan => 'سلطان أسود';
 }
+
+/// The translations for Arabic, as used in Mauritania (`ar_MR`).
+class AppLocalizationsArMr extends AppLocalizationsAr {
+  AppLocalizationsArMr() : super('ar_MR');
+
+  @override
+  String get tutorialSultanTitle => 'الظايم (السلطان)';
+
+  @override
+  String get pieceWhiteSultan => 'ظايم أبيض (سلطان)';
+
+  @override
+  String get pieceBlackSultan => 'ظايم أسود (سلطان)';
+}
