@@ -189,6 +189,19 @@ moteur ne propose aucun autre coup. Paramètre : `mandatoryCapture`.
 Exemple [S1], repris dans les tests : le pion blanc g7 exécute la rafle
 g7 x i5 x g3 x g5 x e7 x c9.
 
+**Rafles équivalentes (constat technique, à décider).** Deux rafles qui
+prennent les mêmes pièces et finissent au même point mènent à la même
+position. Le moteur les liste toutes comme des coups distincts, et un
+Sultan volant peut en avoir des milliers : la recherche de l'IA a rencontré
+une position à 76 800 rafles maximales, dont le calcul prend 1,9 s.
+
+- L'application en tient déjà compte : elle n'affiche et ne propose qu'une
+  rafle par résultat distinct.
+- **À décider :** fusionner aussi ces rafles dans le moteur. Ce serait plus
+  rapide, et plus sûr pour le serveur, qui calcule les coups à chaque tour.
+  Cela ne change aucune position atteignable, mais cela modifie la liste
+  des coups validée en phase 2.
+
 `capture.maximumSultanWeight` — **NEEDS_VERIFICATION** : aucune source ne
 dit si un Sultan compte davantage qu'un pion dans ce calcul. Le moteur
 compte les pièces seulement.

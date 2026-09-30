@@ -4,103 +4,109 @@ Application mobile du **Dhamet mauritanien** (ظامت, aussi appelé Srand /
 اصرند), jeu de plateau traditionnel de la famille de l'alquerque et des
 dames.
 
-> **État du projet : phase 2 bis, noyau du jeu.** Sont en place, en pur
-> Dart et testés :
->
-> - le moteur de règles ;
-> - la fin de partie ;
-> - l'historique, avec annuler / rétablir ;
-> - la sauvegarde JSON.
->
-> L'interface, l'IA et le multijoueur viendront dans les phases suivantes
-> (voir [Roadmap](#roadmap)).
+> **État :** toutes les phases de la roadmap ont une première version
+> testée (voir [Roadmap](#roadmap)). Certaines règles restent à confirmer
+> auprès des joueurs : voir [docs/rules.md](docs/rules.md).
 
 ## Description
 
-Objectifs :
-
-- jouer à deux sur le même appareil, contre l'IA, et plus tard en ligne
-  (partie privée par code, puis matchmaking, classement et tournois) ;
-- respecter fidèlement les règles traditionnelles et l'identité culturelle
-  du jeu ;
-- fonctionner **hors ligne** pour le jeu local, l'IA, le tutoriel et
-  l'historique ;
-- proposer l'arabe (avec le RTL), le français, l'anglais et le hassaniya.
+- **Modes de jeu :**
+  - à deux sur le même appareil ;
+  - contre l'IA, avec 4 niveaux ;
+  - en ligne, dans une salle privée à code (partie classée ou non, pendule
+    optionnelle).
+- **Autour du jeu :**
+  - classement Elo et tournois « toutes rondes » ;
+  - tutoriel interactif, qui repose sur le vrai moteur ;
+  - historique, relecture des parties et statistiques.
+- **Hors ligne :** le jeu local, l'IA, le tutoriel, l'historique et la
+  reprise d'une partie interrompue fonctionnent sans Internet.
+- **Langues :** arabe (RTL), français, anglais et hassaniya (mécanisme en
+  place, traduction à faire par des locuteurs natifs).
+- **Design :** identité mauritanienne sobre, avec le sable, la terre,
+  l'indigo et l'or. Le plateau est tracé comme dans le sable. Les deux camps
+  se distinguent par la forme de leurs pièces (bâtonnet ou anneau), pas
+  seulement par la couleur.
 
 ## Règles
 
-Référence complète, avec le statut de chaque règle (`CONFIRMED`, `LIKELY`,
-`VARIANT`, `NEEDS_VERIFICATION`) : **[docs/rules.md](docs/rules.md)**.
+Référence complète : **[docs/rules.md](docs/rules.md)**. Chaque règle y a un
+statut (`CONFIRMED`, `LIKELY`, `VARIANT`, `NEEDS_VERIFICATION`), ses sources,
+et figure dans l'un des récapitulatifs
+[Confirmed](docs/rules.md#confirmed-rules),
+[Unconfirmed](docs/rules.md#unconfirmed-rules) ou
+[Configurable Rules](docs/rules.md#configurable-rules).
 
 En bref :
 
-- plateau de 9 × 9 intersections au tracé d'alquerque (14 diagonales) ;
-- 40 pièces par camp, centre vide ;
-- le pion avance d'un pas, tout droit ou en diagonale ;
-- la prise se fait par saut court, dans toutes les directions ;
-- la prise est obligatoire, la rafle maximale est imposée et les pièces
-  prises sont retirées immédiatement ;
-- un pion qui termine son coup sur la dernière rangée devient **Sultan**,
-  qui se déplace et prend à distance ;
-- on gagne en prenant toutes les pièces adverses ou en bloquant
-  l'adversaire.
+- **Plateau et pièces :**
+  - 9 × 9 intersections au tracé d'alquerque (14 diagonales) ;
+  - 40 pièces par camp, centre vide.
+- **Déplacement :** le pion avance d'un pas, tout droit ou en diagonale.
+- **Prise :**
+  - par saut court, dans toutes les directions ;
+  - obligatoire, avec la rafle maximale imposée ;
+  - les pièces prises sont retirées immédiatement.
+- **Sultan :** un pion qui finit son coup sur la dernière rangée devient
+  Sultan. Le Sultan est volant : il se déplace et prend à distance.
+- **Fin de partie :** on gagne par élimination ou par blocage. Aucune nulle
+  n'est confirmée ; les nulles sont désactivées par défaut.
 
-Les règles incertaines (premier joueur, soufflé/Souvlet, demi-tour du
-Sultan, nulles…) sont paramétrables dans `DhametRules` et listées dans
-`dhametRuleCatalog`. Les tableaux récapitulatifs de
-[docs/rules.md](docs/rules.md) sont :
-
-- [Confirmed Rules](docs/rules.md#confirmed-rules) ;
-- [Unconfirmed Rules](docs/rules.md#unconfirmed-rules) ;
-- [Configurable Rules](docs/rules.md#configurable-rules).
+Les règles incertaines sont paramétrables dans `DhametRules` et ne sont
+jamais inventées : premier joueur, soufflé (Souvlet), demi-tour et
+atterrissage du Sultan, nulles, ouverture « rencontre ».
 
 ## Architecture
 
 ```text
 dhamet/
 ├── packages/
-│   └── dhamet_engine/        Moteur de règles — pur Dart, sans Flutter
-│       ├── lib/src/board/    Position, Direction, BoardTopology (graphe), Board
-│       ├── lib/src/pieces/   Player, Piece
-│       ├── lib/src/rules/    DhametRules, SouvletRule, DrawRules, OpeningRule, catalogue
-│       ├── lib/src/moves/    Move, MoveGenerator, CaptureResolver, TraditionalEncounter
-│       ├── lib/src/state/    GameState
-│       ├── lib/src/game/     Game, GameHistory, MoveRecord, GameEndDetector,
-│       │                     GameResult, UndoPolicy
-│       ├── lib/src/serialization/  Lecture JSON défensive
-│       ├── benchmark/        Mesures de performance
-│       └── test/             Tests du moteur
-├── lib/                      Application Flutter (phase 4+)
-├── docs/rules.md             Règles et sources
-└── android/, ios/
+│   ├── dhamet_engine/   Moteur de règles — pur Dart, seule source des règles
+│   └── dhamet_ai/       IA (négamax alpha-bêta) — pur Dart, n'utilise que le moteur
+├── lib/                 Application Flutter
+│   ├── app/             App, router (go_router), thème (AppColors, AppTypography,
+│   │                    AppSpacing, AppRadius, AppShadows)
+│   ├── core/            Localisation, services (son/vibrations, analytics), widgets
+│   ├── l10n/            Fichiers ARB (fr, en, ar, ar_MR) et code généré
+│   └── features/
+│       ├── game/        domain (mode, session, interaction), data (sauvegarde),
+│       │                presentation (écrans, plateau, contrôleur)
+│       ├── ai/          Adaptateur vers dhamet_ai (isolate)
+│       ├── multiplayer/ Client REST/WebSocket, salon, salle, partie en ligne
+│       ├── profile/     Classement
+│       ├── tournaments/ Tournois
+│       ├── history/     Historique et statistiques
+│       ├── settings/    Paramètres
+│       └── tutorial/    Tutoriel interactif
+├── server/              Serveur NestJS autoritaire (voir server/README.md)
+│   └── engine_bridge/   Le moteur Dart compilé en JavaScript pour Node
+├── docs/                rules.md, multiplayer.md (contrat client/serveur), localization.md
+└── tool/                l10n_status.dart
 ```
 
 Principes :
 
-- **Le moteur est un package Dart séparé.** Il ne peut pas dépendre de
-  Flutter, se teste avec `dart test` et pourra servir à des outils ou à la
-  validation côté serveur.
-- **Le moteur est la seule source de vérité.** L'interface, l'IA et le
-  serveur passent tous par `MoveGenerator` et `GameState.play()`.
-- **Les états sont immuables.** Jouer un coup renvoie un nouveau
-  `GameState`, ce qui simplifie l'historique, l'annulation et la recherche
-  de l'IA.
-- **Les règles sont paramétrables.** Chaque règle incertaine correspond à un
-  paramètre de `DhametRules`.
-
-Architecture prévue de l'application (phase 4+) : `lib/app` (router,
-thème), `lib/core` (constantes, erreurs, localisation) et
-`lib/features/{game,ai,multiplayer,profile,settings,tutorial}`, chacun
-découpé en `domain/`, `data/` et `presentation/`. L'IA ira dans un package
-séparé, `packages/dhamet_ai`.
+- **Une seule source de vérité pour les règles.** L'interface, l'IA et le
+  serveur utilisent tous le même moteur Dart ; le serveur l'exécute compilé
+  en JavaScript.
+- **Le moteur et l'IA sont des packages pur Dart,** sans Flutter : le
+  compilateur empêche toute fuite de l'interface vers les règles.
+- **Les états sont immuables.** `Game` et `GameState` rendent l'annulation,
+  la relecture, la recherche de l'IA et la sauvegarde exactes.
+- **Le serveur fait autorité.** Il revérifie chaque coup, et le client
+  n'applique un coup qu'une fois confirmé.
+- **La gestion d'état** repose sur Riverpod 3 (`Notifier`), la navigation
+  sur go_router.
 
 ## Installation
 
-Prérequis : Flutter 3.47+ (Dart 3.13+).
+Prérequis : Flutter 3.47+ (Dart 3.13+). Pour le serveur : Node 22, Docker.
 
 ```bash
 flutter pub get
 (cd packages/dhamet_engine && dart pub get)
+(cd packages/dhamet_ai && dart pub get)
+flutter run
 ```
 
 ## Development
@@ -109,208 +115,177 @@ flutter pub get
 dart format .
 flutter analyze
 (cd packages/dhamet_engine && dart analyze)
+(cd packages/dhamet_ai && dart analyze)
+dart run tool/l10n_status.dart      # état des traductions
 ```
+
+Le **mode développeur** (Paramètres → Avancé) affiche :
+
+- les coordonnées ;
+- les coups légaux ;
+- l'état de la partie en JSON ;
+- le temps de l'IA ;
+- les FPS.
+
+Il n'est jamais activé par défaut.
 
 ## Tests
 
-```bash
-# Moteur (rapide, sans Flutter)
-cd packages/dhamet_engine
-dart test
-dart test --coverage-path=coverage/lcov.info   # couverture
+| Où | Commande | Contenu |
+|---|---|---|
+| Moteur | `cd packages/dhamet_engine && dart test` | 198 tests, ≈ 99 % de couverture : règles, exemples des sources, fin de partie, historique et annulation, sérialisation, invariants sur parties aléatoires |
+| IA | `cd packages/dhamet_ai && dart test` | 71 tests : légalité, rafle maximale, positions tactiques prouvées par recherche exhaustive, temps, isolate |
+| App | `flutter test` | 69 tests : interaction, contrôleurs, sauvegarde sur disque, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur |
+| App + serveur réel | `flutter test test/integration --dart-define=DHAMET_SERVER=http://localhost:3999` | Deux clients jouent une partie classée à travers le serveur (voir l'en-tête du fichier) |
+| Serveur | `cd server && npm test && npm run test:e2e` | 70 tests unitaires et 58 tests de bout en bout |
 
-# Application
-flutter test
-```
+Mesures de performance :
 
-Les tests du moteur couvrent :
-
-- le plateau : positions, connexions, 14 diagonales, points ouverts et
-  fermés ;
-- les déplacements des pions et du Sultan ;
-- les prises : simples, obligatoires, arrière, latérales, multiples et
-  majoritaires ;
-- la promotion ;
-- les exemples chiffrés des sources, dont l'ouverture traditionnelle
-  « rencontre » ;
-- la fin de partie : élimination, blocage, nulles optionnelles ;
-- l'historique et l'annulation : après une capture, une rafle, une
-  promotion ou un coup de Sultan, redo, invalidation du redo, comparaison
-  à un modèle de référence ;
-- la sérialisation : allers-retours, formats figés, sauvegardes
-  corrompues ;
-- des parties aléatoires qui vérifient les invariants à chaque coup, pour
-  plusieurs jeux de règles.
-
-Mesures de performance (compilé AOT, comme une version release) :
-
-```bash
-cd packages/dhamet_engine
-dart compile exe benchmark/engine_benchmark.dart -o /tmp/dhamet_bench
-/tmp/dhamet_bench
-```
+- moteur : `packages/dhamet_engine/benchmark/engine_benchmark.dart` ;
+- IA : `packages/dhamet_ai/benchmark/ai_benchmark.dart`.
 
 ## Build Android
 
 ```bash
 flutter build apk --debug
+flutter build appbundle          # release (signature à configurer)
 ```
 
-Identifiant d'application provisoire : `mr.dhamet.dhamet`.
+- Identifiant provisoire : `mr.dhamet.dhamet`.
+- Nom affiché : « Dhamet », et « ظامت » sur un appareil en arabe.
+- Les builds debug peuvent joindre un serveur local en HTTP
+  (`http://10.0.2.2:3000` depuis l'émulateur). En release, il faut
+  HTTPS/WSS.
 
 ## Build iOS
 
 ```bash
-flutter build ios --debug --no-codesign   # macOS + Xcode requis
+flutter build ios --no-codesign   # macOS + Xcode requis
 ```
+
+`NSAllowsLocalNetworking` autorise un serveur de développement sur le
+réseau local.
 
 ## Game Engine
 
-```dart
-import 'package:dhamet_engine/dhamet_engine.dart';
+`packages/dhamet_engine`, détaillé dans son README :
 
-var state = GameState.initial();              // Blancs au trait
-print(state.legalMoves);                      // [d4-e5, e4-e5, f4-e5]
-state = state.play(state.legalMoves.first);   // vérifie la légalité
-print(state.board);                           // diagramme texte
-```
+- **Plateau :**
+  - `BoardTopology` : graphe explicite des lignes (`adjacency`, `ray`,
+    `segments`) ;
+  - `Position`, `Board`, `Piece`, `Player`.
+- **Coups :**
+  - `MoveGenerator` : coups légaux, prise obligatoire, rafle maximale ;
+  - `CaptureResolver` : rafles avec retrait immédiat ;
+  - `Move`, avec son chemin et ses pièces prises.
+- **Partie :** `GameState`, `Game`, `GameHistory`, `MoveRecord` (annuler et
+  rétablir exacts), `GameEndDetector`, `UndoPolicy`.
+- **Règles :** `DhametRules`, `SouvletRule`, `OpeningRule`, `DrawRules`,
+  `dhametRuleCatalog`.
+- **Sauvegarde :** JSON versionné (`Game.toJson` / `Game.fromJson`), rejoué
+  et revérifié au chargement.
 
-- `BoardTopology` : graphe explicite des lignes (`adjacency`, `ray`,
-  `segments` pour dessiner le plateau).
-- `MoveGenerator` : coups légaux (prise obligatoire, rafle maximale).
-- `CaptureResolver` : rafles complètes d'une pièce.
-- `DhametRules` : règles paramétrables ; `dhametRuleCatalog` : statut de
-  chaque règle.
-
-### Partie, historique, annuler / rétablir
-
-```dart
-var game = Game.start(undoPolicy: UndoPolicy.unlimited); // partie locale
-game = game.play(game.state.legalMoves.first, timestamp: DateTime.now());
-game = game.undo();          // état précédent exact, sans recalcul
-game = game.redo();
-print(game.result);          // null tant que la partie continue
-```
-
-- `Game` est une session immuable : historique, politique d'annulation et
-  résultat.
-  - Méthodes : `play`, `undo`, `redo`, `resign`, `loseOnTime`, et
-    `agreeToDraw` si les règles l'autorisent.
-- `GameHistory` et `MoveRecord` conservent pour chaque coup :
-  - le joueur, le départ, l'arrivée et la pièce ;
-  - les positions **et** les pièces capturées ;
-  - la promotion et l'horodatage ;
-  - l'**état avant et l'état après**.
-
-  Annuler et rétablir ne font que déplacer un curseur entre des états
-  enregistrés. Jouer après une annulation efface les coups annulés.
-- `UndoPolicy` : `disabled` par défaut, à garder pour les parties en ligne
-  ou compétitives ; `unlimited` ou `limited(n)` pour les parties locales.
-- `GameEndDetector` détecte, dans cet ordre :
-  - l'élimination ;
-  - le blocage ;
-  - la répétition, en option.
-
-  Les nulles sont désactivées par défaut (`DrawRules.none`).
-
-### Sauvegarde (JSON)
-
-`Game.toJson()` / `Game.fromJson()`, avec un `toJson` / `fromJson` pour
-chaque type : `GameState`, `Board`, `Piece`, `Player`, `Position`, `Move`,
-`DhametRules`, `GameHistory`, `GameResult` et `UndoPolicy`.
-
-```json
-{
-  "format": "dhamet.game",
-  "version": 1,
-  "undoPolicy": {"enabled": true, "maxDepth": null},
-  "declaredResult": null,
-  "history": {
-    "initialState": {
-      "board": ["bbbbbbbbb", "…", "bbbb.wwww", "…", "wwwwwwwww"],
-      "currentPlayer": "white", "plyCount": 0, "rules": {"…": "…"},
-      "lastMove": null
-    },
-    "moves": [{
-      "move": {"piece": "w", "from": "d4", "path": ["e5"], "captured": [], "promotes": false},
-      "capturedPieces": [], "timestamp": "2026-09-30T10:00:00.000Z"
-    }],
-    "cursor": 1
-  }
-}
-```
-
-- Le plateau est écrit en 9 lignes de 9 symboles, rangée 9 en premier :
-  `.` vide, `w`/`b` pion, `W`/`B` Sultan.
-- Seuls l'état initial et les coups sont stockés. Au chargement, chaque coup
-  est **rejoué et revérifié**. Un coup illégal, des pièces capturées
-  incohérentes ou un format inconnu lèvent une `FormatException`.
-- Un paramètre de règle absent prend sa valeur par défaut, ce qui garde les
-  anciennes sauvegardes lisibles.
-- Taille : environ 130 octets par coup.
-
-### Performances
-
-Mesurées sur 40 parties aléatoires (4 416 coups), compilé AOT sur un
-poste Linux de développement :
-
-| Opération | Temps |
-|---|---|
-| Génération des coups légaux | ~33 µs / position |
-| Appliquer un coup (sans vérification) | ~3,4 µs |
-| Appliquer un coup vérifié (génération + contrôle) | ~31 µs |
-| `Game.play` (vérification + historique + fin de partie) | ~57 µs |
-| Annuler / rétablir | < 1 µs |
-| Sauvegarder une partie (`toJson` + `jsonEncode`) | ~0,4 ms |
-| Charger une partie (`jsonDecode` + rejeu vérifié) | ~3 ms |
+Performance : environ 33 µs pour générer les coups d'une position type,
+moins de 1 µs pour annuler ou rétablir.
 
 ## AI
 
-Phase 5, pas encore commencée : Minimax avec élagage alpha-bêta, niveaux
-Facile, Moyen, Difficile et Expert, calculs dans un isolate. L'IA
-utilisera exclusivement `MoveGenerator`.
+`packages/dhamet_ai`, détaillé dans son README.
+
+- **Recherche :**
+  - négamax avec élagage alpha-bêta (PVS) et approfondissement itératif ;
+  - prolongement tant qu'une prise est en cours ;
+  - tri des coups (variante principale, prises, coups « killer »,
+    historique).
+- **Évaluation :** matériel (pion 100, Sultan 300), avancement, garde de la
+  dernière rangée, exposition et pièces en prise. Chaque terme a été
+  validé par des parties de l'IA contre elle-même.
+- **Niveaux :**
+
+  | Niveau | Profondeur | Temps max | Aléa |
+  |---|---|---|---|
+  | Facile | 1 | 0,25 s | fort |
+  | Moyen | 3 | 0,7 s | modéré |
+  | Difficile | 6 | 1,8 s | faible |
+  | Expert | jusqu'à 16 | 3,5 s | aucun |
+
+  Chaque niveau bat le précédent. Les temps ont été mesurés sur ordinateur.
+- **Dans l'app :**
+  - la recherche tourne dans un isolate, avec un chien de garde ;
+  - le coup choisi est revérifié parmi les coups légaux ;
+  - un temps de réflexion minimal rend les réponses lisibles.
 
 ## Multiplayer
 
-Phases 8 et 9, pas encore commencées : serveur NestJS + WebSocket
-**autoritaire**, qui revalide chaque coup (joueur, tour, légalité, état de
-la partie). Le moteur étant en Dart, deux pistes sont possibles côté
-serveur : compiler le moteur en JavaScript, ou en faire un portage
-TypeScript validé par des vecteurs de test communs générés depuis ce
-moteur.
+- **Protocole :** [docs/multiplayer.md](docs/multiplayer.md).
+- **Serveur :** [server/README.md](server/README.md) (installation, Docker,
+  écarts au contrat).
+- **Pile serveur :**
+  - NestJS 11 et WebSocket brut sur `/ws` ;
+  - PostgreSQL 16 (sql.js en mémoire pour les tests) ;
+  - JWT et mots de passe hachés en scrypt ;
+  - Elo avec K = 32 ;
+  - tournois toutes rondes.
+- **Autorité du serveur :** il vérifie l'authentification, l'appartenance à
+  la salle, la partie en cours, le tour, le ply attendu, puis la légalité
+  par le moteur. Il horodate, enregistre et diffuse sa propre copie du coup.
+- **Reconnexion :**
+  - le client se reconnecte seul, avec un délai croissant, puis envoie
+    `room:rejoin` ;
+  - le joueur absent a 60 s pour revenir, sinon il perd par abandon.
+
+```bash
+cd server && npm ci && docker compose up -d db && npm run start:dev
+```
+
+Dans l'app : Paramètres → Adresse du serveur, puis « Jouer en ligne ».
 
 ## Localization
 
-Phase 7, pas encore commencée : arabe (RTL), français, anglais et
-hassaniya. Aucun texte ne sera codé en dur dans les widgets.
+- Tous les textes passent par `gen-l10n`. Le français est le modèle ; le
+  français, l'anglais et l'arabe sont complets, avec les pluriels arabes
+  ICU.
+- Le hassaniya utilise `ar_MR` et se replie sur l'arabe pour tout message
+  non traduit. Seul le vocabulaire attesté (ظايم) est traduit à ce jour.
+- Détails et glossaire : [docs/localization.md](docs/localization.md).
 
 ## Roadmap
 
 | Phase | Contenu | État |
 |---|---|---|
-| 1 | Recherche des règles, `docs/rules.md` | ✅ (questions ouvertes listées) |
-| 2 | Moteur : Board, Position, Piece, Player, GameState, Move, MoveGenerator | ✅ |
-| 2 bis | GameEndDetector, historique, undo/redo, sérialisation, SouvletRule, OpeningRule | ✅ |
-| 3 | Consolidation des tests du moteur | ✅ (couverture ≈ 99 %) |
-| 4 | Interface locale : accueil, partie, résultat, paramètres | à faire |
-| 5 | IA : Minimax, alpha-bêta, évaluation, niveaux | à faire |
-| 6 | Persistance hors ligne : historique, sauvegarde, reprise | format JSON prêt ; stockage à faire |
-| 7 | Localisation : ar, fr, en, hassaniya | à faire |
-| 8 | Backend NestJS + WebSocket | à faire |
-| 9 | Jeu en ligne : salons, invitations, reconnexion | à faire |
-| 10 | Classement | à faire |
-| 11 | Tournois | à faire |
+| 1 | Recherche des règles | ✅ Questions ouvertes listées (rules.md § 14) |
+| 2 | Moteur de jeu | ✅ |
+| 2 bis | Fin de partie, historique, annulation, sérialisation, Souvlet (abstraction), ouverture | ✅ |
+| 3 | Tests du moteur | ✅ 198 tests, ≈ 99 % |
+| 4 | Interface locale | ✅ |
+| 5 | IA | ✅ |
+| 6 | Sauvegarde hors ligne | ✅ |
+| 7 | Localisation | ✅ Hassaniya à traduire par des natifs |
+| 8 | Backend NestJS + WebSocket | ✅ |
+| 9 | Jeu en ligne : salles, invitations, reconnexion | ✅ |
+| 10 | Classement Elo | ✅ |
+| 11 | Tournois | ✅ Toutes rondes ; élimination directe à faire |
+
+Suites possibles :
+
+- valider les règles incertaines avec des joueurs ou la Fédération ;
+- traduire le hassaniya ;
+- ajouter les sons ;
+- proposer le matchmaking public, la revanche dans une salle et
+  l'élimination directe ;
+- faire tourner le serveur sur plusieurs instances (état partagé) ;
+- ajouter une table de transposition à l'IA.
 
 ## Rules Sources
 
-Détail et discussion de chaque source dans
-[docs/rules.md § 15](docs/rules.md#15-sources) :
+Détail et discussion de chaque source :
+[docs/rules.md § 15](docs/rules.md#15-sources).
 
-- « Strand ou Dhamet », jeuxstrategieter.free.fr (règle détaillée, soufflé,
-  ouverture) ;
+- « Strand ou Dhamet », jeuxstrategieter.free.fr : règle détaillée,
+  soufflé, ouverture.
 - « Dhamet », Wikipédia (fr), qui cite Ol Bah, *Jeux et Stratégie* n° 27
-  (1984), et Mascort, *Les Jeux du Sahara* (2021) ;
-- « Zamma », Wikipedia (en), Mats Winther, mindsports.nl et *World of
-  Abstract Games* ;
-- presse arabe : Noonpost, Al-Araby Al-Jadeed et Sky News Arabia
+  (1984), et Mascort, *Les Jeux du Sahara* (2021).
+- « Zamma » : Wikipedia (en), Mats Winther, mindsports.nl, *World of
+  Abstract Games*.
+- Presse arabe : Noonpost, Al-Araby Al-Jadeed, Sky News Arabia
   (terminologie hassaniya, Fédération mauritanienne de Dhamet).
