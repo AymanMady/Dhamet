@@ -6,6 +6,7 @@ import { AppConfig, appConfig } from './config/app.config';
 import { typeOrmOptions } from './database/typeorm-options';
 import { EngineModule } from './engine/engine.module';
 import { GamesModule } from './games/games.module';
+import { HealthController } from './health/health.controller';
 import { RankingModule } from './ranking/ranking.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
@@ -26,5 +27,6 @@ import { UsersModule } from './users/users.module';
     RoomsModule,
     TournamentsModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}

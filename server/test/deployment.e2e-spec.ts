@@ -16,6 +16,10 @@ describe('Deployment behind a reverse proxy', () => {
     await t.stop();
   });
 
+  it('answers the health check: 200 {status: "ok"}', async () => {
+    await t.http.get('/api/health').expect(200, { status: 'ok' });
+  });
+
   it('rate-limits /api/auth per client address, read through the proxies', async () => {
     // Each proxy appends the address it received the request from.
     const guest = (...forwardedFor: string[]) =>
