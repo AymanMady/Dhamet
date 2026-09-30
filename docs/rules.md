@@ -6,7 +6,11 @@ Ce document est la **référence des règles** implémentées par le moteur
 - un **identifiant** stable, repris dans le code (`dhametRuleCatalog`) ;
 - un **statut** ;
 - le cas échéant, le **paramètre** de `DhametRules` qui la contrôle ;
-- les **sources** qui l'établissent (voir [§ 16](#16-sources)).
+- les **sources** qui l'établissent (voir [§ 15](#15-sources)).
+
+Les récapitulatifs sont en fin de document :
+[Confirmed Rules](#confirmed-rules), [Unconfirmed Rules](#unconfirmed-rules)
+et [Configurable Rules](#configurable-rules).
 
 | Statut | Signification |
 |---|---|
@@ -123,7 +127,7 @@ par les tests).
 
 Cette position est symétrique par demi-tour (couleurs échangées).
 
-## 5. Premier joueur — `turn.firstPlayer` — NEEDS_VERIFICATION
+## 5. Premier joueur — `turn.startingPlayer` — NEEDS_VERIFICATION
 
 Les sources se contredisent :
 
@@ -133,7 +137,8 @@ Les sources se contredisent :
 
 La position étant symétrique, la question porte seulement sur le nom donné
 au premier joueur (bâtonnets ou crottes de chameau ?).
-**Défaut du moteur : Blancs**, paramètre `firstPlayer`.
+**Défaut du moteur : Blancs**, paramètre `startingPlayer`. Ce défaut restera
+inchangé tant qu'aucune nouvelle source ne tranche la question.
 
 ## 6. Déplacement des pions — `pawn.move` — CONFIRMED
 
@@ -245,7 +250,7 @@ Certaines dames, dont les dames turques, l'interdisent. **Aucune source ne
 traite ce point pour le Dhamet.** Le moteur l'autorise par défaut, puisque
 rien ne l'interdit. Paramètre : `sultanMayReverseDuringCapture`.
 
-## 10. Souvlet / Soufflé — `souvlet` — NEEDS_VERIFICATION (non implémenté)
+## 10. Souvlet / Soufflé — `souvlet` — NEEDS_VERIFICATION (abstraction seulement)
 
 Ce que disent les sources :
 
@@ -278,13 +283,22 @@ l'adversaire.
 l'application les impose. Une faute est donc impossible et le soufflé n'a
 pas lieu d'être. Cela revient à l'option « l'adversaire exige le bon coup ».
 
-**Prévu (phase suivante) :** une abstraction `SouvletRule`
-(`disabled` / `enabled` + options), pour un mode « traditionnel » où
-l'application laisse jouer une rafle non maximale et propose à l'adversaire
-d'exiger le bon coup ou de souffler. Les questions ci-dessus devront être
-tranchées avant.
+**Abstraction en place :** `DhametRules.souvlet` est un `SouvletRule`.
 
-## 11. Ouverture traditionnelle « rencontre » — `opening.rencontre` — VARIANT (non implémenté)
+- `SouvletRule.disabled` (défaut) correspond au comportement décrit
+  ci-dessus.
+- `SouvletRule.enabled` existe comme configuration et peut être
+  sauvegardé, mais **son comportement n'est pas implémenté**. Tant qu'il
+  n'est pas confirmé, le moteur refuse de générer des coups avec cette
+  configuration (`UnsupportedError`). La règle ne peut donc jamais
+  s'appliquer silencieusement de façon inventée.
+- Les questions ouvertes sont reprises dans le code (`TODO(CONFIRMATION_NEEDED)`
+  dans `souvlet_rule.dart`). Une fois tranchées, `SouvletRule` recevra ses
+  options et l'application pourra proposer un mode « traditionnel », où une
+  rafle non maximale est jouable et où l'adversaire choisit d'exiger le bon
+  coup ou de souffler.
+
+## 11. Ouverture traditionnelle « rencontre » — `opening.rencontre` — VARIANT (option, désactivée par défaut)
 
 > « Une partie débute par une "rencontre" qui est conventionnellement
 > toujours la même : d4-e5 (f6xd4) ; c3xe5 (a5xc3) ; b2xd4 (c5xc3) ; e5xa5
@@ -301,8 +315,19 @@ tranchées avant.
   e4xc4, e3xc5), avec l'avance d'un pion annoncée par la source. C'est une
   confirmation indépendante du tracé des diagonales, de la position
   initiale, des prises latérales et du retrait immédiat.
-- À décider : proposer cette ouverture en option (jouée automatiquement),
-  ou l'imposer si elle est confirmée comme règle.
+- **Paramètre `opening`** :
+  - `OpeningRule.free` (**défaut**) : jeu libre dès le premier coup.
+  - `OpeningRule.traditionalEncounter` : tant que la partie suit la
+    rencontre depuis la position initiale, seul le coup prévu est légal.
+    Les 10 coups sont joués, puis le jeu redevient libre avec les trois
+    prises de d4.
+    - Si les Noirs commencent, la même séquence est jouée par l'autre camp,
+      en miroir (demi-tour du plateau).
+    - Si un coup de la séquence est illégal avec les autres paramètres (par
+      exemple e5xa5 quand les prises latérales sont désactivées), la
+      séquence s'arrête à ce coup.
+- Cette ouverture n'est **jamais imposée par défaut**. À confirmer : est-elle
+  obligatoire, en compétition comme en partie libre ?
 
 ## 12. Fin de partie
 
@@ -310,15 +335,38 @@ tranchées avant.
 |---|---|---|
 | `end.elimination` | Celui qui n'a plus de pièce perd [S1, S2, S3, S4, S8]. | CONFIRMED |
 | `end.blocked` | Celui qui ne peut plus jouer perd [S1, S2, S5]. C'est rare en pratique [S1, S2]. | CONFIRMED |
-| `end.draw` | Nulle par accord mutuel ou triple répétition [S5 seulement, sans référence]. | NEEDS_VERIFICATION |
+| `end.draw` | Nulle par accord mutuel ou triple répétition [S5 seulement, sans référence]. | NEEDS_VERIFICATION, désactivée par défaut |
 
 Il n'y a pas de limite de temps traditionnelle : « لا يوجد مجال زمني محدد
 للعبة » (« aucun temps n'est imposé »). La phrase a été relevée dans la
-presse arabe, mais sa source exacte reste **à retrouver**. Une pendule pour le mode compétitif en ligne serait
-donc une règle **propre à l'application**, à présenter comme telle.
+presse arabe, mais sa source exacte reste **à retrouver**. Une pendule
+pour le mode compétitif en ligne serait donc une règle **propre à
+l'application**, à présenter comme telle.
 
-La détection de fin de partie (`GameEndDetector`) sera implémentée à la
-phase suivante.
+**Implémentation : `GameEndDetector`**. Il lit la position, avec l'historique
+pour la répétition, dans cet ordre :
+
+1. **Élimination** : le camp sans pièce perd (`GameEndReason.elimination`).
+2. **Blocage** : le camp au trait, qui a des pièces mais aucun coup légal,
+   perd (`GameEndReason.blocked`).
+3. **Répétition** : seulement si `draw.repetitionLimit` est défini. Une
+   position compte comme répétée si le plateau **et** le camp au trait sont
+   identiques (`GameEndReason.repetition`).
+
+Les **nulles sont désactivées par défaut** : `DhametRules.draw` vaut
+`DrawRules.none`. Avec les options `DrawRules(byAgreement: true)` et
+`DrawRules(repetitionLimit: 3)`, la nulle devient possible par accord
+(`Game.agreeToDraw()`) et par triple répétition.
+
+Fins déclarées (hors position), gérées par `Game` :
+
+- abandon (`resign`) ;
+- dépassement du temps (`loseOnTime`), réservé au futur mode compétitif ;
+- nulle par accord, si elle est autorisée.
+
+**Annuler / rétablir** n'est pas une règle du jeu mais une fonction de
+l'application. C'est `UndoPolicy` qui la gouverne : désactivé par défaut, à
+activer pour les parties locales seulement, jamais en ligne.
 
 ## 13. Format de match — `match.threeRounds` — VARIANT
 
@@ -326,34 +374,68 @@ phase suivante.
 si elle intervient trois fois de suite » [S8, presse]. Utile pour les
 tournois (phase 11), à confirmer auprès de la Fédération.
 
-## 14. Récapitulatif
+## Confirmed Rules
 
-| Id | Statut | Paramètre `DhametRules` | Implémenté |
+Règles confirmées par au moins deux sources indépendantes. Elles sont
+implémentées et testées, et ne doivent pas changer sans nouvelle source.
+
+| Id | Règle | Sources |
+|---|---|---|
+| `board.grid` | 81 intersections, grille de 9 × 9 lignes | S1, S2, S3, S4 |
+| `board.diagonals` | Tracé d'alquerque : 14 diagonales passant par les points vastes (`colonne + rangée` pair) | S1, S3, S4, S5 |
+| `setup.pieces` | 40 pièces par camp, centre e5 vide | S1, S2, S3, S7 |
+| `setup.middleRow` | 4 pièces par camp sur la rangée 5, à sa droite | S1, S3, S7 |
+| `pawn.move` | Un pas en avant, tout droit ou en diagonale ; ni recul ni pas latéral | S1, S2, S3, S4, S7, S8 |
+| `capture.pawnDirections` | Prise par saut court dans toutes les directions | S1, S2, S3, S4, S7 |
+| `capture.mandatory` | Prise obligatoire | S1, S2, S3, S4, S5 |
+| `capture.maximum` | Rafle complète, et celle qui prend le plus de pièces | S1, S2, S3, S4, S5 |
+| `capture.immediateRemoval` | Pièces retirées au fur et à mesure de la rafle | S1, S3, S4, S5 |
+| `promotion.lastRow` | Pion terminant son coup sur la dernière rangée : Sultan | S1, S2, S3, S4, S7 |
+| `promotion.notDuringCapture` | Pas de promotion en simple passage pendant une rafle | S2, S4 |
+| `sultan.flying` | Sultan volant : déplacement et prise à distance | S1, S2, S3, S4, S5 |
+| `end.elimination` | Le camp sans pièce perd | S1, S2, S3, S4, S8 |
+| `end.blocked` | Le camp sans coup légal perd | S1, S2, S5 |
+
+## Unconfirmed Rules
+
+Règles contradictoires, ambiguës ou non documentées. Chacune a un
+comportement par défaut prudent et reste **à confirmer** (voir § 14).
+
+| Id | Statut | Comportement par défaut | À confirmer |
 |---|---|---|---|
-| `board.grid` | CONFIRMED | — | oui |
-| `board.diagonals` | CONFIRMED | — (`BoardTopology`) | oui |
-| `setup.pieces` | CONFIRMED | — | oui |
-| `setup.middleRow` | CONFIRMED | — | oui |
-| `turn.firstPlayer` | NEEDS_VERIFICATION | `firstPlayer` | oui |
-| `opening.rencontre` | VARIANT | — | non |
-| `pawn.move` | CONFIRMED | — | oui |
-| `capture.pawnDirections` | CONFIRMED | `pawnCapturesBackward`, `pawnCapturesSideways` | oui |
-| `capture.mandatory` | CONFIRMED | `mandatoryCapture` | oui |
-| `capture.maximum` | CONFIRMED | `captureChoice` | oui |
-| `capture.maximumSultanWeight` | NEEDS_VERIFICATION | — | non (compte les pièces) |
-| `capture.immediateRemoval` | CONFIRMED | `capturedPieceRemoval` | oui |
-| `promotion.lastRow` | CONFIRMED | — | oui |
-| `promotion.notDuringCapture` | CONFIRMED | — | oui |
-| `sultan.flying` | CONFIRMED | `sultanFlies` | oui |
-| `sultan.landing` | LIKELY | `sultanLanding` | oui |
-| `sultan.reverseDuringCapture` | NEEDS_VERIFICATION | `sultanMayReverseDuringCapture` | oui |
-| `souvlet` | NEEDS_VERIFICATION | — | non |
-| `end.elimination` | CONFIRMED | — | phase suivante |
-| `end.blocked` | CONFIRMED | — | phase suivante |
-| `end.draw` | NEEDS_VERIFICATION | — | non |
-| `match.threeRounds` | VARIANT | — | non |
+| `turn.startingPlayer` | NEEDS_VERIFICATION | Blancs | Quel camp commence (S1 contre S3-S6) |
+| `sultan.landing` | LIKELY | N'importe où derrière la pièce prise | Seulement juste derrière ? |
+| `sultan.reverseDuringCapture` | NEEDS_VERIFICATION | Demi-tour autorisé | Aucune source |
+| `capture.maximumSultanWeight` | NEEDS_VERIFICATION | Seul le nombre de pièces compte (non paramétrable) | Un Sultan compte-t-il plus ? |
+| `souvlet` | NEEDS_VERIFICATION | Désactivé : seuls les coups légaux sont jouables | Déclencheur, pièce retirée, coup maintenu… (§ 10) |
+| `opening.rencontre` | VARIANT | Jeu libre | Rencontre obligatoire ou convention ? |
+| `end.draw` | NEEDS_VERIFICATION | Aucune nulle | Accord ? Répétition ? Autre ? |
+| `match.threeRounds` | VARIANT | Non implémenté | Format de match de la Fédération |
 
-## 15. Questions à poser aux joueurs ou à la Fédération
+## Configurable Rules
+
+Tous les paramètres de `DhametRules`, sauvegardés avec chaque partie. Une
+partie ancienne sans un paramètre récent prend sa valeur par défaut.
+
+| Paramètre | Défaut | Autres valeurs | Règle | Statut |
+|---|---|---|---|---|
+| `startingPlayer` | `white` | `black` | `turn.startingPlayer` | NEEDS_VERIFICATION |
+| `mandatoryCapture` | `true` | `false` | `capture.mandatory` | CONFIRMED |
+| `captureChoice` | `maximumPieces` | `free` | `capture.maximum` | CONFIRMED |
+| `capturedPieceRemoval` | `immediate` | `endOfSequence` (Zamma) | `capture.immediateRemoval` | CONFIRMED |
+| `pawnCapturesBackward` | `true` | `false` | `capture.pawnDirections` | CONFIRMED |
+| `pawnCapturesSideways` | `true` | `false` | `capture.pawnDirections` | CONFIRMED |
+| `sultanFlies` | `true` | `false` (pas unique) | `sultan.flying` | CONFIRMED |
+| `sultanLanding` | `anyEmptyPointBeyond` | `immediatelyBehind` | `sultan.landing` | LIKELY |
+| `sultanMayReverseDuringCapture` | `true` | `false` | `sultan.reverseDuringCapture` | NEEDS_VERIFICATION |
+| `opening` | `free` | `traditionalEncounter` | `opening.rencontre` | VARIANT |
+| `souvlet` | `SouvletRule.disabled` | `enabled` (refusé tant que non confirmé) | `souvlet` | NEEDS_VERIFICATION |
+| `draw` | `DrawRules.none` | `byAgreement`, `repetitionLimit` | `end.draw` | NEEDS_VERIFICATION |
+
+Les valeurs par défaut des règles CONFIRMED ne doivent pas être modifiées.
+Les autres valeurs servent aux variantes, au tutoriel et aux tests.
+
+## 14. Questions à poser aux joueurs ou à la Fédération
 
 1. Quel camp (bâtonnets ou crottes) joue en premier ? Y a-t-il un tirage au sort ?
 2. La « rencontre » est-elle obligatoire, en compétition comme en partie libre ?
@@ -366,7 +448,7 @@ tournois (phase 11), à confirmer auprès de la Fédération.
 8. Existe-t-il un règlement écrit de la Fédération mauritanienne de Dhamet ?
 9. Sens exact de السله et لكريف.
 
-## 16. Sources
+## 15. Sources
 
 Consultées en ligne le 30/09/2026.
 

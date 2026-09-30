@@ -18,6 +18,17 @@ print(state.board);
   sequence taking the most pieces must be played.
 - `DhametRules` holds the configurable rules. `dhametRuleCatalog` gives the
   status of each rule.
+- `Game` is an immutable game session with history (`GameHistory`,
+  `MoveRecord`), exact undo/redo gated by `UndoPolicy`, end detection
+  (`GameEndDetector`) and JSON save/load (`Game.toJson` / `Game.fromJson`).
+
+```dart
+var game = Game.start(undoPolicy: UndoPolicy.unlimited); // local game
+game = game.play(game.state.legalMoves.first);
+game = game.undo();
+final saved = jsonEncode(game.toJson());
+final restored = Game.fromJson(jsonDecode(saved));
+```
 
 The rules, their statuses and their sources are documented in
 [`docs/rules.md`](../../docs/rules.md).
@@ -25,4 +36,5 @@ The rules, their statuses and their sources are documented in
 ```bash
 dart test                                   # run the tests
 dart test --coverage-path=coverage/lcov.info
+dart compile exe benchmark/engine_benchmark.dart -o /tmp/bench && /tmp/bench
 ```
