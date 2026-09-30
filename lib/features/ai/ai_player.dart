@@ -4,6 +4,7 @@ import 'package:dhamet_engine/dhamet_engine.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../game/domain/game_mode.dart';
+import 'engine_ai_player.dart';
 
 /// Chooses the computer's moves. Implementations must only return moves
 /// from `state.legalMoves` and must not block the UI thread.
@@ -25,4 +26,4 @@ class RandomAiPlayer implements AiPlayer {
   }
 }
 
-final aiPlayerProvider = Provider<AiPlayer>((ref) => RandomAiPlayer());
+final aiPlayerProvider = Provider<AiPlayer>((ref) => const EngineAiPlayer());

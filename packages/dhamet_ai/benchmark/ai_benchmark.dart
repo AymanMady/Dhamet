@@ -20,7 +20,7 @@ void main() {
   _benchmarkEvaluation(positions);
 
   print(
-    '\n${'level'.padRight(8)}${'depth'.padLeft(12)}${'time/move'.padLeft(16)}'
+    '\n${'level'.padRight(8)}${'depth'.padLeft(8)}${'time/move'.padLeft(24)}'
     '${'nodes/move'.padLeft(12)}${'nodes/s'.padLeft(10)}',
   );
   for (final difficulty in AiDifficulty.values) {
@@ -41,8 +41,8 @@ void main() {
     final maxMs = times.reduce(max) / 1000;
     print(
       '${difficulty.name.padRight(8)}'
-      '${depthRange.padLeft(12)}'
-      '${'${averageMs.toStringAsFixed(0)} ms (max ${maxMs.toStringAsFixed(0)})'.padLeft(16)}'
+      '${depthRange.padLeft(8)}'
+      '${'${averageMs.toStringAsFixed(0)} ms (max ${maxMs.toStringAsFixed(0)})'.padLeft(24)}'
       '${(nodes / positions.length).round().toString().padLeft(12)}'
       '${(nodes / totalMicros * 1e6).round().toString().padLeft(10)}',
     );

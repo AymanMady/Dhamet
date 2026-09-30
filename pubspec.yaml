@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   dhamet_engine:
     path: packages/dhamet_engine
+  dhamet_ai:
+    path: packages/dhamet_ai
   flutter_riverpod: ^3.4.3
   go_router: ^18.0.2
   shared_preferences: ^2.5.5

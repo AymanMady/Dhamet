@@ -80,7 +80,7 @@ parameters (penalties are given as positive values).
 | `mobility`    | 0      | each free step of a pawn / empty point a Sultan reaches |
 | `centre`      | 0      | each ring nearer to e5                                 |
 
-It costs about ▲EVAL▲ µs per position, is antisymmetric
+It costs about 3.5 µs per position (compiled, desktop), is antisymmetric
 (`evaluate(s, white) == −evaluate(s, black)`) and colour-blind (turning the
 board around and swapping colours and turn gives the same score).
 
@@ -102,7 +102,7 @@ noise).
 | Sultan 400 vs 300 (depth 3)                           | 31–32                |
 | Sultan mobility 1 vs 0 (depth 3)                      | 29–30                |
 | without advancement vs advancement 2                  | 23–31                |
-| final weights vs material only (depth 3)              | ▲FINAL▲              |
+| final weights vs material only (depth 3)              | 49–15                |
 
 Mobility and centre control, the usual draughts terms, lose in Dhamet:
 open space around a piece and the many lines through the central points
@@ -113,10 +113,10 @@ off by default.
 
 | Level  | `maxDepth` | `quiescenceDepth` | `timeLimit` | `randomness` | Measured (desktop) |
 |--------|-----------:|------------------:|------------:|-------------:|--------------------|
-| easy   | 1          | 2                 | 0.25 s      | 1.5          | ▲EASY▲             |
-| medium | 3          | 6                 | 0.7 s       | 0.4          | ▲MEDIUM▲           |
-| hard   | 6          | 10                | 1.8 s       | 0.05         | ▲HARD▲             |
-| expert | 16         | 16                | 3.5 s       | 0            | ▲EXPERT▲           |
+| easy   | 1          | 2                 | 0.25 s      | 1.5          | depth 1, ~1 ms     |
+| medium | 3          | 6                 | 0.7 s       | 0.4          | depth 3, ~10 ms    |
+| hard   | 6          | 10                | 1.8 s       | 0.05         | depth 6, ~0.4 s    |
+| expert | 16         | 16                | 3.5 s       | 0            | depth 6–10, ~3.1 s |
 
 - **Easy** looks one move ahead plus the forced captures that follow, and
   picks at random among the moves within 1.5 pawns of the best: it never
@@ -126,18 +126,30 @@ off by default.
 - **Hard** searches 6 plies; its randomness (0.05 pawn) only breaks ties.
 - **Expert** is limited by time, not depth, and never randomises.
 
-Level against level (presets, 8 openings × both colours):
-▲MATCHES▲
+"Measured" is the benchmark below: average over 20 positions from AI games,
+compiled, on an 8-core desktop shared with other jobs (hard peaks at 1.2 s,
+expert at 3.55 s). The search runs at 45 000 to 65 000 positions per
+second.
+
+Level against level, with the presets, from random 6-ply openings played
+with both colours (on a loaded machine, so with less depth than above):
+
+| Match            | Result | Games |
+|------------------|--------|-------|
+| medium vs easy   | 16–0   | 16    |
+| hard vs medium   | 16–0   | 16    |
+| expert vs hard   | 6–2    | 8     |
 
 **Time budgets.** The limits (0.25 / 0.7 / 1.8 / 3.5 s) stay within the
 mobile-friendly targets of 0.3 / 0.8 / 2 / 4 s. They are wall-clock bounds:
 a phone (3 to 5 times slower than a desktop) answers just as fast and
 simply searches one or two plies less, and `chooseMoveInBackground`
-guarantees the answer within the limit plus 100 ms. Because a new iteration
-is not started after half the budget, the average time per move is well
-below the limit. Easy and medium are bounded by depth on a desktop, so they
-answer almost instantly; the app may add a short delay for a natural
-rhythm.
+guarantees the answer within the limit plus 100 ms. Easy, medium and hard
+are bounded by depth on a desktop, so they usually answer well within the
+limit (easy and medium almost instantly: the app may add a short delay for
+a natural rhythm); expert is bounded by time and uses most of its budget.
+A new iteration is never started after half the budget, as it would
+rarely finish.
 
 ## Background isolate
 
@@ -175,8 +187,9 @@ avoiding a promotion that loses every piece.
   path; with several landing points per jump, one position had 76 800
   maximal sequences (15 pieces) and took 1.9 s to generate on a desktop.
   A single `legalMoves` call cannot be interrupted, so `chooseMove` can
-  exceed its time limit on such a node (~1 % of moves in self-play, by up
-  to ~0.9 s on an idle desktop, several seconds on a loaded one).
+  exceed its time limit on such a node (4 moves out of 1 060 in self-play
+  with a 0.3 s budget, by up to 0.25 s; several seconds on a heavily loaded
+  machine).
   `chooseMoveInBackground` still answers on time thanks to its watchdog.
   The AI searches each distinct outcome once; the real fix belongs in the
   engine (generate distinct outcomes, or generate lazily).
