@@ -1,0 +1,3 @@
+tags:
+  # Needs a running server: see test/integration/online_server_test.dart.
+  server:
