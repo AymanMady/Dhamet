@@ -215,7 +215,7 @@ class OnlineController extends Notifier<OnlineState> {
     final token = state.token;
     if (token == null || _client != null) return;
     final client = ref.read(realtimeClientFactoryProvider)(
-      RealtimeClient.socketUri(ref.read(settingsProvider).serverUrl, token),
+      RealtimeClient.socketUri(ref.read(apiClientProvider).baseUrl, token),
     );
     _client = client;
     _events = client.events.listen(_onEvent);
