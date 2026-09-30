@@ -8,7 +8,7 @@ import '../../../app/router/app_router.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/localization/l10n.dart';
 import '../../../core/widgets/common.dart';
-import '../../game/presentation/widgets/piece_painter.dart';
+import '../../game/presentation/pieces/piece_icon.dart';
 import '../data/online_models.dart';
 import 'online_controller.dart';
 

@@ -5,11 +5,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/app_theme.dart';
+import '../../../../app/theme/app_typography.dart';
 import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/common.dart';
+import '../../../../core/widgets/sand/sand_background.dart';
+import '../../../../core/widgets/sand/sand_plate.dart';
+import '../../../../core/widgets/wood_button.dart';
 import '../../../settings/presentation/settings_controller.dart';
 import '../controllers/game_controller.dart';
-import '../widgets/piece_painter.dart';
+import '../pieces/piece_icon.dart';
 
 /// Victory, defeat or draw, with the way to go on.
 class ResultScreen extends ConsumerWidget {
@@ -55,70 +60,88 @@ class ResultScreen extends ConsumerWidget {
           )
         : PieceIcon(Piece.of(result.winner!, PieceType.sultan), size: 110);
 
+    final palette = context.boardPalette;
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false),
-      body: ScreenFrame(
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          children: [
-            Center(
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: animate ? 0 : 1, end: 1),
-                duration: const Duration(milliseconds: 700),
-                curve: Curves.elasticOut,
-                builder: (context, value, child) =>
-                    Transform.scale(scale: 0.4 + 0.6 * value, child: child),
-                child: emblem,
-              ),
+      body: SandBackground(
+        child: ScreenFrame(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.xxl * 2,
+              AppSpacing.lg,
+              AppSpacing.lg,
             ),
-            const SizedBox(height: AppSpacing.lg),
-            Semantics(
-              header: true,
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.displaySmall?.copyWith(
-                  color: theme.colorScheme.primary,
+            children: [
+              Center(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: animate ? 0 : 1, end: 1),
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.elasticOut,
+                  builder: (context, value, child) =>
+                      Transform.scale(scale: 0.4 + 0.6 * value, child: child),
+                  child: emblem,
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.movesCount(session.state.plyCount),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: AppSpacing.lg),
+              SandPlate(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.displaySmall?.copyWith(
+                          fontFamily: AppTypography.displayFamily,
+                          color: palette.ink,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      subtitle,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: palette.ink,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      l10n.movesCount(session.state.plyCount),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: palette.ink.withValues(alpha: 0.75),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            FilledButton.icon(
-              icon: const Icon(Icons.replay),
-              label: Text(l10n.playAgain),
-              onPressed: () {
-                ref.read(gameControllerProvider.notifier).restart();
-                context.go(AppRoutes.game);
-              },
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.slideshow_outlined),
-              label: Text(l10n.viewGame),
-              onPressed: () =>
-                  context.push(AppRoutes.replay, extra: session.game),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.home_outlined),
-              label: Text(l10n.backHome),
-              onPressed: () => context.go(AppRoutes.home),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.xl),
+              WoodButton(
+                icon: Icons.replay,
+                label: l10n.playAgain,
+                emphasis: true,
+                onPressed: () {
+                  ref.read(gameControllerProvider.notifier).restart();
+                  context.go(AppRoutes.game);
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              WoodButton(
+                icon: Icons.slideshow_outlined,
+                label: l10n.viewGame,
+                onPressed: () =>
+                    context.push(AppRoutes.replay, extra: session.game),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              WoodButton(
+                icon: Icons.home_outlined,
+                label: l10n.backHome,
+                onPressed: () => context.go(AppRoutes.home),
+              ),
+            ],
+          ),
         ),
       ),
     );

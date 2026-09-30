@@ -7,10 +7,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_theme.dart';
 import '../../../core/localization/l10n.dart';
 import '../../../core/widgets/common.dart';
-import '../../game/presentation/widgets/board_view.dart';
-import '../../game/presentation/widgets/game_panels.dart';
+import '../../../core/widgets/sand/sand_background.dart';
+import '../../../core/widgets/sand/sand_plate.dart';
+import '../../../core/widgets/wood_button.dart';
+import '../../game/presentation/board/dhamet_board.dart';
+import '../../game/presentation/hud/game_panels.dart';
 import '../../settings/presentation/settings_controller.dart';
 import '../data/realtime_client.dart';
 import 'online_controller.dart';
@@ -68,6 +72,7 @@ class _OnlineGameScreenState extends ConsumerState<OnlineGameScreen> {
     }
 
     final state = game.state;
+    final palette = context.boardPalette;
     final me = online.myColor ?? Player.white;
     final now = DateTime.now();
     final result = online.result ?? game.result;
@@ -97,6 +102,8 @@ class _OnlineGameScreenState extends ConsumerState<OnlineGameScreen> {
                   formatClock(remaining),
                   textDirection: TextDirection.ltr,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: palette.ink,
+                    fontWeight: FontWeight.w700,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -128,8 +135,14 @@ class _OnlineGameScreenState extends ConsumerState<OnlineGameScreen> {
         : online.ratingChanges[online.user!.id];
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.onlineRoomTitle(room.code))),
-      body: SafeArea(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: palette.ink,
+        title: Text(l10n.onlineRoomTitle(room.code)),
+      ),
+      body: SandBackground(
         child: ScreenFrame(
           maxWidth: 640,
           child: Column(
@@ -155,10 +168,17 @@ class _OnlineGameScreenState extends ConsumerState<OnlineGameScreen> {
                       )
                     : Semantics(
                         liveRegion: true,
-                        child: Text(
-                          status,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium,
+                        child: SandPlate(
+                          tint: mustCapture ? palette.capture : null,
+                          child: Text(
+                            status,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: palette.ink,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
                         ),
                       ),
               ),
@@ -195,34 +215,39 @@ class _OnlineGameScreenState extends ConsumerState<OnlineGameScreen> {
               Padding(
                 padding: AppSpacing.screen,
                 child: result == null
-                    ? OutlinedButton.icon(
-                        icon: const Icon(Icons.flag_outlined),
+                    ? WoodButton(
+                        icon: Icons.flag_outlined,
                         onPressed: () => _confirmResign(controller),
-                        label: Text(l10n.resign),
+                        label: l10n.resign,
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (delta != null)
-                            Text(
-                              l10n.onlineRatingChange(
-                                delta >= 0 ? '+$delta' : '$delta',
+                            Center(
+                              child: SandPlate(
+                                child: Text(
+                                  l10n.onlineRatingChange(
+                                    delta >= 0 ? '+$delta' : '$delta',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           const SizedBox(height: AppSpacing.sm),
-                          FilledButton(
+                          WoodButton(
+                            label: l10n.onlineBackToLobby,
+                            emphasis: true,
                             onPressed: () {
                               controller.leaveRoom();
                               context.go(AppRoutes.online);
                             },
-                            child: Text(l10n.onlineBackToLobby),
                           ),
                           const SizedBox(height: AppSpacing.sm),
-                          OutlinedButton(
+                          WoodButton(
+                            label: l10n.viewGame,
                             onPressed: () =>
                                 context.push(AppRoutes.replay, extra: game),
-                            child: Text(l10n.viewGame),
                           ),
                         ],
                       ),

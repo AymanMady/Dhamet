@@ -27,9 +27,26 @@ abstract final class AppColors {
   static const night700 = Color(0xFF262B38);
   static const nightSand = Color(0xFFCDB892);
 
-  // Pieces: light "sticks" (العيدان) and dark "pellets" (البعر).
-  static const lightPiece = Color(0xFFF3E6C8);
-  static const lightPieceEdge = Color(0xFF8A6A45);
-  static const darkPiece = Color(0xFF4A3426);
-  static const darkPieceEdge = Color(0xFF22170F);
+  // Pieces, as played on the sand: planted sticks (العيدان) for the light
+  // side, dark pebbles for the other (the reference art shows pebbles where
+  // tradition uses camel-dung pellets, البعر).
+  static const woodLight = Color(0xFFE8CFA0);
+  static const wood = Color(0xFFB98B56);
+  static const woodDark = Color(0xFF6E4B2A);
+  static const woodCut = Color(0xFFF0DEB8);
+  static const woodGrain = Color(0xFF5A3C22);
+  static const stoneLight = Color(0xFF928A80);
+  static const stone = Color(0xFF615951);
+  static const stoneDark = Color(0xFF302A26);
+
+  /// The second, lighter pebble stacked on a pebble Sultan.
+  static const quartzLight = Color(0xFFF4EDE2);
+  static const quartz = Color(0xFFD3C7B5);
+  static const quartzDark = Color(0xFF9B8E7C);
+
+  // Weathered planks of the buttons.
+  static const plankLight = Color(0xFFC9B08A);
+  static const plank = Color(0xFF9E8462);
+  static const plankDark = Color(0xFF6B5741);
+  static const plankInk = Color(0xFF34261A);
 }

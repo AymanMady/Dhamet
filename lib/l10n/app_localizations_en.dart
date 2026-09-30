@@ -195,6 +195,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restart => 'Restart';
 
   @override
+  String get pause => 'Pause';
+
+  @override
   String get resignTitle => 'Resign the game?';
 
   @override
@@ -481,7 +484,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialPiecesBody =>
-      'Each side has 40 pieces; only the central intersection is empty at the start. Traditionally one side plays with sticks and the other with camel-dung pellets: here the light pieces carry a stick and the dark ones a ring.';
+      'Each side has 40 pieces; only the central intersection is empty at the start. Traditionally one side plays with sticks and the other with camel-dung pellets: here White plays sticks planted in the sand and Black plays pebbles.';
 
   @override
   String get tutorialMoveTitle => 'Moving';
@@ -509,7 +512,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialPromotionBody =>
-      'A pawn that ends its move on the opponent\'s last row becomes a Sultan. Take the pawn to the last row.';
+      'A pawn that ends its move on the opponent\'s last row becomes a Sultan. As on the sand, a second piece is added to it: two crossed sticks, or a light pebble set on the dark one. Take the pawn to the last row.';
 
   @override
   String get tutorialSultanTitle => 'The Sultan';

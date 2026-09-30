@@ -4,7 +4,7 @@ import 'package:dhamet/features/game/data/saved_game.dart';
 import 'package:dhamet/features/game/domain/game_mode.dart';
 import 'package:dhamet/features/game/presentation/controllers/game_controller.dart';
 import 'package:dhamet/features/game/presentation/screens/home_screen.dart';
-import 'package:dhamet/features/game/presentation/widgets/board_view.dart';
+import 'package:dhamet/features/game/presentation/board/dhamet_board.dart';
 import 'package:dhamet_engine/dhamet_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -77,6 +77,45 @@ void main() {
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(container.read(gameControllerProvider)!.state.plyCount, 1);
+  });
+
+  testWidgets('the pause menu restarts the game', (tester) async {
+    final container = await pumpApp(tester);
+    await skipSplash(tester);
+    await tester.tap(find.text('Play with a friend'));
+    await tester.pumpAndSettle();
+    await tapBoard(tester, 'd4');
+    await tapBoard(tester, 'e5');
+    expect(container.read(gameControllerProvider)!.state.plyCount, 1);
+
+    await tester.tap(find.byTooltip('Pause'));
+    await tester.pumpAndSettle();
+    // Closing the menu resumes the game untouched.
+    await tester.tap(find.text('Resume game'));
+    await tester.pumpAndSettle();
+    expect(container.read(gameControllerProvider)!.state.plyCount, 1);
+
+    await tester.tap(find.byTooltip('Pause'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Restart'));
+    await tester.pumpAndSettle();
+    // Confirmation dialog.
+    await tester.tap(find.widgetWithText(FilledButton, 'Restart'));
+    await tester.pumpAndSettle();
+    expect(container.read(gameControllerProvider)!.state.plyCount, 0);
+  });
+
+  testWidgets('leaving a game keeps it to resume', (tester) async {
+    await pumpApp(tester);
+    await skipSplash(tester);
+    await tester.tap(find.text('Play with a friend'));
+    await tester.pumpAndSettle();
+    await tapBoard(tester, 'd4');
+    await tapBoard(tester, 'e5');
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.text('Resume game'), findsOneWidget);
   });
 
   testWidgets('the AI answers the player', (tester) async {

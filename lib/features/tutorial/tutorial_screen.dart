@@ -6,7 +6,7 @@ import '../../app/theme/app_spacing.dart';
 import '../../core/localization/l10n.dart';
 import '../../core/widgets/common.dart';
 import '../game/domain/board_interaction.dart';
-import '../game/presentation/widgets/board_view.dart';
+import '../game/presentation/board/dhamet_board.dart';
 import '../settings/presentation/settings_controller.dart';
 import 'tutorial_steps.dart';
 

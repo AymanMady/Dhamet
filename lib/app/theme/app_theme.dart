@@ -5,78 +5,129 @@ import 'app_radius.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// Colours of the board, which are not part of Material's colour scheme.
+/// Colours of the sand scene and the board, which are not part of
+/// Material's colour scheme. The light theme is the midday sand of the
+/// reference art; the dark theme is the same sand at dusk.
 @immutable
 class BoardPalette extends ThemeExtension<BoardPalette> {
   const BoardPalette({
-    required this.surface,
-    required this.surfaceEdge,
-    required this.line,
-    required this.faintLine,
+    required this.sand,
+    required this.sandLight,
+    required this.sandShade,
+    required this.grain,
+    required this.groove,
+    required this.shadow,
+    required this.ink,
+    required this.inkGlow,
     required this.highlight,
     required this.capture,
     required this.lastMove,
-    required this.coordinates,
+    required this.sky,
+    required this.haze,
+    required this.wall,
   });
 
   static const light = BoardPalette(
-    surface: AppColors.sand200,
-    surfaceEdge: AppColors.sand400,
-    line: AppColors.earth700,
-    faintLine: Color(0x995E432A),
+    sand: Color(0xFFD7B17B),
+    sandLight: Color(0xFFF0D8AA),
+    sandShade: Color(0xFFB48750),
+    grain: Color(0xFF7E5B34),
+    groove: Color(0xFF8E6A40),
+    shadow: Color(0xFF3F2814),
+    ink: Color(0xFF3A2716),
+    inkGlow: Color(0xFFF7E8C8),
     highlight: AppColors.indigo,
-    capture: AppColors.terracotta,
+    capture: Color(0xFFA8401C),
     lastMove: AppColors.gold,
-    coordinates: AppColors.earth700,
+    sky: Color(0xFFC9DCE6),
+    haze: Color(0xFFF1E3C9),
+    wall: Color(0xFFBC9165),
   );
 
   static const dark = BoardPalette(
-    surface: AppColors.nightSand,
-    surfaceEdge: AppColors.sand400,
-    line: AppColors.earth900,
-    faintLine: Color(0x9933251A),
-    highlight: AppColors.indigo,
-    capture: AppColors.terracotta,
-    lastMove: AppColors.gold,
-    coordinates: AppColors.sand200,
+    sand: Color(0xFF9C8160),
+    sandLight: Color(0xFFC2A67E),
+    sandShade: Color(0xFF6C553B),
+    grain: Color(0xFF45331F),
+    groove: Color(0xFF4F3B26),
+    shadow: Color(0xFF140D07),
+    ink: Color(0xFFF6ECD9),
+    inkGlow: Color(0xFF241810),
+    highlight: Color(0xFF9DBBE3),
+    capture: Color(0xFFE8825A),
+    lastMove: AppColors.goldLight,
+    sky: Color(0xFF1D2542),
+    haze: Color(0xFFC98A5D),
+    wall: Color(0xFF4C3A29),
   );
 
-  final Color surface;
-  final Color surfaceEdge;
-  final Color line;
+  /// The sand itself, in full sun.
+  final Color sand;
+  final Color sandLight;
+  final Color sandShade;
 
-  /// Lines that are traditionally not traced in the sand (rows 2, 4, 6, 8
-  /// and columns b, d, f, h), drawn lighter.
-  final Color faintLine;
+  /// Dark grains scattered in the sand.
+  final Color grain;
+
+  /// Bottom of the lines traced in the sand.
+  final Color groove;
+
+  /// Shadows cast by the pieces (used with transparency).
+  final Color shadow;
+
+  /// Text written on the sand, and the edge that makes it look engraved.
+  final Color ink;
+  final Color inkGlow;
+
+  /// Selection and possible destinations (the indigo of the melhfa).
   final Color highlight;
+
+  /// Captures (red ochre).
   final Color capture;
   final Color lastMove;
-  final Color coordinates;
+
+  /// The blurred horizon behind the board: sky, haze and mud-brick walls.
+  final Color sky;
+  final Color haze;
+  final Color wall;
 
   @override
-  BoardPalette copyWith({Color? surface, Color? line}) => BoardPalette(
-    surface: surface ?? this.surface,
-    surfaceEdge: surfaceEdge,
-    line: line ?? this.line,
-    faintLine: faintLine,
+  BoardPalette copyWith({Color? sand, Color? groove}) => BoardPalette(
+    sand: sand ?? this.sand,
+    sandLight: sandLight,
+    sandShade: sandShade,
+    grain: grain,
+    groove: groove ?? this.groove,
+    shadow: shadow,
+    ink: ink,
+    inkGlow: inkGlow,
     highlight: highlight,
     capture: capture,
     lastMove: lastMove,
-    coordinates: coordinates,
+    sky: sky,
+    haze: haze,
+    wall: wall,
   );
 
   @override
   BoardPalette lerp(BoardPalette? other, double t) {
     if (other == null) return this;
+    Color mix(Color a, Color b) => Color.lerp(a, b, t)!;
     return BoardPalette(
-      surface: Color.lerp(surface, other.surface, t)!,
-      surfaceEdge: Color.lerp(surfaceEdge, other.surfaceEdge, t)!,
-      line: Color.lerp(line, other.line, t)!,
-      faintLine: Color.lerp(faintLine, other.faintLine, t)!,
-      highlight: Color.lerp(highlight, other.highlight, t)!,
-      capture: Color.lerp(capture, other.capture, t)!,
-      lastMove: Color.lerp(lastMove, other.lastMove, t)!,
-      coordinates: Color.lerp(coordinates, other.coordinates, t)!,
+      sand: mix(sand, other.sand),
+      sandLight: mix(sandLight, other.sandLight),
+      sandShade: mix(sandShade, other.sandShade),
+      grain: mix(grain, other.grain),
+      groove: mix(groove, other.groove),
+      shadow: mix(shadow, other.shadow),
+      ink: mix(ink, other.ink),
+      inkGlow: mix(inkGlow, other.inkGlow),
+      highlight: mix(highlight, other.highlight),
+      capture: mix(capture, other.capture),
+      lastMove: mix(lastMove, other.lastMove),
+      sky: mix(sky, other.sky),
+      haze: mix(haze, other.haze),
+      wall: mix(wall, other.wall),
     );
   }
 }

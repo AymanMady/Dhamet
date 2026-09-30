@@ -204,6 +204,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get restart => 'إعادة اللعبة';
 
   @override
+  String get pause => 'إيقاف مؤقت';
+
+  @override
   String get resignTitle => 'هل تريد الاستسلام؟';
 
   @override
@@ -492,7 +495,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tutorialPiecesBody =>
-      'لكل جانب 40 قطعة، ولا تبقى فارغة في البداية إلا النقطة الوسطى. تقليديًا يلعب جانب بالعيدان والآخر بالبعر: هنا تحمل القطع الفاتحة عودًا والداكنة حلقة.';
+      'لكل جانب 40 قطعة، ولا تبقى فارغة في البداية إلا النقطة الوسطى. تقليديًا يلعب جانب بالعيدان والآخر بالبعر: هنا الأبيض عيدان مغروسة في الرمل والأسود حصى.';
 
   @override
   String get tutorialMoveTitle => 'التحرك';
@@ -520,7 +523,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tutorialPromotionBody =>
-      'الجندي الذي ينهي نقلته على آخر صف للخصم يصبح سلطانًا (ظايم). أوصل الجندي إلى الصف الأخير.';
+      'الجندي الذي ينهي نقلته على آخر صف للخصم يصبح سلطانًا (ظايم). وكما على الرمل، تُضاف إليه قطعة ثانية: عودان متقاطعان، أو حصاة فاتحة فوق الداكنة. أوصل الجندي إلى الصف الأخير.';
 
   @override
   String get tutorialSultanTitle => 'السلطان';

@@ -11,7 +11,7 @@ import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/common.dart';
 import '../../domain/game_mode.dart';
 import '../controllers/game_controller.dart';
-import '../widgets/piece_painter.dart';
+import '../pieces/piece_icon.dart';
 
 enum _SideChoice { white, black, random }
 

@@ -196,6 +196,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get restart => 'Recommencer';
 
   @override
+  String get pause => 'Pause';
+
+  @override
   String get resignTitle => 'Abandonner la partie ?';
 
   @override
@@ -483,7 +486,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tutorialPiecesBody =>
-      'Chaque camp a 40 pièces ; seule l\'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l\'autre avec des crottes de chameau : ici, les pièces claires portent un trait et les foncées un anneau.';
+      'Chaque camp a 40 pièces ; seule l\'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l\'autre avec des crottes de chameau : ici, les Blancs sont des bâtonnets plantés dans le sable et les Noirs des cailloux.';
 
   @override
   String get tutorialMoveTitle => 'Le déplacement';
@@ -511,7 +514,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tutorialPromotionBody =>
-      'Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Menez le pion jusqu\'à la dernière rangée.';
+      'Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Comme sur le sable, on lui ajoute une seconde pièce : deux bâtonnets croisés, ou un caillou clair posé sur le sombre. Menez le pion jusqu\'à la dernière rangée.';
 
   @override
   String get tutorialSultanTitle => 'Le Sultan';

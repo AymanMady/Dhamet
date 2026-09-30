@@ -10,7 +10,7 @@ import '../../core/widgets/common.dart';
 import '../game/data/game_archive.dart';
 import '../game/data/saved_game.dart';
 import '../game/domain/game_mode.dart';
-import '../game/presentation/widgets/piece_painter.dart';
+import '../game/presentation/pieces/piece_icon.dart';
 import 'game_statistics.dart';
 
 final finishedGamesProvider = FutureProvider.autoDispose<List<SavedGame>>(

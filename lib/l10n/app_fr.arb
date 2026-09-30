@@ -108,6 +108,10 @@
   "redo": "Rétablir",
   "resign": "Abandonner",
   "restart": "Recommencer",
+  "pause": "Pause",
+  "@pause": {
+    "description": "Bouton et titre du menu de pause pendant une partie"
+  },
   "resignTitle": "Abandonner la partie ?",
   "resignBody": "La victoire sera donnée à l'adversaire.",
   "restartTitle": "Recommencer ?",
@@ -256,7 +260,7 @@
   "tutorialBoardTitle": "Le plateau",
   "tutorialBoardBody": "Le Dhamet se joue sur les 81 intersections d'une grille de 9 × 9 lignes, tracée comme quatre plateaux d'alquerque. Les diagonales ne passent que par un point sur deux, les points « vastes ». Les autres points, « étroits », n'ont pas de diagonale.",
   "tutorialPiecesTitle": "Les pièces",
-  "tutorialPiecesBody": "Chaque camp a 40 pièces ; seule l'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l'autre avec des crottes de chameau : ici, les pièces claires portent un trait et les foncées un anneau.",
+  "tutorialPiecesBody": "Chaque camp a 40 pièces ; seule l'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l'autre avec des crottes de chameau : ici, les Blancs sont des bâtonnets plantés dans le sable et les Noirs des cailloux.",
   "tutorialMoveTitle": "Le déplacement",
   "tutorialMoveBody": "Un pion avance d'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Il ne recule jamais et ne se déplace pas sur le côté. Avancez le pion blanc.",
   "tutorialCaptureTitle": "La prise",
@@ -264,7 +268,7 @@
   "tutorialRafleTitle": "La rafle",
   "tutorialRafleBody": "Si le pion peut encore prendre après une prise, il continue : c'est une rafle. Les pièces prises sont retirées aussitôt, et il faut toujours jouer la rafle qui prend le plus de pièces. Réalisez la rafle de cinq pièces.",
   "tutorialPromotionTitle": "La promotion",
-  "tutorialPromotionBody": "Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Menez le pion jusqu'à la dernière rangée.",
+  "tutorialPromotionBody": "Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Comme sur le sable, on lui ajoute une seconde pièce : deux bâtonnets croisés, ou un caillou clair posé sur le sombre. Menez le pion jusqu'à la dernière rangée.",
   "tutorialSultanTitle": "Le Sultan",
   "tutorialSultanBody": "Le Sultan se déplace d'autant d'intersections qu'il veut le long d'une ligne, en avant comme en arrière. Il prend une pièce à distance si l'intersection derrière elle est libre. Prenez le pion noir avec le Sultan.",
   "tutorialVictoryTitle": "La victoire",

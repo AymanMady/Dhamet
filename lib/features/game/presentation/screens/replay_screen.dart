@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/app_theme.dart';
 import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/common.dart';
+import '../../../../core/widgets/sand/sand_background.dart';
+import '../../../../core/widgets/sand/sand_plate.dart';
+import '../../../../core/widgets/wood_button.dart';
 import '../../../settings/presentation/settings_controller.dart';
 import '../../data/game_archive.dart';
-import '../widgets/board_view.dart';
+import '../board/dhamet_board.dart';
 
 /// Steps through a finished (or current) game, move by move.
 class ReplayScreen extends ConsumerStatefulWidget {
@@ -60,6 +64,7 @@ class _ReplayScreenState extends ConsumerState<ReplayScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
+    final palette = context.boardPalette;
     final states = _states;
     final Widget body;
     if (states == null) {
@@ -78,11 +83,16 @@ class _ReplayScreenState extends ConsumerState<ReplayScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(AppSpacing.sm),
-              child: Text(
-                _index == 0
-                    ? l10n.replayStart
-                    : l10n.replayPosition(_index, last),
-                style: Theme.of(context).textTheme.titleMedium,
+              child: SandPlate(
+                child: Text(
+                  _index == 0
+                      ? l10n.replayStart
+                      : l10n.replayPosition(_index, last),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: palette.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
             Expanded(
@@ -104,39 +114,37 @@ class _ReplayScreenState extends ConsumerState<ReplayScreen> {
               ),
             ),
             if (state.lastMove != null)
-              Text(l10n.lastMoveLabel(state.lastMove!.notation)),
+              SandPlate(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                child: Text(l10n.lastMoveLabel(state.lastMove!.notation)),
+              ),
             Padding(
               padding: AppSpacing.screen,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton.outlined(
+                  WoodButton.icon(
                     tooltip: l10n.replayFirst,
-                    iconSize: 28,
                     onPressed: _index > 0 ? () => _go(0) : null,
-                    icon: Icon(isRtl ? Icons.last_page : Icons.first_page),
+                    icon: isRtl ? Icons.last_page : Icons.first_page,
                   ),
-                  IconButton.outlined(
+                  WoodButton.icon(
                     tooltip: l10n.replayPrevious,
-                    iconSize: 28,
                     onPressed: _index > 0 ? () => _go(_index - 1) : null,
-                    icon: Icon(
-                      isRtl ? Icons.chevron_right : Icons.chevron_left,
-                    ),
+                    icon: isRtl ? Icons.chevron_right : Icons.chevron_left,
                   ),
-                  IconButton.filled(
+                  WoodButton.icon(
                     tooltip: l10n.replayNext,
-                    iconSize: 28,
                     onPressed: _index < last ? () => _go(_index + 1) : null,
-                    icon: Icon(
-                      isRtl ? Icons.chevron_left : Icons.chevron_right,
-                    ),
+                    icon: isRtl ? Icons.chevron_left : Icons.chevron_right,
                   ),
-                  IconButton.outlined(
+                  WoodButton.icon(
                     tooltip: l10n.replayLast,
-                    iconSize: 28,
                     onPressed: _index < last ? () => _go(last) : null,
-                    icon: Icon(isRtl ? Icons.first_page : Icons.last_page),
+                    icon: isRtl ? Icons.first_page : Icons.last_page,
                   ),
                 ],
               ),
@@ -154,8 +162,14 @@ class _ReplayScreenState extends ConsumerState<ReplayScreen> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.replayTitle)),
-      body: body,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: palette.ink,
+        title: Text(l10n.replayTitle),
+      ),
+      body: SandBackground(child: SafeArea(child: body)),
     );
   }
 }
