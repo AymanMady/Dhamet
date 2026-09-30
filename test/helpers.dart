@@ -58,8 +58,13 @@ Future<ProviderContainer> pumpApp(
   WidgetTester tester, {
   Map<String, Object> preferences = const {},
   AiPlayer? ai,
+  GameArchive? archive,
 }) async {
-  final container = await testContainer(preferences: preferences, ai: ai);
+  final container = await testContainer(
+    preferences: preferences,
+    ai: ai,
+    archive: archive,
+  );
   await tester.pumpWidget(
     UncontrolledProviderScope(container: container, child: const DhametApp()),
   );

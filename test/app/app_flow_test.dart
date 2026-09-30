@@ -1,4 +1,7 @@
 import 'package:dhamet/app/router/app_router.dart';
+import 'package:dhamet/features/game/data/game_archive.dart';
+import 'package:dhamet/features/game/data/saved_game.dart';
+import 'package:dhamet/features/game/domain/game_mode.dart';
 import 'package:dhamet/features/game/presentation/controllers/game_controller.dart';
 import 'package:dhamet/features/game/presentation/screens/home_screen.dart';
 import 'package:dhamet/features/game/presentation/widgets/board_view.dart';
@@ -114,6 +117,29 @@ void main() {
     await tester.tap(find.text('View the game'));
     await tester.pumpAndSettle();
     expect(find.text('Starting position'), findsOneWidget);
+  });
+
+  testWidgets('an interrupted game can be resumed', (tester) async {
+    final archive = InMemoryGameArchive();
+    var game = Game.start(undoPolicy: UndoPolicy.unlimited);
+    game = game.play(game.state.legalMovesMatching('d4-e5').single);
+    await archive.saveCurrent(
+      SavedGame(
+        id: 'saved-1',
+        mode: const LocalMode(),
+        game: game,
+        startedAt: DateTime.utc(2026, 9, 30),
+      ),
+    );
+    final container = await pumpApp(tester, archive: archive);
+    await skipSplash(tester);
+    expect(find.text('Resume game'), findsOneWidget);
+    await tester.tap(find.text('Resume game'));
+    await tester.pumpAndSettle();
+    final session = container.read(gameControllerProvider)!;
+    expect(session.id, 'saved-1');
+    expect(session.state.plyCount, 1);
+    expect(find.text('Last move: d4-e5'), findsOneWidget);
   });
 
   testWidgets('Arabic is laid out right to left', (tester) async {

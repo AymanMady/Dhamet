@@ -22,7 +22,10 @@ sealed class GameMode {
     return switch (json['type']) {
       'local' => const LocalMode(),
       'ai' => AiMode(
-        level: AiLevel.values.byName(json['level']! as String),
+        level: AiLevel.values.firstWhere(
+          (level) => level.name == json['level'],
+          orElse: () => throw FormatException('mode.level', json['level']),
+        ),
         humanSide: Player.fromJson(json['humanSide']),
       ),
       _ => throw FormatException('mode: unknown type', json['type']),
