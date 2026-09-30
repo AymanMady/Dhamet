@@ -2,6 +2,7 @@ import 'package:dhamet_engine/dhamet_engine.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/art/game_art.dart';
 import 'piece_renderer.dart';
 
 /// A piece drawn as an icon, e.g. in the players' panels: the same stick or
@@ -15,15 +16,22 @@ class PieceIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox.square(
     dimension: size,
-    child: CustomPaint(painter: _PieceIconPainter(piece, context.boardPalette)),
+    child: CustomPaint(
+      painter: _PieceIconPainter(
+        piece,
+        context.boardPalette,
+        GameArtScope.of(context),
+      ),
+    ),
   );
 }
 
 class _PieceIconPainter extends CustomPainter {
-  _PieceIconPainter(this.piece, this.palette);
+  _PieceIconPainter(this.piece, this.palette, this.art);
 
   final Piece piece;
   final BoardPalette palette;
+  final GameArt? art;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -36,10 +44,12 @@ class _PieceIconPainter extends CustomPainter {
       side * (stick ? 0.84 : (piece.isSultan ? 0.66 : 0.54)),
     );
     PieceRenderer.paintShadow(canvas, base, cell, piece, palette);
-    PieceRenderer.paintBody(canvas, base, cell, piece, palette);
+    PieceRenderer.paintBody(canvas, base, cell, piece, palette, art: art);
   }
 
   @override
   bool shouldRepaint(_PieceIconPainter oldDelegate) =>
-      oldDelegate.piece != piece || oldDelegate.palette != palette;
+      oldDelegate.piece != piece ||
+      oldDelegate.palette != palette ||
+      oldDelegate.art != art;
 }

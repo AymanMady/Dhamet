@@ -4,12 +4,14 @@ import 'dart:ui' as ui;
 import 'package:flutter/widgets.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../art/game_art.dart';
 import '../rasterized_paint.dart';
 import 'sand_texture.dart';
 
-/// The sand scene behind a game: sand everywhere and, with [horizon], a
-/// blurred strip of sky and mud-brick walls at the top, as in a photograph
-/// with a shallow depth of field. Painted once into an image.
+/// The scene behind the game: the game scene of the reference art (sand,
+/// mud-brick walls out of focus), cropped to cover the screen. Before the
+/// art is loaded, and in tests, a drawn scene stands in: sand everywhere
+/// and, with [horizon], a blurred strip of sky and walls at the top.
 class SandBackground extends StatelessWidget {
   const SandBackground({super.key, required this.child, this.horizon = true});
 
@@ -17,22 +19,77 @@ class SandBackground extends StatelessWidget {
   final bool horizon;
 
   @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.expand,
-    children: [
-      RepaintBoundary(
-        child: LayoutBuilder(
-          builder: (context, constraints) => RasterizedPaint(
-            painter: SandScenePainter(
-              palette: context.boardPalette,
-              horizon: horizon,
-            ),
-            size: constraints.biggest,
-          ),
+  Widget build(BuildContext context) {
+    final palette = context.boardPalette;
+    final scene = GameArtScope.of(context)?.scene;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        RepaintBoundary(
+          child: scene != null
+              ? CustomPaint(
+                  painter: ScenePhotoPainter(image: scene, palette: palette),
+                )
+              : LayoutBuilder(
+                  builder: (context, constraints) => RasterizedPaint(
+                    painter: SandScenePainter(
+                      palette: palette,
+                      horizon: horizon,
+                    ),
+                    size: constraints.biggest,
+                  ),
+                ),
         ),
+        child,
+      ],
+    );
+  }
+}
+
+/// The photograph of the scene, covering the whole area, tinted for the
+/// theme, with a soft vignette that keeps the eye on the middle.
+class ScenePhotoPainter extends CustomPainter {
+  const ScenePhotoPainter({required this.image, required this.palette});
+
+  final ui.Image image;
+  final BoardPalette palette;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    paintImage(
+      canvas: canvas,
+      rect: rect,
+      image: image,
+      fit: BoxFit.cover,
+      // Keep the walls in view when the height is cropped.
+      alignment: const Alignment(0.1, -0.3),
+      filterQuality: FilterQuality.medium,
+    );
+    if (palette.dusk.a > 0) {
+      canvas.drawRect(rect, Paint()..color = palette.dusk);
+    }
+    _paintVignette(canvas, rect, palette);
+  }
+
+  @override
+  bool shouldRepaint(ScenePhotoPainter oldDelegate) =>
+      oldDelegate.image != image || oldDelegate.palette != palette;
+}
+
+void _paintVignette(Canvas canvas, Rect rect, BoardPalette palette) {
+  canvas.drawRect(
+    rect,
+    Paint()
+      ..shader = ui.Gradient.radial(
+        rect.center,
+        rect.longestSide * 0.75,
+        [
+          palette.shadow.withValues(alpha: 0),
+          palette.shadow.withValues(alpha: 0.2),
+        ],
+        const [0.55, 1],
       ),
-      child,
-    ],
   );
 }
 
@@ -51,20 +108,7 @@ class SandScenePainter extends CustomPainter {
     final rect = Offset.zero & size;
     paintSand(canvas, rect, palette, seed: 3);
     if (horizon) _paintHorizon(canvas, size);
-    // A soft vignette keeps the eye on the board.
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          rect.center,
-          size.longestSide * 0.75,
-          [
-            palette.shadow.withValues(alpha: 0),
-            palette.shadow.withValues(alpha: 0.2),
-          ],
-          const [0.55, 1],
-        ),
-    );
+    _paintVignette(canvas, rect, palette);
   }
 
   void _paintHorizon(Canvas canvas, Size size) {

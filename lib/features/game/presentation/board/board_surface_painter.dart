@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:dhamet_engine/dhamet_engine.dart';
 import 'package:flutter/rendering.dart';
@@ -18,11 +19,15 @@ class BoardSurfacePainter extends CustomPainter {
     required this.geometry,
     required this.palette,
     this.showCoordinates = false,
+    this.sand,
   });
 
   final BoardGeometry geometry;
   final BoardPalette palette;
   final bool showCoordinates;
+
+  /// The sand texture of the reference art; without it, the sand is drawn.
+  final ui.Image? sand;
 
   double get _cell => geometry.cell;
 
@@ -84,14 +89,23 @@ class BoardSurfacePainter extends CustomPainter {
       );
     canvas.save();
     canvas.clipPath(patch);
-    paintSand(
-      canvas,
-      Offset.zero & Size.square(geometry.size),
-      palette.copyWith(sand: Color.lerp(palette.sand, palette.sandLight, 0.12)),
-      seed: 11,
-      ripples: 0.15,
-      stones: 0.2,
-    );
+    final area = Offset.zero & Size.square(geometry.size);
+    final sand = this.sand;
+    if (sand != null) {
+      // Tiled about twice across the board.
+      paintSandImage(canvas, area, sand, palette, tile: geometry.size / 2);
+    } else {
+      paintSand(
+        canvas,
+        area,
+        palette.copyWith(
+          sand: Color.lerp(palette.sand, palette.sandLight, 0.12),
+        ),
+        seed: 11,
+        ripples: 0.15,
+        stones: 0.2,
+      );
+    }
     // The patch lies a little lower than its rim.
     canvas.drawPath(
       patch,
@@ -213,7 +227,8 @@ class BoardSurfacePainter extends CustomPainter {
   bool shouldRepaint(BoardSurfacePainter oldDelegate) =>
       oldDelegate.geometry != geometry ||
       oldDelegate.palette != palette ||
-      oldDelegate.showCoordinates != showCoordinates;
+      oldDelegate.showCoordinates != showCoordinates ||
+      oldDelegate.sand != sand;
 }
 
 /// A straight line of the board, from one edge intersection to the other.

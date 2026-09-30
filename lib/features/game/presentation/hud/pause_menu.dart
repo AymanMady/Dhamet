@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/art/game_art.dart';
 import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/sand/sand_texture.dart';
 import '../../../../core/widgets/wood_button.dart';
@@ -30,6 +31,7 @@ class PauseMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final palette = context.boardPalette;
+    final art = GameArtScope.of(context);
     const radius = BorderRadius.all(Radius.circular(18));
     void choose(PauseAction? action) => Navigator.of(context).pop(action);
     const gap = SizedBox(height: AppSpacing.sm);
@@ -54,7 +56,9 @@ class PauseMenu extends StatelessWidget {
           child: ClipRRect(
             borderRadius: radius,
             child: CustomPaint(
-              painter: SandPainter(palette: palette, seed: 21, ripples: 0.4),
+              painter: art == null
+                  ? SandPainter(palette: palette, seed: 21, ripples: 0.4)
+                  : SandImagePainter(image: art.sand, palette: palette),
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg - 4),
                 child: Column(

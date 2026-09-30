@@ -6,6 +6,7 @@ import 'package:flutter/painting.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/art/game_art.dart';
 import '../../../../core/utils/smooth_path.dart';
 import '../board/board_geometry.dart';
 import 'piece_look.dart';
@@ -16,6 +17,9 @@ import 'piece_look.dart';
 /// differ by shape, not only by colour. A Sultan gets a second piece, as
 /// players do on the sand (docs/rules.md § 8): two crossed sticks bound with
 /// an indigo cord, or a light pebble set on the dark one.
+///
+/// With [GameArt], the sticks and pebbles are those cut out of the reference
+/// art; otherwise they are drawn.
 ///
 /// [base] is the intersection and [cell] the distance between two
 /// intersections. [lift] raises the piece off the sand, from 0 (planted) to
@@ -129,6 +133,7 @@ abstract final class PieceRenderer {
     double lift = 0,
     double opacity = 1,
     double scale = 1,
+    GameArt? art,
   }) {
     if (opacity <= 0) return;
     final layered = opacity < 1;
@@ -148,9 +153,19 @@ abstract final class PieceRenderer {
         ..translate(-raised.dx, -raised.dy);
     }
     if (piece.owner == Player.white) {
-      _paintSticks(canvas, base, raised, cell, piece, look, palette, lift);
+      _paintSticks(
+        canvas,
+        base,
+        raised,
+        cell,
+        piece,
+        look,
+        palette,
+        lift,
+        art?.stick,
+      );
     } else {
-      _paintPebbles(canvas, raised, cell, piece, look);
+      _paintPebbles(canvas, raised, cell, piece, look, art?.pebble);
     }
     if (scaled) canvas.restore();
     if (layered) canvas.restore();
@@ -190,6 +205,7 @@ abstract final class PieceRenderer {
     PieceLook look,
     BoardPalette palette,
     double lift,
+    ui.Image? sprite,
   ) {
     final sticks = _sticks(piece, look);
     final planted = lift < 0.05;
@@ -199,14 +215,20 @@ abstract final class PieceRenderer {
       }
     }
     for (final stick in sticks) {
-      _paintStick(
-        canvas,
-        raised + stick.offset * cell,
-        cell,
-        stick,
-        look,
-        planted: planted,
-      );
+      final foot = raised + stick.offset * cell;
+      if (sprite != null) {
+        _paintStickSprite(
+          canvas,
+          foot,
+          cell,
+          stick,
+          look,
+          sprite,
+          planted: planted,
+        );
+      } else {
+        _paintStick(canvas, foot, cell, stick, look, planted: planted);
+      }
     }
     if (planted) {
       for (final stick in sticks) {
@@ -214,6 +236,32 @@ abstract final class PieceRenderer {
       }
     }
     if (piece.isSultan) _paintBinding(canvas, raised, cell, sticks);
+  }
+
+  /// The stick cut out of the reference art, standing on [foot].
+  static void _paintStickSprite(
+    Canvas canvas,
+    Offset foot,
+    double cell,
+    _Stick stick,
+    PieceLook look,
+    ui.Image sprite, {
+    required bool planted,
+  }) {
+    final height = cell * _stickHeight * stick.length;
+    // A little thicker than the photo, to be seen and tapped.
+    final width = height * sprite.width / sprite.height * 1.3;
+    // Planted, the foot of the stick goes a little under the sand.
+    final sink = planted ? width * 0.35 : 0.0;
+    final destination = Rect.fromLTWH(-width / 2, sink - height, width, height);
+    canvas
+      ..save()
+      ..translate(foot.dx, foot.dy)
+      ..rotate(stick.tilt);
+    // A thin dark edge keeps the light wood readable on the sand.
+    _drawSprite(canvas, sprite, destination.inflate(cell * 0.014), _edge);
+    _drawSprite(canvas, sprite, destination, _toneFilter(look.tone - 0.15));
+    canvas.restore();
   }
 
   static void _paintStick(
@@ -425,9 +473,14 @@ abstract final class PieceRenderer {
     double cell,
     Piece piece,
     PieceLook look,
+    ui.Image? sprite,
   ) {
     final center = raised - Offset(0, cell * 0.03);
     final radius = cell * _pebbleRadius * look.size;
+    if (sprite != null) {
+      _paintPebbleSprites(canvas, center, radius, piece, look, sprite);
+      return;
+    }
     _paintPebble(
       canvas,
       center,
@@ -464,6 +517,112 @@ abstract final class PieceRenderer {
       AppColors.quartzDark,
     );
   }
+
+  /// The pebble cut out of the reference art; a Sultan carries a second,
+  /// lighter one.
+  static void _paintPebbleSprites(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    Piece piece,
+    PieceLook look,
+    ui.Image sprite,
+  ) {
+    _paintPebbleSprite(canvas, center, radius, look, sprite);
+    if (!piece.isSultan) return;
+    final topCenter = center - Offset(radius * 0.08, radius * 0.66);
+    final topRadius = radius * 0.64;
+    canvas
+      ..save()
+      ..clipPath(
+        Path()..addOval(
+          Rect.fromCenter(
+            center: center,
+            width: radius * 2.1,
+            height: radius * 1.9,
+          ),
+        ),
+      )
+      ..drawOval(
+        Rect.fromCenter(
+          center: topCenter + Offset(radius * 0.2, radius * 0.42),
+          width: topRadius * 2.1,
+          height: topRadius * 1.3,
+        ),
+        Paint()
+          ..color = AppColors.stoneDark.withValues(alpha: 0.6)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, radius * 0.12),
+      )
+      ..restore();
+    _paintPebbleSprite(
+      canvas,
+      topCenter,
+      topRadius,
+      PieceLook.fromSeed(look.speckles + 1),
+      sprite,
+      filter: _quartz,
+    );
+  }
+
+  static void _paintPebbleSprite(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    PieceLook look,
+    ui.Image sprite, {
+    ColorFilter? filter,
+  }) {
+    final width = radius * 2.15;
+    final height = width * sprite.height / sprite.width;
+    canvas
+      ..save()
+      ..translate(center.dx, center.dy)
+      // A slight turn only: the photo is lit from the upper left.
+      ..rotate((look.rotation - math.pi) * 0.06);
+    _drawSprite(
+      canvas,
+      sprite,
+      Rect.fromCenter(center: Offset.zero, width: width, height: height),
+      filter ?? _toneFilter(look.tone),
+    );
+    canvas.restore();
+  }
+
+  static void _drawSprite(
+    Canvas canvas,
+    ui.Image sprite,
+    Rect destination,
+    ColorFilter? filter,
+  ) => canvas.drawImageRect(
+    sprite,
+    Offset.zero & Size(sprite.width.toDouble(), sprite.height.toDouble()),
+    destination,
+    Paint()
+      ..filterQuality = FilterQuality.medium
+      ..colorFilter = filter,
+  );
+
+  /// Lightens or darkens a photographed piece a little.
+  static ColorFilter? _toneFilter(double tone) {
+    if (tone == 0) return null;
+    final k = 1 + tone * 0.8;
+    return ColorFilter.matrix(<double>[
+      k, 0, 0, 0, 0, //
+      0, k, 0, 0, 0, //
+      0, 0, k, 0, 0, //
+      0, 0, 0, 1, 0, //
+    ]);
+  }
+
+  static const _edge = ColorFilter.mode(Color(0xB3281A0E), BlendMode.srcIn);
+
+  /// Turns the dark pebble into the light one stacked on a Sultan.
+  static const _quartz = ColorFilter.matrix(<double>[
+    0.32, 0.45, 0.1, 0, 105, //
+    0.3, 0.47, 0.1, 0, 98, //
+    0.28, 0.42, 0.12, 0, 86, //
+    0, 0, 0, 1, 0, //
+  ]);
 
   static void _paintPebble(
     Canvas canvas,

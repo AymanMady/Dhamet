@@ -25,6 +25,7 @@ class BoardPalette extends ThemeExtension<BoardPalette> {
     required this.sky,
     required this.haze,
     required this.wall,
+    required this.dusk,
   });
 
   static const light = BoardPalette(
@@ -42,6 +43,7 @@ class BoardPalette extends ThemeExtension<BoardPalette> {
     sky: Color(0xFFC9DCE6),
     haze: Color(0xFFF1E3C9),
     wall: Color(0xFFBC9165),
+    dusk: Color(0x00000000),
   );
 
   static const dark = BoardPalette(
@@ -59,6 +61,7 @@ class BoardPalette extends ThemeExtension<BoardPalette> {
     sky: Color(0xFF1D2542),
     haze: Color(0xFFC98A5D),
     wall: Color(0xFF4C3A29),
+    dusk: Color(0x991A1830),
   );
 
   /// The sand itself, in full sun.
@@ -91,6 +94,10 @@ class BoardPalette extends ThemeExtension<BoardPalette> {
   final Color haze;
   final Color wall;
 
+  /// Laid over the daylight photos of the reference art (scene, sand) to
+  /// match the theme: transparent at midday, blue-grey at dusk.
+  final Color dusk;
+
   @override
   BoardPalette copyWith({Color? sand, Color? groove}) => BoardPalette(
     sand: sand ?? this.sand,
@@ -107,6 +114,7 @@ class BoardPalette extends ThemeExtension<BoardPalette> {
     sky: sky,
     haze: haze,
     wall: wall,
+    dusk: dusk,
   );
 
   @override
@@ -128,6 +136,7 @@ class BoardPalette extends ThemeExtension<BoardPalette> {
       sky: mix(sky, other.sky),
       haze: mix(haze, other.haze),
       wall: mix(wall, other.wall),
+      dusk: mix(dusk, other.dusk),
     );
   }
 }

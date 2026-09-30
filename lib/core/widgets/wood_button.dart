@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_spacing.dart';
+import '../art/game_art.dart';
 
 /// A button made of a weathered plank, its label carved in the wood, like
 /// the "new game" planks of the reference art. It sinks into the sand when
@@ -104,6 +105,7 @@ class _WoodButtonState extends State<WoodButton> {
                 pressed: _pressed,
                 emphasis: widget.emphasis,
                 nails: label != null,
+                photo: GameArtScope.of(context)?.plank,
               ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -140,12 +142,17 @@ class WoodPlankPainter extends CustomPainter {
     this.pressed = false,
     this.emphasis = false,
     this.nails = true,
+    this.photo,
   });
 
   final int seed;
   final bool pressed;
   final bool emphasis;
   final bool nails;
+
+  /// The plank cut out of the reference art; without it, the plank is
+  /// drawn.
+  final ui.Image? photo;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -170,6 +177,11 @@ class WoodPlankPainter extends CustomPainter {
         ..color = const Color(0x70301E0E)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, pressed ? 1.5 : 3.5),
     );
+    final photo = this.photo;
+    if (photo != null) {
+      _paintPhoto(canvas, rect, photo);
+      return;
+    }
     final colors = emphasis
         ? const [Color(0xFFD9B884), Color(0xFFAA814F), Color(0xFF74532F)]
         : const [AppColors.plankLight, AppColors.plank, AppColors.plankDark];
@@ -264,10 +276,56 @@ class WoodPlankPainter extends CustomPainter {
     }
   }
 
+  /// Stretches the photographed plank: its ends keep their proportions and
+  /// the middle stretches along the grain.
+  void _paintPhoto(Canvas canvas, Rect rect, ui.Image photo) {
+    final width = photo.width.toDouble();
+    final height = photo.height.toDouble();
+    final scale = rect.height / height;
+    final slice = Rect.fromLTRB(
+      width * 0.18,
+      height * 0.3,
+      width * 0.82,
+      height * 0.7,
+    );
+    canvas
+      ..save()
+      ..translate(rect.left, rect.top)
+      ..scale(scale)
+      ..drawImageNine(
+        photo,
+        slice,
+        Rect.fromLTWH(0, 0, math.max(rect.width / scale, width * 0.37), height),
+        Paint()
+          ..filterQuality = FilterQuality.medium
+          ..colorFilter = emphasis
+              ? _warm
+              : pressed
+              ? _shaded
+              : null,
+      )
+      ..restore();
+  }
+
+  static const _warm = ColorFilter.matrix(<double>[
+    1.12, 0, 0, 0, 10, //
+    0, 1.02, 0, 0, 2, //
+    0, 0, 0.82, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ]);
+
+  static const _shaded = ColorFilter.matrix(<double>[
+    0.88, 0, 0, 0, 0, //
+    0, 0.88, 0, 0, 0, //
+    0, 0, 0.88, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ]);
+
   @override
   bool shouldRepaint(WoodPlankPainter oldDelegate) =>
       oldDelegate.seed != seed ||
       oldDelegate.pressed != pressed ||
       oldDelegate.emphasis != emphasis ||
-      oldDelegate.nails != nails;
+      oldDelegate.nails != nails ||
+      oldDelegate.photo != photo;
 }

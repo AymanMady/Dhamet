@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/art/game_art.dart';
 import '../animations/move_timeline.dart';
 import '../animations/sand_effects.dart';
 import '../pieces/piece_look.dart';
@@ -175,6 +176,7 @@ class BoardPiecesPainter extends CustomPainter {
     required this.board,
     required this.variants,
     required this.hidden,
+    this.art,
   }) : _variantsVersion = variants.version;
 
   final BoardGeometry geometry;
@@ -185,6 +187,7 @@ class BoardPiecesPainter extends CustomPainter {
 
   /// Pieces drawn by [BoardEffectsPainter] instead: held or moving.
   final Set<Position> hidden;
+  final GameArt? art;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -207,7 +210,15 @@ class BoardPiecesPainter extends CustomPainter {
       PieceRenderer.paintShadow(canvas, base, cell, piece, palette, look: look);
     }
     for (final (base, piece, look) in pieces) {
-      PieceRenderer.paintBody(canvas, base, cell, piece, palette, look: look);
+      PieceRenderer.paintBody(
+        canvas,
+        base,
+        cell,
+        piece,
+        palette,
+        look: look,
+        art: art,
+      );
     }
   }
 
@@ -217,7 +228,8 @@ class BoardPiecesPainter extends CustomPainter {
       oldDelegate.palette != palette ||
       oldDelegate.board != board ||
       oldDelegate._variantsVersion != _variantsVersion ||
-      !setEquals(oldDelegate.hidden, hidden);
+      !setEquals(oldDelegate.hidden, hidden) ||
+      oldDelegate.art != art;
 }
 
 /// What moves above the pieces: the selected piece held up, crosses on the
@@ -235,6 +247,7 @@ class BoardEffectsPainter extends CustomPainter {
     required this.animatedFrom,
     required this.capturedLooks,
     required this.moveProgress,
+    this.art,
   }) : super(repaint: Listenable.merge([selectProgress, moveProgress]));
 
   final BoardGeometry geometry;
@@ -254,6 +267,7 @@ class BoardEffectsPainter extends CustomPainter {
   /// Looks of the pieces the animated move captures.
   final Map<Position, PieceLook> capturedLooks;
   final Animation<double> moveProgress;
+  final GameArt? art;
 
   double get _cell => geometry.cell;
 
@@ -299,6 +313,7 @@ class BoardEffectsPainter extends CustomPainter {
         look: look,
         lift: lift,
         scale: 1 + 0.11 * lift,
+        art: art,
       );
     }
   }
@@ -342,6 +357,7 @@ class BoardEffectsPainter extends CustomPainter {
           lift: removal * 1.2,
           opacity: 1 - removal,
           scale: 1 - 0.2 * removal,
+          art: art,
         );
       }
       paintSandPuff(
@@ -387,6 +403,7 @@ class BoardEffectsPainter extends CustomPainter {
       look: look,
       lift: lift,
       scale: (1 + 0.11 * lift) * (1 + 0.14 * math.sin(math.pi * crown)),
+      art: art,
     );
   }
 

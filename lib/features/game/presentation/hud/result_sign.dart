@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/art/game_art.dart';
 import '../../../../core/widgets/wood_button.dart';
 
 /// A plank sign dropped on the board when the game ends.
@@ -30,7 +31,11 @@ class ResultSign extends StatelessWidget {
       ),
     ),
     child: CustomPaint(
-      painter: const WoodPlankPainter(seed: 99, emphasis: true),
+      painter: WoodPlankPainter(
+        seed: 99,
+        emphasis: true,
+        photo: GameArtScope.of(context)?.plank,
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(28, 12, 28, 18),
         child: Row(

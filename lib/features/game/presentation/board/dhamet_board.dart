@@ -4,6 +4,7 @@ import 'package:dhamet_engine/dhamet_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/art/game_art.dart';
 import '../../../../core/widgets/rasterized_paint.dart';
 import '../animations/move_timeline.dart';
 import '../pieces/piece_look.dart';
@@ -152,6 +153,7 @@ class _DhametBoardState extends State<DhametBoard>
   @override
   Widget build(BuildContext context) {
     final palette = context.boardPalette;
+    final art = GameArtScope.of(context);
     final textDirection = Directionality.of(context);
     final board = widget.state.board;
     final timeline = _timeline;
@@ -196,6 +198,7 @@ class _DhametBoardState extends State<DhametBoard>
                     geometry: geometry,
                     palette: palette,
                     showCoordinates: widget.showCoordinates,
+                    sand: art?.sand,
                   ),
                   cached: true,
                 ),
@@ -218,6 +221,7 @@ class _DhametBoardState extends State<DhametBoard>
                     board: board,
                     variants: _variants,
                     hidden: hidden,
+                    art: art,
                   ),
                   cached: true,
                 ),
@@ -234,6 +238,7 @@ class _DhametBoardState extends State<DhametBoard>
                     animatedFrom: _animatedFrom,
                     capturedLooks: _capturedLooks,
                     moveProgress: _moveAnimation,
+                    art: art,
                   ),
                 ),
                 CustomPaint(

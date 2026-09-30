@@ -201,6 +201,69 @@ void _paintStones(
   }
 }
 
+/// Paints the sand texture of the reference art in [rect], each tile
+/// [tile] pixels wide, lit by the sun in the upper left and tinted for the
+/// theme.
+void paintSandImage(
+  Canvas canvas,
+  Rect rect,
+  ui.Image image,
+  BoardPalette palette, {
+  required double tile,
+}) {
+  final scale = tile / image.width;
+  canvas
+    ..drawRect(
+      rect,
+      Paint()
+        ..shader = ImageShader(
+          image,
+          TileMode.repeated,
+          TileMode.repeated,
+          Matrix4.diagonal3Values(scale, scale, 1).storage,
+          filterQuality: FilterQuality.medium,
+        ),
+    )
+    ..drawRect(
+      rect,
+      Paint()
+        ..shader = ui.Gradient.linear(
+          rect.topLeft,
+          rect.bottomRight,
+          [
+            palette.sandLight.withValues(alpha: 0.16),
+            palette.sand.withValues(alpha: 0),
+            palette.sandShade.withValues(alpha: 0.18),
+          ],
+          const [0, 0.5, 1],
+        ),
+    );
+  if (palette.dusk.a > 0) canvas.drawRect(rect, Paint()..color = palette.dusk);
+}
+
+/// Paints the sand texture of the reference art over its whole area.
+class SandImagePainter extends CustomPainter {
+  const SandImagePainter({
+    required this.image,
+    required this.palette,
+    this.tile = 256,
+  });
+
+  final ui.Image image;
+  final BoardPalette palette;
+  final double tile;
+
+  @override
+  void paint(Canvas canvas, Size size) =>
+      paintSandImage(canvas, Offset.zero & size, image, palette, tile: tile);
+
+  @override
+  bool shouldRepaint(SandImagePainter oldDelegate) =>
+      oldDelegate.image != image ||
+      oldDelegate.palette != palette ||
+      oldDelegate.tile != tile;
+}
+
 /// Paints sand over its whole area; see [paintSand].
 class SandPainter extends CustomPainter {
   const SandPainter({

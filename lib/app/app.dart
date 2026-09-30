@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/art/game_art.dart';
 import '../core/localization/l10n.dart';
 import '../features/settings/presentation/settings_controller.dart';
 import 'router/app_router.dart';
@@ -17,6 +18,8 @@ class DhametApp extends ConsumerWidget {
       onGenerateTitle: (context) => context.l10n.appName,
       debugShowCheckedModeBanner: false,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) =>
+          GameArtScope(art: ref.watch(gameArtProvider), child: child!),
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: settings.themeMode,

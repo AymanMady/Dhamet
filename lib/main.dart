@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
+import 'core/art/game_art.dart';
 import 'features/game/data/file_game_archive.dart';
 import 'features/game/data/game_archive.dart';
 import 'features/settings/presentation/settings_controller.dart';
@@ -23,11 +24,19 @@ Future<void> main() async {
   final preferences = await SharedPreferences.getInstance();
   final documents = await getApplicationDocumentsDirectory();
   final archive = FileGameArchive(Directory('${documents.path}/dhamet'));
+  GameArt? art;
+  try {
+    art = await GameArt.load(rootBundle);
+  } catch (error, stack) {
+    // The game stays playable with the drawings made by the code.
+    debugPrint('Could not load the game art: $error\n$stack');
+  }
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(preferences),
         gameArchiveProvider.overrideWithValue(archive),
+        gameArtProvider.overrideWithValue(art),
       ],
       child: const DhametApp(),
     ),
