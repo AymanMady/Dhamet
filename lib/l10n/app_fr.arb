@@ -300,5 +300,153 @@
   "pieceWhitePawn": "pion blanc",
   "pieceBlackPawn": "pion noir",
   "pieceWhiteSultan": "Sultan blanc",
-  "pieceBlackSultan": "Sultan noir"
+  "pieceBlackSultan": "Sultan noir",
+  "onlineTitle": "Jouer en ligne",
+  "onlineSignInTitle": "Connexion",
+  "onlineUsername": "Nom d'utilisateur",
+  "onlinePassword": "Mot de passe",
+  "onlineUsernameRule": "3 à 20 caractères : lettres, chiffres ou _",
+  "onlinePasswordRule": "Au moins 8 caractères",
+  "onlineSignIn": "Se connecter",
+  "onlineRegister": "Créer un compte",
+  "onlineGuest": "Jouer en invité",
+  "onlineSignOut": "Se déconnecter",
+  "onlineGuestBadge": "Invité",
+  "onlineRating": "Classement Elo : {rating}",
+  "@onlineRating": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineConnected": "Connecté",
+  "onlineConnecting": "Connexion…",
+  "onlineReconnecting": "Connexion perdue, reconnexion…",
+  "onlineDisconnected": "Hors ligne",
+  "onlineCreateRoom": "Créer une salle privée",
+  "onlineJoinRoom": "Rejoindre une salle",
+  "onlineRoomCode": "Code de la salle",
+  "onlineJoin": "Rejoindre",
+  "onlineRated": "Partie classée",
+  "onlineRatedGuestNote": "Les invités ne jouent pas de parties classées.",
+  "onlineTimeControl": "Pendule",
+  "onlineNoClock": "Sans limite, comme le veut la tradition",
+  "onlineClock": "{minutes} min + {seconds} s",
+  "@onlineClock": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineRoomTitle": "Salle {code}",
+  "@onlineRoomTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineShareCode": "Donnez ce code à votre adversaire.",
+  "onlineCopy": "Copier le code",
+  "onlineCopied": "Code copié",
+  "onlineWaitingOpponent": "En attente d'un adversaire…",
+  "onlineReady": "Je suis prêt",
+  "onlinePlayerReady": "Prêt",
+  "onlinePlayerNotReady": "Pas encore prêt",
+  "onlinePlayerAway": "Déconnecté",
+  "onlineHost": "Hôte",
+  "onlineLeave": "Quitter la salle",
+  "onlineOpponentTurn": "Au tour de l'adversaire",
+  "onlineSending": "Envoi du coup…",
+  "onlineOpponentAway": "L'adversaire s'est déconnecté : il a {seconds} s pour revenir.",
+  "@onlineOpponentAway": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineRatingChange": "Classement : {delta}",
+  "@onlineRatingChange": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineBackToLobby": "Retour au salon",
+  "onlineErrorNetwork": "Impossible de joindre le serveur.",
+  "onlineErrorCredentials": "Nom d'utilisateur ou mot de passe incorrect.",
+  "onlineErrorTaken": "Ce nom est déjà pris.",
+  "onlineErrorRoomNotFound": "Salle introuvable.",
+  "onlineErrorRoomFull": "Cette salle est complète.",
+  "onlineErrorMove": "Coup refusé par le serveur.",
+  "onlineErrorGeneric": "Erreur : {message}",
+  "@onlineErrorGeneric": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineLeaderboard": "Classement",
+  "onlineTournaments": "Tournois",
+  "leaderboardTitle": "Classement",
+  "leaderboardEmpty": "Aucun joueur classé pour l'instant.",
+  "leaderboardRecord": "{wins} V · {losses} D · {draws} N",
+  "@leaderboardRecord": {
+    "placeholders": {
+      "wins": {
+        "type": "int"
+      },
+      "losses": {
+        "type": "int"
+      },
+      "draws": {
+        "type": "int"
+      }
+    }
+  },
+  "tournamentsTitle": "Tournois",
+  "tournamentsEmpty": "Aucun tournoi pour l'instant.",
+  "tournamentCreate": "Créer un tournoi",
+  "tournamentName": "Nom du tournoi",
+  "tournamentMaxPlayers": "Nombre maximum de joueurs",
+  "tournamentRoundRobin": "Toutes rondes : chacun rencontre chacun",
+  "tournamentJoin": "S'inscrire",
+  "tournamentStart": "Lancer le tournoi",
+  "tournamentPlayers": "{count, plural, =0{aucun joueur} =1{1 joueur} other{{count} joueurs}}",
+  "@tournamentPlayers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tournamentStatusRegistering": "Inscriptions ouvertes",
+  "tournamentStatusRunning": "En cours",
+  "tournamentStatusFinished": "Terminé",
+  "tournamentRound": "Ronde {number}",
+  "@tournamentRound": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "tournamentStandings": "Classement du tournoi",
+  "tournamentPoints": "{points} pts",
+  "@tournamentPoints": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "tournamentPlayMatch": "Jouer"
 }

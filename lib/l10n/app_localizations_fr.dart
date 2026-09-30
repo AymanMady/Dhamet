@@ -557,4 +557,240 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pieceBlackSultan => 'Sultan noir';
+
+  @override
+  String get onlineTitle => 'Jouer en ligne';
+
+  @override
+  String get onlineSignInTitle => 'Connexion';
+
+  @override
+  String get onlineUsername => 'Nom d\'utilisateur';
+
+  @override
+  String get onlinePassword => 'Mot de passe';
+
+  @override
+  String get onlineUsernameRule => '3 à 20 caractères : lettres, chiffres ou _';
+
+  @override
+  String get onlinePasswordRule => 'Au moins 8 caractères';
+
+  @override
+  String get onlineSignIn => 'Se connecter';
+
+  @override
+  String get onlineRegister => 'Créer un compte';
+
+  @override
+  String get onlineGuest => 'Jouer en invité';
+
+  @override
+  String get onlineSignOut => 'Se déconnecter';
+
+  @override
+  String get onlineGuestBadge => 'Invité';
+
+  @override
+  String onlineRating(int rating) {
+    return 'Classement Elo : $rating';
+  }
+
+  @override
+  String get onlineConnected => 'Connecté';
+
+  @override
+  String get onlineConnecting => 'Connexion…';
+
+  @override
+  String get onlineReconnecting => 'Connexion perdue, reconnexion…';
+
+  @override
+  String get onlineDisconnected => 'Hors ligne';
+
+  @override
+  String get onlineCreateRoom => 'Créer une salle privée';
+
+  @override
+  String get onlineJoinRoom => 'Rejoindre une salle';
+
+  @override
+  String get onlineRoomCode => 'Code de la salle';
+
+  @override
+  String get onlineJoin => 'Rejoindre';
+
+  @override
+  String get onlineRated => 'Partie classée';
+
+  @override
+  String get onlineRatedGuestNote =>
+      'Les invités ne jouent pas de parties classées.';
+
+  @override
+  String get onlineTimeControl => 'Pendule';
+
+  @override
+  String get onlineNoClock => 'Sans limite, comme le veut la tradition';
+
+  @override
+  String onlineClock(int minutes, int seconds) {
+    return '$minutes min + $seconds s';
+  }
+
+  @override
+  String onlineRoomTitle(String code) {
+    return 'Salle $code';
+  }
+
+  @override
+  String get onlineShareCode => 'Donnez ce code à votre adversaire.';
+
+  @override
+  String get onlineCopy => 'Copier le code';
+
+  @override
+  String get onlineCopied => 'Code copié';
+
+  @override
+  String get onlineWaitingOpponent => 'En attente d\'un adversaire…';
+
+  @override
+  String get onlineReady => 'Je suis prêt';
+
+  @override
+  String get onlinePlayerReady => 'Prêt';
+
+  @override
+  String get onlinePlayerNotReady => 'Pas encore prêt';
+
+  @override
+  String get onlinePlayerAway => 'Déconnecté';
+
+  @override
+  String get onlineHost => 'Hôte';
+
+  @override
+  String get onlineLeave => 'Quitter la salle';
+
+  @override
+  String get onlineOpponentTurn => 'Au tour de l\'adversaire';
+
+  @override
+  String get onlineSending => 'Envoi du coup…';
+
+  @override
+  String onlineOpponentAway(int seconds) {
+    return 'L\'adversaire s\'est déconnecté : il a $seconds s pour revenir.';
+  }
+
+  @override
+  String onlineRatingChange(String delta) {
+    return 'Classement : $delta';
+  }
+
+  @override
+  String get onlineBackToLobby => 'Retour au salon';
+
+  @override
+  String get onlineErrorNetwork => 'Impossible de joindre le serveur.';
+
+  @override
+  String get onlineErrorCredentials =>
+      'Nom d\'utilisateur ou mot de passe incorrect.';
+
+  @override
+  String get onlineErrorTaken => 'Ce nom est déjà pris.';
+
+  @override
+  String get onlineErrorRoomNotFound => 'Salle introuvable.';
+
+  @override
+  String get onlineErrorRoomFull => 'Cette salle est complète.';
+
+  @override
+  String get onlineErrorMove => 'Coup refusé par le serveur.';
+
+  @override
+  String onlineErrorGeneric(String message) {
+    return 'Erreur : $message';
+  }
+
+  @override
+  String get onlineLeaderboard => 'Classement';
+
+  @override
+  String get onlineTournaments => 'Tournois';
+
+  @override
+  String get leaderboardTitle => 'Classement';
+
+  @override
+  String get leaderboardEmpty => 'Aucun joueur classé pour l\'instant.';
+
+  @override
+  String leaderboardRecord(int wins, int losses, int draws) {
+    return '$wins V · $losses D · $draws N';
+  }
+
+  @override
+  String get tournamentsTitle => 'Tournois';
+
+  @override
+  String get tournamentsEmpty => 'Aucun tournoi pour l\'instant.';
+
+  @override
+  String get tournamentCreate => 'Créer un tournoi';
+
+  @override
+  String get tournamentName => 'Nom du tournoi';
+
+  @override
+  String get tournamentMaxPlayers => 'Nombre maximum de joueurs';
+
+  @override
+  String get tournamentRoundRobin => 'Toutes rondes : chacun rencontre chacun';
+
+  @override
+  String get tournamentJoin => 'S\'inscrire';
+
+  @override
+  String get tournamentStart => 'Lancer le tournoi';
+
+  @override
+  String tournamentPlayers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count joueurs',
+      one: '1 joueur',
+      zero: 'aucun joueur',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tournamentStatusRegistering => 'Inscriptions ouvertes';
+
+  @override
+  String get tournamentStatusRunning => 'En cours';
+
+  @override
+  String get tournamentStatusFinished => 'Terminé';
+
+  @override
+  String tournamentRound(int number) {
+    return 'Ronde $number';
+  }
+
+  @override
+  String get tournamentStandings => 'Classement du tournoi';
+
+  @override
+  String tournamentPoints(String points) {
+    return '$points pts';
+  }
+
+  @override
+  String get tournamentPlayMatch => 'Jouer';
 }

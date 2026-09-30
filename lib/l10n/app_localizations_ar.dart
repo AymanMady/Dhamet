@@ -566,6 +566,243 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pieceBlackSultan => 'سلطان أسود';
+
+  @override
+  String get onlineTitle => 'اللعب عبر الإنترنت';
+
+  @override
+  String get onlineSignInTitle => 'تسجيل الدخول';
+
+  @override
+  String get onlineUsername => 'اسم المستخدم';
+
+  @override
+  String get onlinePassword => 'كلمة المرور';
+
+  @override
+  String get onlineUsernameRule => 'من 3 إلى 20 حرفًا: حروف أو أرقام أو _';
+
+  @override
+  String get onlinePasswordRule => '8 أحرف على الأقل';
+
+  @override
+  String get onlineSignIn => 'دخول';
+
+  @override
+  String get onlineRegister => 'إنشاء حساب';
+
+  @override
+  String get onlineGuest => 'العب كضيف';
+
+  @override
+  String get onlineSignOut => 'تسجيل الخروج';
+
+  @override
+  String get onlineGuestBadge => 'ضيف';
+
+  @override
+  String onlineRating(int rating) {
+    return 'تصنيف إيلو: $rating';
+  }
+
+  @override
+  String get onlineConnected => 'متصل';
+
+  @override
+  String get onlineConnecting => 'جارٍ الاتصال…';
+
+  @override
+  String get onlineReconnecting => 'انقطع الاتصال، جارٍ إعادة الاتصال…';
+
+  @override
+  String get onlineDisconnected => 'غير متصل';
+
+  @override
+  String get onlineCreateRoom => 'إنشاء غرفة خاصة';
+
+  @override
+  String get onlineJoinRoom => 'الانضمام إلى غرفة';
+
+  @override
+  String get onlineRoomCode => 'رمز الغرفة';
+
+  @override
+  String get onlineJoin => 'انضمام';
+
+  @override
+  String get onlineRated => 'لعبة مصنَّفة';
+
+  @override
+  String get onlineRatedGuestNote => 'لا يمكن للضيوف لعب ألعاب مصنَّفة.';
+
+  @override
+  String get onlineTimeControl => 'الساعة';
+
+  @override
+  String get onlineNoClock => 'بلا حد زمني كما في التقليد';
+
+  @override
+  String onlineClock(int minutes, int seconds) {
+    return '$minutes د + $seconds ث';
+  }
+
+  @override
+  String onlineRoomTitle(String code) {
+    return 'الغرفة $code';
+  }
+
+  @override
+  String get onlineShareCode => 'أعطِ هذا الرمز لخصمك.';
+
+  @override
+  String get onlineCopy => 'نسخ الرمز';
+
+  @override
+  String get onlineCopied => 'تم نسخ الرمز';
+
+  @override
+  String get onlineWaitingOpponent => 'في انتظار خصم…';
+
+  @override
+  String get onlineReady => 'أنا جاهز';
+
+  @override
+  String get onlinePlayerReady => 'جاهز';
+
+  @override
+  String get onlinePlayerNotReady => 'ليس جاهزًا بعد';
+
+  @override
+  String get onlinePlayerAway => 'غير متصل';
+
+  @override
+  String get onlineHost => 'المضيف';
+
+  @override
+  String get onlineLeave => 'مغادرة الغرفة';
+
+  @override
+  String get onlineOpponentTurn => 'دور الخصم';
+
+  @override
+  String get onlineSending => 'جارٍ إرسال النقلة…';
+
+  @override
+  String onlineOpponentAway(int seconds) {
+    return 'انقطع اتصال الخصم: أمامه $seconds ثانية للعودة.';
+  }
+
+  @override
+  String onlineRatingChange(String delta) {
+    return 'التصنيف: $delta';
+  }
+
+  @override
+  String get onlineBackToLobby => 'العودة إلى الردهة';
+
+  @override
+  String get onlineErrorNetwork => 'تعذّر الوصول إلى الخادم.';
+
+  @override
+  String get onlineErrorCredentials => 'اسم المستخدم أو كلمة المرور غير صحيحة.';
+
+  @override
+  String get onlineErrorTaken => 'هذا الاسم مستخدم بالفعل.';
+
+  @override
+  String get onlineErrorRoomNotFound => 'الغرفة غير موجودة.';
+
+  @override
+  String get onlineErrorRoomFull => 'هذه الغرفة ممتلئة.';
+
+  @override
+  String get onlineErrorMove => 'رفض الخادم النقلة.';
+
+  @override
+  String onlineErrorGeneric(String message) {
+    return 'خطأ: $message';
+  }
+
+  @override
+  String get onlineLeaderboard => 'الترتيب';
+
+  @override
+  String get onlineTournaments => 'البطولات';
+
+  @override
+  String get leaderboardTitle => 'الترتيب';
+
+  @override
+  String get leaderboardEmpty => 'لا يوجد لاعب مصنَّف بعد.';
+
+  @override
+  String leaderboardRecord(int wins, int losses, int draws) {
+    return '$wins ف · $losses خ · $draws ت';
+  }
+
+  @override
+  String get tournamentsTitle => 'البطولات';
+
+  @override
+  String get tournamentsEmpty => 'لا توجد بطولة بعد.';
+
+  @override
+  String get tournamentCreate => 'إنشاء بطولة';
+
+  @override
+  String get tournamentName => 'اسم البطولة';
+
+  @override
+  String get tournamentMaxPlayers => 'العدد الأقصى للاعبين';
+
+  @override
+  String get tournamentRoundRobin => 'دوري كامل: يلتقي الجميع بالجميع';
+
+  @override
+  String get tournamentJoin => 'التسجيل';
+
+  @override
+  String get tournamentStart => 'بدء البطولة';
+
+  @override
+  String tournamentPlayers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count لاعب',
+      many: '$count لاعبًا',
+      few: '$count لاعبين',
+      two: 'لاعبان',
+      one: 'لاعب واحد',
+      zero: 'لا لاعبين',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tournamentStatusRegistering => 'التسجيل مفتوح';
+
+  @override
+  String get tournamentStatusRunning => 'جارية';
+
+  @override
+  String get tournamentStatusFinished => 'منتهية';
+
+  @override
+  String tournamentRound(int number) {
+    return 'الجولة $number';
+  }
+
+  @override
+  String get tournamentStandings => 'ترتيب البطولة';
+
+  @override
+  String tournamentPoints(String points) {
+    return '$points نقطة';
+  }
+
+  @override
+  String get tournamentPlayMatch => 'العب';
 }
 
 /// The translations for Arabic, as used in Mauritania (`ar_MR`).

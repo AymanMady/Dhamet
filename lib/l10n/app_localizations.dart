@@ -1042,6 +1042,420 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Sultan noir'**
   String get pieceBlackSultan;
+
+  /// No description provided for @onlineTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jouer en ligne'**
+  String get onlineTitle;
+
+  /// No description provided for @onlineSignInTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion'**
+  String get onlineSignInTitle;
+
+  /// No description provided for @onlineUsername.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom d\'utilisateur'**
+  String get onlineUsername;
+
+  /// No description provided for @onlinePassword.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe'**
+  String get onlinePassword;
+
+  /// No description provided for @onlineUsernameRule.
+  ///
+  /// In fr, this message translates to:
+  /// **'3 à 20 caractères : lettres, chiffres ou _'**
+  String get onlineUsernameRule;
+
+  /// No description provided for @onlinePasswordRule.
+  ///
+  /// In fr, this message translates to:
+  /// **'Au moins 8 caractères'**
+  String get onlinePasswordRule;
+
+  /// No description provided for @onlineSignIn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Se connecter'**
+  String get onlineSignIn;
+
+  /// No description provided for @onlineRegister.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un compte'**
+  String get onlineRegister;
+
+  /// No description provided for @onlineGuest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jouer en invité'**
+  String get onlineGuest;
+
+  /// No description provided for @onlineSignOut.
+  ///
+  /// In fr, this message translates to:
+  /// **'Se déconnecter'**
+  String get onlineSignOut;
+
+  /// No description provided for @onlineGuestBadge.
+  ///
+  /// In fr, this message translates to:
+  /// **'Invité'**
+  String get onlineGuestBadge;
+
+  /// No description provided for @onlineRating.
+  ///
+  /// In fr, this message translates to:
+  /// **'Classement Elo : {rating}'**
+  String onlineRating(int rating);
+
+  /// No description provided for @onlineConnected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connecté'**
+  String get onlineConnected;
+
+  /// No description provided for @onlineConnecting.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion…'**
+  String get onlineConnecting;
+
+  /// No description provided for @onlineReconnecting.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion perdue, reconnexion…'**
+  String get onlineReconnecting;
+
+  /// No description provided for @onlineDisconnected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne'**
+  String get onlineDisconnected;
+
+  /// No description provided for @onlineCreateRoom.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer une salle privée'**
+  String get onlineCreateRoom;
+
+  /// No description provided for @onlineJoinRoom.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre une salle'**
+  String get onlineJoinRoom;
+
+  /// No description provided for @onlineRoomCode.
+  ///
+  /// In fr, this message translates to:
+  /// **'Code de la salle'**
+  String get onlineRoomCode;
+
+  /// No description provided for @onlineJoin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre'**
+  String get onlineJoin;
+
+  /// No description provided for @onlineRated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie classée'**
+  String get onlineRated;
+
+  /// No description provided for @onlineRatedGuestNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les invités ne jouent pas de parties classées.'**
+  String get onlineRatedGuestNote;
+
+  /// No description provided for @onlineTimeControl.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pendule'**
+  String get onlineTimeControl;
+
+  /// No description provided for @onlineNoClock.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sans limite, comme le veut la tradition'**
+  String get onlineNoClock;
+
+  /// No description provided for @onlineClock.
+  ///
+  /// In fr, this message translates to:
+  /// **'{minutes} min + {seconds} s'**
+  String onlineClock(int minutes, int seconds);
+
+  /// No description provided for @onlineRoomTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Salle {code}'**
+  String onlineRoomTitle(String code);
+
+  /// No description provided for @onlineShareCode.
+  ///
+  /// In fr, this message translates to:
+  /// **'Donnez ce code à votre adversaire.'**
+  String get onlineShareCode;
+
+  /// No description provided for @onlineCopy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le code'**
+  String get onlineCopy;
+
+  /// No description provided for @onlineCopied.
+  ///
+  /// In fr, this message translates to:
+  /// **'Code copié'**
+  String get onlineCopied;
+
+  /// No description provided for @onlineWaitingOpponent.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente d\'un adversaire…'**
+  String get onlineWaitingOpponent;
+
+  /// No description provided for @onlineReady.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je suis prêt'**
+  String get onlineReady;
+
+  /// No description provided for @onlinePlayerReady.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prêt'**
+  String get onlinePlayerReady;
+
+  /// No description provided for @onlinePlayerNotReady.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore prêt'**
+  String get onlinePlayerNotReady;
+
+  /// No description provided for @onlinePlayerAway.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déconnecté'**
+  String get onlinePlayerAway;
+
+  /// No description provided for @onlineHost.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hôte'**
+  String get onlineHost;
+
+  /// No description provided for @onlineLeave.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter la salle'**
+  String get onlineLeave;
+
+  /// No description provided for @onlineOpponentTurn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Au tour de l\'adversaire'**
+  String get onlineOpponentTurn;
+
+  /// No description provided for @onlineSending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoi du coup…'**
+  String get onlineSending;
+
+  /// No description provided for @onlineOpponentAway.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'adversaire s\'est déconnecté : il a {seconds} s pour revenir.'**
+  String onlineOpponentAway(int seconds);
+
+  /// No description provided for @onlineRatingChange.
+  ///
+  /// In fr, this message translates to:
+  /// **'Classement : {delta}'**
+  String onlineRatingChange(String delta);
+
+  /// No description provided for @onlineBackToLobby.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour au salon'**
+  String get onlineBackToLobby;
+
+  /// No description provided for @onlineErrorNetwork.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de joindre le serveur.'**
+  String get onlineErrorNetwork;
+
+  /// No description provided for @onlineErrorCredentials.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom d\'utilisateur ou mot de passe incorrect.'**
+  String get onlineErrorCredentials;
+
+  /// No description provided for @onlineErrorTaken.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce nom est déjà pris.'**
+  String get onlineErrorTaken;
+
+  /// No description provided for @onlineErrorRoomNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Salle introuvable.'**
+  String get onlineErrorRoomNotFound;
+
+  /// No description provided for @onlineErrorRoomFull.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette salle est complète.'**
+  String get onlineErrorRoomFull;
+
+  /// No description provided for @onlineErrorMove.
+  ///
+  /// In fr, this message translates to:
+  /// **'Coup refusé par le serveur.'**
+  String get onlineErrorMove;
+
+  /// No description provided for @onlineErrorGeneric.
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur : {message}'**
+  String onlineErrorGeneric(String message);
+
+  /// No description provided for @onlineLeaderboard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Classement'**
+  String get onlineLeaderboard;
+
+  /// No description provided for @onlineTournaments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournois'**
+  String get onlineTournaments;
+
+  /// No description provided for @leaderboardTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Classement'**
+  String get leaderboardTitle;
+
+  /// No description provided for @leaderboardEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun joueur classé pour l\'instant.'**
+  String get leaderboardEmpty;
+
+  /// No description provided for @leaderboardRecord.
+  ///
+  /// In fr, this message translates to:
+  /// **'{wins} V · {losses} D · {draws} N'**
+  String leaderboardRecord(int wins, int losses, int draws);
+
+  /// No description provided for @tournamentsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournois'**
+  String get tournamentsTitle;
+
+  /// No description provided for @tournamentsEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun tournoi pour l\'instant.'**
+  String get tournamentsEmpty;
+
+  /// No description provided for @tournamentCreate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un tournoi'**
+  String get tournamentCreate;
+
+  /// No description provided for @tournamentName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du tournoi'**
+  String get tournamentName;
+
+  /// No description provided for @tournamentMaxPlayers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nombre maximum de joueurs'**
+  String get tournamentMaxPlayers;
+
+  /// No description provided for @tournamentRoundRobin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes rondes : chacun rencontre chacun'**
+  String get tournamentRoundRobin;
+
+  /// No description provided for @tournamentJoin.
+  ///
+  /// In fr, this message translates to:
+  /// **'S\'inscrire'**
+  String get tournamentJoin;
+
+  /// No description provided for @tournamentStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lancer le tournoi'**
+  String get tournamentStart;
+
+  /// No description provided for @tournamentPlayers.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{aucun joueur} =1{1 joueur} other{{count} joueurs}}'**
+  String tournamentPlayers(int count);
+
+  /// No description provided for @tournamentStatusRegistering.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inscriptions ouvertes'**
+  String get tournamentStatusRegistering;
+
+  /// No description provided for @tournamentStatusRunning.
+  ///
+  /// In fr, this message translates to:
+  /// **'En cours'**
+  String get tournamentStatusRunning;
+
+  /// No description provided for @tournamentStatusFinished.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminé'**
+  String get tournamentStatusFinished;
+
+  /// No description provided for @tournamentRound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ronde {number}'**
+  String tournamentRound(int number);
+
+  /// No description provided for @tournamentStandings.
+  ///
+  /// In fr, this message translates to:
+  /// **'Classement du tournoi'**
+  String get tournamentStandings;
+
+  /// No description provided for @tournamentPoints.
+  ///
+  /// In fr, this message translates to:
+  /// **'{points} pts'**
+  String tournamentPoints(String points);
+
+  /// No description provided for @tournamentPlayMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jouer'**
+  String get tournamentPlayMatch;
 }
 
 class _AppLocalizationsDelegate

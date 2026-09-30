@@ -10,7 +10,12 @@ import '../../features/game/presentation/screens/replay_screen.dart';
 import '../../features/game/presentation/screens/result_screen.dart';
 import '../../features/game/presentation/screens/splash_screen.dart';
 import '../../features/history/history_screen.dart';
+import '../../features/multiplayer/presentation/online_game_screen.dart';
+import '../../features/multiplayer/presentation/online_room_screen.dart';
+import '../../features/multiplayer/presentation/online_screen.dart';
+import '../../features/profile/leaderboard_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/tournaments/tournaments_screen.dart';
 import '../../features/tutorial/tutorial_screen.dart';
 
 /// Route paths. Screens reached from the home screen are nested under it so
@@ -27,6 +32,12 @@ abstract final class AppRoutes {
   static const settings = '/home/settings';
   static const tutorial = '/home/tutorial';
   static const online = '/home/online';
+  static const onlineRoom = '/home/online/room';
+  static const onlineGame = '/home/online/game';
+  static const leaderboard = '/home/online/leaderboard';
+  static const tournaments = '/home/online/tournaments';
+
+  static String tournament(String id) => '$tournaments/$id';
 
   static String historyGame(String id) => '$history/$id';
 }
@@ -84,6 +95,35 @@ final routerProvider = Provider<GoRouter>(
           GoRoute(
             path: 'tutorial',
             builder: (context, state) => const TutorialScreen(),
+          ),
+          GoRoute(
+            path: 'online',
+            builder: (context, state) => const OnlineScreen(),
+            routes: [
+              GoRoute(
+                path: 'room',
+                builder: (context, state) => const OnlineRoomScreen(),
+              ),
+              GoRoute(
+                path: 'game',
+                builder: (context, state) => const OnlineGameScreen(),
+              ),
+              GoRoute(
+                path: 'leaderboard',
+                builder: (context, state) => const LeaderboardScreen(),
+              ),
+              GoRoute(
+                path: 'tournaments',
+                builder: (context, state) => const TournamentsScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) =>
+                        TournamentScreen(id: state.pathParameters['id']!),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

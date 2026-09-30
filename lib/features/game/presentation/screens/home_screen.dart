@@ -106,8 +106,7 @@ class HomeScreen extends ConsumerWidget {
             MenuButton(
               icon: Icons.public,
               label: l10n.homePlayOnline,
-              // Enabled with the multiplayer client (phase 9).
-              onPressed: null,
+              onPressed: () => context.push(AppRoutes.online),
             ),
             const SizedBox(height: AppSpacing.sm),
             MenuButton(
