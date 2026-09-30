@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
-import { Color, GameJson, GameResultJson, MoveJson } from '../engine/engine.types';
+import { Color, COLORS, GameJson, GameResultJson, MoveJson } from '../engine/engine.types';
 import { RankingService, RatingChanges } from '../ranking/ranking.service';
 import { TimeControl } from '../rooms/time-control';
 import { User } from '../users/user.entity';
@@ -76,7 +76,7 @@ export class GamesService implements OnApplicationBootstrap {
         startedAt: game.startedAt,
         finishedAt: null,
       });
-      for (const color of ['white', 'black'] as const) {
+      for (const color of COLORS) {
         const player = game.players[color];
         await manager.insert(GamePlayer, {
           gameId: game.id,

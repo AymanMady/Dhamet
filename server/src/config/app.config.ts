@@ -48,7 +48,7 @@ export function readSettings(env: Env): Settings {
         integer: true,
       }),
     },
-    database: readDatabase(env),
+    database: readDatabaseSettings(env),
     reconnectGraceSeconds: number(env, 'RECONNECT_GRACE_SECONDS', 60, { min: 0.1, max: 3600 }),
     corsOrigins:
       !cors || cors === '*'
@@ -64,7 +64,7 @@ export function readSettings(env: Env): Settings {
   };
 }
 
-function readDatabase(env: Env): DatabaseConfig {
+export function readDatabaseSettings(env: Env): DatabaseConfig {
   const type = env.DB_TYPE ?? 'postgres';
   if (type === 'sqljs') return { type };
   if (type !== 'postgres') throw new Error(`DB_TYPE must be "postgres" or "sqljs", not "${type}"`);
@@ -72,7 +72,8 @@ function readDatabase(env: Env): DatabaseConfig {
     type,
     url: env.DATABASE_URL || undefined,
     host: env.DB_HOST ?? 'localhost',
-    port: number(env, 'DB_PORT', 5432, { min: 1, max: 65535, integer: true }),
+    // The docker-compose database; 5432 belongs to other local projects.
+    port: number(env, 'DB_PORT', 5436, { min: 1, max: 65535, integer: true }),
     username: env.DB_USER ?? 'dhamet',
     password: env.DB_PASSWORD ?? 'dhamet',
     database: env.DB_NAME ?? 'dhamet',

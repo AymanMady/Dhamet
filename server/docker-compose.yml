@@ -1,0 +1,50 @@
+# Dhamet server + PostgreSQL 16.
+#
+#   cp .env.example .env        # then set JWT_SECRET
+#   docker compose up -d --build   # or `docker compose up -d db` alone
+#
+# PostgreSQL is published on host port ${DB_HOST_PORT:-5436}: 5432 and 5433
+# are already used by other projects on the development machine.
+name: dhamet
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-dhamet}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dhamet}
+      POSTGRES_DB: ${DB_NAME:-dhamet}
+    ports:
+      - '${DB_HOST_PORT:-5436}:5432'
+    volumes:
+      - dhamet-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-dhamet}
+      DB_PASSWORD: ${DB_PASSWORD:-dhamet}
+      DB_NAME: ${DB_NAME:-dhamet}
+      # Required: the server refuses to start in production without it.
+      JWT_SECRET: ${JWT_SECRET:-}
+      RECONNECT_GRACE_SECONDS: ${RECONNECT_GRACE_SECONDS:-60}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    ports:
+      - '${API_PORT:-3000}:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dhamet-db:

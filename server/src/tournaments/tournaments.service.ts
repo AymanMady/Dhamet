@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  OnApplicationBootstrap,
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -32,7 +33,9 @@ const RELATIONS = {
  * so registrations, starts and results never interleave.
  */
 @Injectable()
-export class TournamentsService implements OnModuleInit, GameLifecycleListener {
+export class TournamentsService
+  implements OnModuleInit, OnApplicationBootstrap, GameLifecycleListener
+{
   private readonly queue = new SerialQueue();
 
   constructor(
@@ -44,6 +47,22 @@ export class TournamentsService implements OnModuleInit, GameLifecycleListener {
 
   onModuleInit(): void {
     this.gameplay.subscribe(this);
+  }
+
+  /**
+   * Active rooms live in memory: after a restart, the matches of running
+   * tournaments without a result get a new room (and code).
+   */
+  async onApplicationBootstrap(): Promise<void> {
+    const matches = this.dataSource.getRepository(TournamentMatch);
+    const pending = await matches.find({
+      where: { resultJson: IsNull(), tournament: { status: 'running' } },
+      relations: { white: true, black: true },
+    });
+    for (const match of pending) {
+      const roomCode = await this.rooms.createForMatch(match.id, match.white, match.black);
+      await matches.update(match.id, { roomCode, gameId: null });
+    }
   }
 
   async create(user: User, dto: CreateTournamentDto): Promise<TournamentView> {
@@ -89,7 +108,7 @@ export class TournamentsService implements OnModuleInit, GameLifecycleListener {
       }
       await this.dataSource
         .getRepository(TournamentPlayer)
-        .insert({ tournamentId: id, userId: user.id });
+        .insert({ tournamentId: id, userId: user.id, seed: tournament.players.length + 1 });
       return this.view(id);
     });
   }

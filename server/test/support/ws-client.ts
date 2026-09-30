@@ -69,7 +69,7 @@ export class WsClient {
     return new Promise<T>((resolve, reject) => {
       const waiter: Waiter = {
         event,
-        accept: accept as (data: never) => boolean,
+        accept: accept,
         resolve: (data) => {
           clearTimeout(timer);
           resolve(data as T);

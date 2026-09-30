@@ -4,7 +4,6 @@ import { AppConfig, appConfig } from '../config/app.config';
 import { EngineService } from '../engine/engine.service';
 import { Color, EngineSnapshot, GameJson } from '../engine/engine.types';
 import { GamesService } from '../games/games.service';
-import { RatingChanges } from '../ranking/ranking.service';
 import { toUserView } from '../users/user.view';
 import { UsersService } from '../users/users.service';
 import { ActiveGame, ActiveRoom, RoomView } from './active-room';
@@ -75,7 +74,7 @@ export class GameplayService {
       : null;
     room.game = { id, rated, snapshot, clock };
     room.status = 'playing';
-    await this.store.saveStatus(room);
+    await this.persist(`status of room ${room.code}`, () => this.store.saveStatus(room));
     await this.notify((listener) =>
       listener.gameStarted({ gameId: id, tournamentMatchId: room.tournamentMatchId }),
     );
@@ -108,14 +107,16 @@ export class GameplayService {
       if (!outcome.ok) throw new GameError(outcome.code, outcome.message);
       game.snapshot = outcome.snapshot;
       game.clock?.press(now.getTime());
-      await this.games.recordMove({
-        gameId: game.id,
-        ply: outcome.snapshot.plyCount,
-        userId,
-        move: outcome.move,
-        playedAt: now,
-        game: outcome.snapshot.game,
-      });
+      await this.persist(`move ${outcome.snapshot.plyCount} of game ${game.id}`, () =>
+        this.games.recordMove({
+          gameId: game.id,
+          ply: outcome.snapshot.plyCount,
+          userId,
+          move: outcome.move,
+          playedAt: now,
+          game: outcome.snapshot.game,
+        }),
+      );
       this.connections.broadcast(room.memberIds(), 'game:moved', {
         code: room.code,
         gameId: game.id,
@@ -244,9 +245,8 @@ export class GameplayService {
       white: room.playerWithColor('white').user.id,
       black: room.playerWithColor('black').user.id,
     };
-    let ratingChanges: RatingChanges | null = null;
-    try {
-      ratingChanges = await this.games.finish(game.id, {
+    const ratingChanges = await this.persist(`end of game ${game.id}`, async () => {
+      const changes = await this.games.finish(game.id, {
         game: snapshot.game,
         result,
         plyCount: snapshot.plyCount,
@@ -257,9 +257,8 @@ export class GameplayService {
         const user = await this.users.findById(player.user.id);
         if (user) player.user = toUserView(user);
       }
-    } catch (error) {
-      this.logger.error(`Could not save the end of game ${game.id}`, error);
-    }
+      return changes;
+    });
     await this.notify((listener) =>
       listener.gameFinished({
         gameId: game.id,
@@ -275,6 +274,19 @@ export class GameplayService {
       ...(ratingChanges ? { ratingChanges } : {}),
     });
     this.store.scheduleEviction(room, this.settings.reconnectGraceSeconds);
+  }
+
+  /**
+   * Runs a database write whose failure must not stop the game: the game
+   * in memory is the authority, and its full JSON is saved again at the end.
+   */
+  private async persist<T>(what: string, write: () => Promise<T>): Promise<T | undefined> {
+    try {
+      return await write();
+    } catch (error) {
+      this.logger.error(`Could not save the ${what}`, error);
+      return undefined;
+    }
   }
 
   private async notify(call: (listener: GameLifecycleListener) => Promise<void>): Promise<void> {

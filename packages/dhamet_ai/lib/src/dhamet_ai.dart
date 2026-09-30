@@ -34,14 +34,23 @@ final class DhametAi {
   /// With a seeded [Random], the choice is reproducible as long as the
   /// search is bounded by [AiConfig.maxDepth] rather than by the clock.
   ///
+  /// [onProgress], if given, receives the move the search would play if it
+  /// were stopped now: the first move in search order before searching
+  /// (depth 0, score 0), then the choice after each completed iteration.
+  /// `chooseMoveInBackground` uses it to answer on time even when the
+  /// engine takes long to list the moves of one position.
+  ///
   /// Throws a [StateError] if the game is over, i.e. there is no legal
   /// move.
-  SearchResult chooseMove(GameState state) {
+  SearchResult chooseMove(
+    GameState state, {
+    void Function(SearchResult provisional)? onProgress,
+  }) {
     final result = const GameEndDetector().detect(state);
     if (result != null) {
       throw StateError('The game is over: $result');
     }
-    return _Search(config, evaluator, _random).run(state);
+    return _Search(config, evaluator, _random, onProgress).run(state);
   }
 }
 
@@ -54,11 +63,11 @@ final class _OutOfTime implements Exception {
 
 /// The state of one [DhametAi.chooseMove] call.
 final class _Search {
-  _Search(this.config, this.evaluator, this.random)
+  _Search(this.config, this.evaluator, this.random, this.onProgress)
     : _budget = config.timeLimit.inMicroseconds,
       _margin = (config.randomness * _pawn).round();
 
-  static const int _mate = 1000000;
+  static const int _mate = SearchResult.winScore;
   static const int _infinity = 1 << 30;
   static const int _pawn = 100;
   static const int _maxPly = 2 * AiConfig.maxSupportedDepth + 2;
@@ -67,6 +76,7 @@ final class _Search {
   final AiConfig config;
   final Evaluator evaluator;
   final Random random;
+  final void Function(SearchResult provisional)? onProgress;
   final int _budget;
   final int _margin;
   final Stopwatch _clock = Stopwatch();
@@ -96,18 +106,12 @@ final class _Search {
 
   SearchResult run(GameState root) {
     _clock.start();
-    final player = root.currentPlayer;
-    final legal = root.legalMoves;
-    if (legal.length == 1) {
-      final move = legal.single;
-      return _result(
-        move,
-        evaluator.evaluate(root.applyUnchecked(move), player),
-        0,
-      );
+    var moves = _order(root, 0);
+    onProgress?.call(_result(moves.first, 0, 0));
+    if (moves.length == 1) {
+      return _result(moves.single, _staticScore(root, moves.single), 0);
     }
 
-    var moves = _order(root, 0);
     List<_RootScore>? completed;
     var completedDepth = 0;
     for (var depth = 1; depth <= config.maxDepth; depth++) {
@@ -119,6 +123,10 @@ final class _Search {
       }
       completed = scores;
       completedDepth = depth;
+      if (onProgress case final report?) {
+        final chosen = _pick(scores);
+        report(_result(chosen.move, chosen.score, depth));
+      }
       moves = [for (final entry in scores) entry.move];
       if (_isForcedResult(scores.first.score)) break;
       // The next iteration would most likely not finish in time.
@@ -128,15 +136,21 @@ final class _Search {
     if (completed == null) {
       final fallback = _bestSoFar;
       if (fallback != null) return _result(fallback.move, fallback.score, 0);
-      final move = moves.first;
-      return _result(
-        move,
-        evaluator.evaluate(root.applyUnchecked(move), player),
-        0,
-      );
+      return _result(moves.first, _staticScore(root, moves.first), 0);
     }
     final chosen = _pick(completed);
     return _result(chosen.move, chosen.score, completedDepth);
+  }
+
+  /// The score of playing [move] from [root], without searching.
+  ///
+  /// Only a win by elimination is recognised: detecting a blocked opponent
+  /// would require its legal moves, which the engine can be slow to list,
+  /// and this score is used when there is no time or no need to search.
+  int _staticScore(GameState root, Move move) {
+    final child = root.applyUnchecked(move);
+    if (child.board.count(child.currentPlayer) == 0) return _mate - 1;
+    return evaluator.evaluate(child, root.currentPlayer);
   }
 
   SearchResult _result(Move move, int score, int depth) => SearchResult(
@@ -401,8 +415,12 @@ final class _Search {
             !_isForcedResult(entry.score))
           entry,
     ];
-    return candidates[random.nextInt(candidates.length)];
+    return candidates[(_roll * candidates.length).floor()];
   }
+
+  /// The random draw of this search, taken once so that the choice after
+  /// each iteration and the final choice agree.
+  late final double _roll = random.nextDouble();
 
   static List<_RootScore> _sortedByScore(List<_RootScore> scores) {
     final order = List<int>.generate(scores.length, (i) => i)

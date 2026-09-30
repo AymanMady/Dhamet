@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { GameResultJson } from '../engine/engine.types';
 import { User } from '../users/user.entity';
 import { Tournament } from './tournament.entity';
@@ -8,6 +8,7 @@ export class TournamentMatch {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Index()
   @Column({ type: 'uuid' })
   tournamentId!: string;
 

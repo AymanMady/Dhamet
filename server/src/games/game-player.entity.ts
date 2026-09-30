@@ -1,4 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { Color } from '../engine/engine.types';
 import { User } from '../users/user.entity';
 import { Game } from './game.entity';
@@ -16,6 +24,7 @@ export class GamePlayer {
   @JoinColumn({ name: 'gameId' })
   game!: Game;
 
+  @Index()
   @Column({ type: 'uuid' })
   userId!: string;
 

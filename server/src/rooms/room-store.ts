@@ -1,7 +1,7 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { ActiveRoom, RoomPlayer } from './active-room';
 import { GameError } from './game-error';
 import { Room } from './room.entity';
@@ -18,11 +18,16 @@ export interface NewRoom {
 
 /** Active rooms, in memory, by code; each one also has a `rooms` row for history. */
 @Injectable()
-export class RoomStore implements OnModuleDestroy {
+export class RoomStore implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RoomStore.name);
   private readonly rooms = new Map<string, ActiveRoom>();
 
   constructor(@InjectRepository(Room) private readonly repository: Repository<Room>) {}
+
+  /** Rooms left open by a previous run are gone with its memory. */
+  async onModuleInit(): Promise<void> {
+    await this.repository.update({ status: Not('finished') }, { status: 'finished' });
+  }
 
   async open(init: NewRoom): Promise<ActiveRoom> {
     const code = uniqueRoomCode((candidate) => this.rooms.has(candidate));

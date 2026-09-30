@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { Color, GameResultJson } from '../engine/engine.types';
+import { Color, COLORS, GameResultJson } from '../engine/engine.types';
 import { User } from '../users/user.entity';
 import { toUserView, UserView } from '../users/user.view';
 import { UsersService } from '../users/users.service';
@@ -39,7 +39,7 @@ export class RankingService {
     const changes = game.rated
       ? eloChanges(players.white.rating, players.black.rating, whiteScore)
       : { white: 0, black: 0 };
-    for (const color of ['white', 'black'] as const) {
+    for (const color of COLORS) {
       const user = players[color];
       const score = color === 'white' ? whiteScore : 1 - whiteScore;
       const ratingBefore = user.rating;

@@ -27,15 +27,28 @@ final class SearchResult {
   /// Time spent searching.
   final Duration elapsed;
 
+  /// Score of a win on the board; a win in `n` plies scores
+  /// `winScore - n` and a loss in `n` plies `n - winScore`, so that nearer
+  /// wins and farther losses are preferred.
+  static const int winScore = 1000000;
+
   /// Scores at least this large (in absolute value) announce a forced
   /// result.
-  static const int winThreshold = 1000000 - 1000;
+  static const int winThreshold = winScore - 1000;
 
   /// Whether the side to move has a forced win.
   bool get isWin => score >= winThreshold;
 
   /// Whether the side to move loses against best play.
   bool get isLoss => score <= -winThreshold;
+
+  /// Number of plies, this move included, until the forced end of the game,
+  /// or `null` when the search found no forced result.
+  int? get pliesToForcedEnd => isWin
+      ? winScore - score
+      : isLoss
+      ? winScore + score
+      : null;
 
   @override
   String toString() =>
