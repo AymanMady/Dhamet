@@ -40,3 +40,27 @@ GameState playNotation(GameState state, String notation) {
   }
   return state.play(matches.single);
 }
+
+/// A local game (undo allowed) from [state] or the initial position.
+Game localGame({GameState? state, DhametRules rules = DhametRules.standard}) =>
+    Game.start(
+      initialState: state,
+      rules: rules,
+      undoPolicy: UndoPolicy.unlimited,
+    );
+
+/// [game] after the unique legal moves matching [moves], in order.
+Game playAll(Game game, List<String> moves) {
+  var current = game;
+  for (final notation in moves) {
+    final matches = current.state.legalMovesMatching(notation);
+    if (matches.length != 1) {
+      throw StateError(
+        '$notation matches ${matches.length} legal moves; '
+        'legal moves are ${notations(current.state.legalMoves)}',
+      );
+    }
+    current = current.play(matches.single);
+  }
+  return current;
+}

@@ -1,6 +1,7 @@
 import '../board/position.dart';
 import '../pieces/piece.dart';
 import '../pieces/player.dart';
+import '../serialization/json_reader.dart';
 
 /// Kind of move, derived from the number of captured pieces.
 enum MoveType {
@@ -92,6 +93,41 @@ final class Move {
       if (positions[i + 1] != path[i]) return false;
     }
     return true;
+  }
+
+  /// JSON representation.
+  Map<String, Object?> toJson() => {
+    'piece': piece.toJson(),
+    'from': from.toJson(),
+    'path': [for (final p in path) p.toJson()],
+    'captured': [for (final p in captured) p.toJson()],
+    'promotes': promotes,
+  };
+
+  /// Reads [toJson] output. Only checks that the move is well formed;
+  /// whether it is legal depends on the game state.
+  static Move fromJson(Object? json) {
+    final map = readMap(json, 'move');
+    final path = [
+      for (final p in readList(map['path'], 'move.path')) Position.fromJson(p),
+    ];
+    final captured = [
+      for (final p in readList(map['captured'] ?? const [], 'move.captured'))
+        Position.fromJson(p),
+    ];
+    if (path.isEmpty) {
+      throw FormatException('move.path: a move needs a destination', json);
+    }
+    if (captured.isNotEmpty && captured.length != path.length) {
+      throw FormatException('move.captured: one piece per landing', json);
+    }
+    return Move(
+      piece: Piece.fromJson(map['piece']),
+      from: Position.fromJson(map['from']),
+      path: path,
+      captured: captured,
+      promotes: readOptional(map, 'promotes', 'move', false),
+    );
   }
 
   @override

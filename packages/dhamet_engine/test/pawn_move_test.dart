@@ -82,7 +82,7 @@ void main() {
 
     test('with Black moving first, Black can only enter the centre', () {
       final state = GameState.initial(
-        rules: const DhametRules(firstPlayer: Player.black),
+        rules: const DhametRules(startingPlayer: Player.black),
       );
       expect(state.currentPlayer, Player.black);
       expect(notations(state.legalMoves), {'d6-e5', 'e6-e5', 'f6-e5'});

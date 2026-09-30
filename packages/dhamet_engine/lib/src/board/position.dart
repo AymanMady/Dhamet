@@ -73,6 +73,15 @@ final class Position implements Comparable<Position> {
     return tryAt(column, row);
   }
 
+  /// Reads a JSON position (its [notation]).
+  static Position fromJson(Object? json) {
+    final position = json is String ? tryParse(json) : null;
+    if (position == null) {
+      throw FormatException('position: expected a notation such as e5', json);
+    }
+    return position;
+  }
+
   static const int _letterA = 0x61;
   static const int _digitOne = 0x31;
 
@@ -87,6 +96,9 @@ final class Position implements Comparable<Position> {
 
   /// Algebraic notation, e.g. `e5`.
   String get notation => '${String.fromCharCode(_letterA + column)}${row + 1}';
+
+  /// JSON representation: the [notation].
+  String toJson() => notation;
 
   @override
   bool operator ==(Object other) =>

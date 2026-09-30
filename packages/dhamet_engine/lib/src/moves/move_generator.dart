@@ -3,10 +3,12 @@ import '../board/board_topology.dart';
 import '../board/position.dart';
 import '../pieces/player.dart';
 import '../rules/dhamet_rules.dart';
+import '../rules/opening_rule.dart';
 import '../state/game_state.dart';
 import 'capture_resolver.dart';
 import 'move.dart';
 import 'piece_movement.dart';
+import 'traditional_encounter.dart';
 
 /// Generates the legal moves of a position.
 ///
@@ -20,11 +22,21 @@ import 'piece_movement.dart';
 /// else
 ///     return the normal moves
 /// ```
+///
+/// Throws an [UnsupportedError] if [DhametRules.souvlet] is enabled: that
+/// rule is unconfirmed and not implemented (docs/rules.md § 10).
 final class MoveGenerator {
   MoveGenerator(this.rules, {BoardTopology? topology})
     : topology = topology ?? BoardTopology.standard,
       captureResolver = CaptureResolver(rules, topology: topology),
-      _movements = PieceMovements(topology ?? BoardTopology.standard, rules);
+      _movements = PieceMovements(topology ?? BoardTopology.standard, rules) {
+    if (rules.souvlet.isEnabled) {
+      throw UnsupportedError(
+        'The Souvlet rule is not implemented: its behaviour is unconfirmed '
+        '(docs/rules.md § 10).',
+      );
+    }
+  }
 
   /// A shared generator for [rules] on the standard board.
   factory MoveGenerator.forRules(DhametRules rules) =>
@@ -38,8 +50,22 @@ final class MoveGenerator {
   final PieceMovements _movements;
 
   /// The legal moves of the player to move in [state].
-  List<Move> legalMoves(GameState state) =>
-      legalMovesFor(state.board, state.currentPlayer);
+  ///
+  /// With [OpeningRule.traditionalEncounter], only the scripted move is
+  /// legal while the game follows the traditional opening.
+  List<Move> legalMoves(GameState state) {
+    final moves = legalMovesFor(state.board, state.currentPlayer);
+    if (rules.opening == OpeningRule.traditionalEncounter) {
+      final scripted = TraditionalEncounter.scriptedMoveFor(state);
+      if (scripted != null) {
+        return [
+          for (final move in moves)
+            if (move.matchesNotation(scripted)) move,
+        ];
+      }
+    }
+    return moves;
+  }
 
   /// The legal moves of [player] on [board].
   List<Move> legalMovesFor(BoardView board, Player player) {

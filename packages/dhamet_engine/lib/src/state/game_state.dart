@@ -5,6 +5,7 @@ import '../moves/move.dart';
 import '../moves/move_generator.dart';
 import '../pieces/player.dart';
 import '../rules/dhamet_rules.dart';
+import '../serialization/json_reader.dart';
 
 /// An immutable snapshot of a game: the board, the side to move and the
 /// rules in force.
@@ -20,14 +21,32 @@ final class GameState {
     this.lastMove,
   });
 
-  /// The traditional starting position with [DhametRules.firstPlayer] to
+  /// The traditional starting position with [DhametRules.startingPlayer] to
   /// move.
   factory GameState.initial({DhametRules rules = DhametRules.standard}) =>
       GameState(
         board: Board.initial(),
-        currentPlayer: rules.firstPlayer,
+        currentPlayer: rules.startingPlayer,
         rules: rules,
       );
+
+  /// Reads [toJson] output.
+  ///
+  /// Throws a [FormatException] if [json] is malformed.
+  factory GameState.fromJson(Object? json) {
+    final map = readMap(json, 'state');
+    final plyCount = readField<int>(map, 'plyCount', 'state');
+    if (plyCount < 0) {
+      throw FormatException('state.plyCount: must not be negative', plyCount);
+    }
+    return GameState(
+      board: Board.fromJson(map['board']),
+      currentPlayer: Player.fromJson(map['currentPlayer']),
+      rules: DhametRules.fromJson(map['rules']),
+      plyCount: plyCount,
+      lastMove: map['lastMove'] == null ? null : Move.fromJson(map['lastMove']),
+    );
+  }
 
   final Board board;
 
@@ -85,6 +104,28 @@ final class GameState {
     plyCount: plyCount + 1,
     lastMove: move,
   );
+
+  /// JSON representation. Legal moves are not stored: they are recomputed.
+  Map<String, Object?> toJson() => {
+    'board': board.toJson(),
+    'currentPlayer': currentPlayer.toJson(),
+    'plyCount': plyCount,
+    'rules': rules.toJson(),
+    'lastMove': lastMove?.toJson(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      other is GameState &&
+      other.board == board &&
+      other.currentPlayer == currentPlayer &&
+      other.rules == rules &&
+      other.plyCount == plyCount &&
+      other.lastMove == lastMove;
+
+  @override
+  int get hashCode =>
+      Object.hash(board, currentPlayer, rules, plyCount, lastMove);
 
   String _illegalReason(Move move) {
     if (move.player != currentPlayer) {

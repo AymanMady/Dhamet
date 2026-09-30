@@ -1,4 +1,8 @@
 import '../pieces/player.dart';
+import '../serialization/json_reader.dart';
+import 'draw_rules.dart';
+import 'opening_rule.dart';
+import 'souvlet_rule.dart';
 
 /// Which capture sequences are allowed when several are available.
 enum CaptureChoice {
@@ -38,7 +42,7 @@ enum SultanLanding {
 /// LIKELY must be confirmed by Dhamet players before being considered final.
 final class DhametRules {
   const DhametRules({
-    this.firstPlayer = Player.white,
+    this.startingPlayer = Player.white,
     this.mandatoryCapture = true,
     this.captureChoice = CaptureChoice.maximumPieces,
     this.capturedPieceRemoval = CapturedPieceRemoval.immediate,
@@ -47,6 +51,9 @@ final class DhametRules {
     this.sultanFlies = true,
     this.sultanLanding = SultanLanding.anyEmptyPointBeyond,
     this.sultanMayReverseDuringCapture = true,
+    this.opening = OpeningRule.free,
+    this.souvlet = SouvletRule.disabled,
+    this.draw = DrawRules.none,
   });
 
   /// The default rule set.
@@ -54,11 +61,11 @@ final class DhametRules {
 
   /// Side that makes the first move.
   ///
-  /// NEEDS_VERIFICATION (`turn.firstPlayer`): White according to the French
+  /// NEEDS_VERIFICATION (`turn.startingPlayer`): White according to the French
   /// description of the traditional opening, Black according to Wikipedia,
   /// mindsports.nl and Mats Winther. Since the starting position is
   /// symmetric, this only decides which colour name the first player gets.
-  final Player firstPlayer;
+  final Player startingPlayer;
 
   /// Whether a player who can capture must capture.
   ///
@@ -110,8 +117,25 @@ final class DhametRules {
   /// it. Allowed by default because nothing forbids it.
   final bool sultanMayReverseDuringCapture;
 
+  /// How the game opens.
+  ///
+  /// VARIANT (`opening.rencontre`): free by default; the traditional
+  /// "rencontre" is available but never imposed.
+  final OpeningRule opening;
+
+  /// The Souvlet (soufflé) penalty.
+  ///
+  /// NEEDS_VERIFICATION (`souvlet`): disabled; enabling it is not supported
+  /// until its behaviour is confirmed.
+  final SouvletRule souvlet;
+
+  /// Draw rules.
+  ///
+  /// NEEDS_VERIFICATION (`end.draw`): none by default.
+  final DrawRules draw;
+
   DhametRules copyWith({
-    Player? firstPlayer,
+    Player? startingPlayer,
     bool? mandatoryCapture,
     CaptureChoice? captureChoice,
     CapturedPieceRemoval? capturedPieceRemoval,
@@ -120,8 +144,11 @@ final class DhametRules {
     bool? sultanFlies,
     SultanLanding? sultanLanding,
     bool? sultanMayReverseDuringCapture,
+    OpeningRule? opening,
+    SouvletRule? souvlet,
+    DrawRules? draw,
   }) => DhametRules(
-    firstPlayer: firstPlayer ?? this.firstPlayer,
+    startingPlayer: startingPlayer ?? this.startingPlayer,
     mandatoryCapture: mandatoryCapture ?? this.mandatoryCapture,
     captureChoice: captureChoice ?? this.captureChoice,
     capturedPieceRemoval: capturedPieceRemoval ?? this.capturedPieceRemoval,
@@ -131,12 +158,83 @@ final class DhametRules {
     sultanLanding: sultanLanding ?? this.sultanLanding,
     sultanMayReverseDuringCapture:
         sultanMayReverseDuringCapture ?? this.sultanMayReverseDuringCapture,
+    opening: opening ?? this.opening,
+    souvlet: souvlet ?? this.souvlet,
+    draw: draw ?? this.draw,
   );
+
+  /// A JSON representation listing every setting.
+  Map<String, Object?> toJson() => {
+    'startingPlayer': startingPlayer.toJson(),
+    'mandatoryCapture': mandatoryCapture,
+    'captureChoice': captureChoice.name,
+    'capturedPieceRemoval': capturedPieceRemoval.name,
+    'pawnCapturesBackward': pawnCapturesBackward,
+    'pawnCapturesSideways': pawnCapturesSideways,
+    'sultanFlies': sultanFlies,
+    'sultanLanding': sultanLanding.name,
+    'sultanMayReverseDuringCapture': sultanMayReverseDuringCapture,
+    'opening': opening.name,
+    'souvlet': souvlet.toJson(),
+    'draw': draw.toJson(),
+  };
+
+  /// Reads [toJson] output. A missing setting takes its default value, so
+  /// that games saved before a setting existed still load.
+  static DhametRules fromJson(Object? json) {
+    final map = readMap(json, 'rules');
+    const defaults = DhametRules.standard;
+    E enumOr<E extends Enum>(List<E> values, String key, E fallback) =>
+        map[key] == null ? fallback : readEnum(values, map[key], 'rules.$key');
+    bool flag(String key, bool fallback) =>
+        readOptional(map, key, 'rules', fallback);
+    return DhametRules(
+      startingPlayer: map['startingPlayer'] == null
+          ? defaults.startingPlayer
+          : Player.fromJson(map['startingPlayer']),
+      mandatoryCapture: flag('mandatoryCapture', defaults.mandatoryCapture),
+      captureChoice: enumOr(
+        CaptureChoice.values,
+        'captureChoice',
+        defaults.captureChoice,
+      ),
+      capturedPieceRemoval: enumOr(
+        CapturedPieceRemoval.values,
+        'capturedPieceRemoval',
+        defaults.capturedPieceRemoval,
+      ),
+      pawnCapturesBackward: flag(
+        'pawnCapturesBackward',
+        defaults.pawnCapturesBackward,
+      ),
+      pawnCapturesSideways: flag(
+        'pawnCapturesSideways',
+        defaults.pawnCapturesSideways,
+      ),
+      sultanFlies: flag('sultanFlies', defaults.sultanFlies),
+      sultanLanding: enumOr(
+        SultanLanding.values,
+        'sultanLanding',
+        defaults.sultanLanding,
+      ),
+      sultanMayReverseDuringCapture: flag(
+        'sultanMayReverseDuringCapture',
+        defaults.sultanMayReverseDuringCapture,
+      ),
+      opening: enumOr(OpeningRule.values, 'opening', defaults.opening),
+      souvlet: map['souvlet'] == null
+          ? defaults.souvlet
+          : SouvletRule.fromJson(map['souvlet']),
+      draw: map['draw'] == null
+          ? defaults.draw
+          : DrawRules.fromJson(map['draw']),
+    );
+  }
 
   @override
   bool operator ==(Object other) =>
       other is DhametRules &&
-      other.firstPlayer == firstPlayer &&
+      other.startingPlayer == startingPlayer &&
       other.mandatoryCapture == mandatoryCapture &&
       other.captureChoice == captureChoice &&
       other.capturedPieceRemoval == capturedPieceRemoval &&
@@ -144,11 +242,14 @@ final class DhametRules {
       other.pawnCapturesSideways == pawnCapturesSideways &&
       other.sultanFlies == sultanFlies &&
       other.sultanLanding == sultanLanding &&
-      other.sultanMayReverseDuringCapture == sultanMayReverseDuringCapture;
+      other.sultanMayReverseDuringCapture == sultanMayReverseDuringCapture &&
+      other.opening == opening &&
+      other.souvlet == souvlet &&
+      other.draw == draw;
 
   @override
   int get hashCode => Object.hash(
-    firstPlayer,
+    startingPlayer,
     mandatoryCapture,
     captureChoice,
     capturedPieceRemoval,
@@ -157,5 +258,8 @@ final class DhametRules {
     sultanFlies,
     sultanLanding,
     sultanMayReverseDuringCapture,
+    opening,
+    souvlet,
+    draw,
   );
 }

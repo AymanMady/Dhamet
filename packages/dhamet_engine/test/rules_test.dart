@@ -7,7 +7,7 @@ void main() {
   group('DhametRules', () {
     test('defaults follow the documented Mauritanian rules', () {
       const rules = DhametRules.standard;
-      expect(rules.firstPlayer, Player.white);
+      expect(rules.startingPlayer, Player.white);
       expect(rules.mandatoryCapture, isTrue);
       expect(rules.captureChoice, CaptureChoice.maximumPieces);
       expect(rules.capturedPieceRemoval, CapturedPieceRemoval.immediate);
@@ -16,15 +16,32 @@ void main() {
       expect(rules.sultanFlies, isTrue);
       expect(rules.sultanLanding, SultanLanding.anyEmptyPointBeyond);
       expect(rules.sultanMayReverseDuringCapture, isTrue);
+      expect(rules.opening, OpeningRule.free);
+      expect(rules.souvlet, SouvletRule.disabled);
+      expect(rules.draw, DrawRules.none);
+      expect(rules.draw.isEnabled, isFalse);
+    });
+
+    test('copyWith covers the opening, Souvlet and draw settings', () {
+      final changed = DhametRules.standard.copyWith(
+        opening: OpeningRule.traditionalEncounter,
+        souvlet: SouvletRule.enabled,
+        draw: const DrawRules(repetitionLimit: 3),
+      );
+      expect(changed.opening, OpeningRule.traditionalEncounter);
+      expect(changed.souvlet.isEnabled, isTrue);
+      expect(changed.draw.repetitionLimit, 3);
+      expect(changed.startingPlayer, Player.white);
+      expect(changed == DhametRules.standard, isFalse);
     });
 
     test('copyWith changes only the given settings', () {
       const rules = DhametRules.standard;
       final changed = rules.copyWith(
-        firstPlayer: Player.black,
+        startingPlayer: Player.black,
         sultanLanding: SultanLanding.immediatelyBehind,
       );
-      expect(changed.firstPlayer, Player.black);
+      expect(changed.startingPlayer, Player.black);
       expect(changed.sultanLanding, SultanLanding.immediatelyBehind);
       expect(changed.captureChoice, rules.captureChoice);
       expect(changed == rules, isFalse);
@@ -44,6 +61,52 @@ void main() {
       expect(
         MoveGenerator.forRules(const DhametRules(sultanFlies: false)),
         isNot(same(MoveGenerator.forRules(DhametRules.standard))),
+      );
+    });
+  });
+
+  group('DrawRules', () {
+    test('disabled unless a rule is chosen', () {
+      expect(const DrawRules(byAgreement: true).isEnabled, isTrue);
+      expect(const DrawRules(repetitionLimit: 3).isEnabled, isTrue);
+      expect(
+        const DrawRules(repetitionLimit: 3),
+        const DrawRules(repetitionLimit: 3),
+      );
+      expect(
+        const DrawRules(repetitionLimit: 3).hashCode,
+        const DrawRules(repetitionLimit: 3).hashCode,
+      );
+      expect(
+        DrawRules.none.toString(),
+        'DrawRules(byAgreement: false, repetitionLimit: null)',
+      );
+    });
+  });
+
+  group('UndoPolicy', () {
+    test('values, equality and JSON', () {
+      expect(UndoPolicy.disabled.isEnabled, isFalse);
+      expect(UndoPolicy.unlimited.maxDepth, isNull);
+      expect(const UndoPolicy.limited(3).maxDepth, 3);
+      expect(const UndoPolicy.limited(3), const UndoPolicy.limited(3));
+      expect(
+        const UndoPolicy.limited(3).hashCode,
+        const UndoPolicy.limited(3).hashCode,
+      );
+      for (final policy in [
+        UndoPolicy.disabled,
+        UndoPolicy.unlimited,
+        const UndoPolicy.limited(3),
+      ]) {
+        expect(UndoPolicy.fromJson(policy.toJson()), policy);
+      }
+      expect(UndoPolicy.disabled.toString(), 'UndoPolicy.disabled');
+      expect(UndoPolicy.unlimited.toString(), 'UndoPolicy.unlimited');
+      expect(const UndoPolicy.limited(3).toString(), 'UndoPolicy.limited(3)');
+      expect(
+        () => UndoPolicy.fromJson({'enabled': 'yes'}),
+        throwsFormatException,
       );
     });
   });
@@ -70,7 +133,7 @@ void main() {
       expect(
         toVerify,
         containsAll([
-          'turn.firstPlayer',
+          'turn.startingPlayer',
           'sultan.reverseDuringCapture',
           'souvlet',
           'end.draw',

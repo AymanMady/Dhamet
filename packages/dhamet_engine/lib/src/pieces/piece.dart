@@ -49,4 +49,15 @@ enum Piece {
 
   /// The Sultan of the same owner.
   Piece get promoted => of(owner, PieceType.sultan);
+
+  /// JSON representation: the diagram [symbol] (`w`, `W`, `b`, `B`).
+  String toJson() => symbol;
+
+  static Piece fromJson(Object? json) {
+    final piece = json is String ? fromSymbol(json) : null;
+    if (piece == null) {
+      throw FormatException('piece: expected one of w, W, b, B', json);
+    }
+    return piece;
+  }
 }

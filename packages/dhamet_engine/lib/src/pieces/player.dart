@@ -1,5 +1,6 @@
 import '../board/direction.dart';
 import '../board/position.dart';
+import '../serialization/json_reader.dart';
 
 /// One of the two sides.
 ///
@@ -7,7 +8,7 @@ import '../board/position.dart';
 /// 5–9 and advances towards row 1. The colour names follow the written
 /// sources; traditionally one army is made of sticks (العيدان) and the other
 /// of camel-dung pellets (البعر). Which side moves first is a rule setting
-/// (`DhametRules.firstPlayer`).
+/// (`DhametRules.startingPlayer`).
 enum Player {
   white(rowStep: 1, promotionRow: Position.size - 1),
   black(rowStep: -1, promotionRow: 0);
@@ -29,4 +30,9 @@ enum Player {
 
   /// Whether [direction] goes towards this player's own side.
   bool isBackward(Direction direction) => direction.rowStep == -rowStep;
+
+  /// JSON representation: `"white"` or `"black"`.
+  String toJson() => name;
+
+  static Player fromJson(Object? json) => readEnum(values, json, 'player');
 }

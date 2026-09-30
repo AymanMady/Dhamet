@@ -63,18 +63,19 @@ const List<RuleInfo> dhametRuleCatalog = [
     summary: 'On row 5 each side places 4 pieces on its own right-hand side.',
   ),
   RuleInfo(
-    id: 'turn.firstPlayer',
+    id: 'turn.startingPlayer',
     status: RuleStatus.needsVerification,
     summary: 'Which colour moves first (sources disagree).',
-    setting: 'firstPlayer',
+    setting: 'startingPlayer',
   ),
   RuleInfo(
     id: 'opening.rencontre',
     status: RuleStatus.variant,
     summary:
         'The first five moves of each side follow the traditional '
-        '"rencontre" sequence (mandatory or merely conventional?).',
-    implemented: false,
+        '"rencontre" sequence (mandatory or merely conventional?). '
+        'Optional, never imposed by default.',
+    setting: 'opening',
   ),
   RuleInfo(
     id: 'pawn.move',
@@ -155,26 +156,28 @@ const List<RuleInfo> dhametRuleCatalog = [
     status: RuleStatus.needsVerification,
     summary:
         'Soufflé: after an incomplete capture the opponent may demand the '
-        'correct move or remove the offending piece. Details unknown.',
+        'correct move or remove the offending piece. Details unknown: '
+        'only the disabled configuration exists.',
+    setting: 'souvlet',
     implemented: false,
   ),
   RuleInfo(
     id: 'end.elimination',
     status: RuleStatus.confirmed,
     summary: 'A player who has lost all pieces loses.',
-    implemented: false,
   ),
   RuleInfo(
     id: 'end.blocked',
     status: RuleStatus.confirmed,
     summary: 'A player who cannot move loses.',
-    implemented: false,
   ),
   RuleInfo(
     id: 'end.draw',
     status: RuleStatus.needsVerification,
-    summary: 'Draw by agreement or threefold repetition (single source).',
-    implemented: false,
+    summary:
+        'Draw by agreement or threefold repetition (single source). '
+        'Disabled by default.',
+    setting: 'draw',
   ),
   RuleInfo(
     id: 'match.threeRounds',

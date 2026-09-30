@@ -3,6 +3,7 @@ import 'dart:collection';
 import '../moves/move.dart';
 import '../pieces/piece.dart';
 import '../pieces/player.dart';
+import '../serialization/json_reader.dart';
 import 'position.dart';
 
 /// Read access to an arrangement of pieces, as needed by move generation.
@@ -116,6 +117,32 @@ final class Board implements BoardView {
     return Board._(UnmodifiableListView(cells));
   }
 
+  /// Reads [toJson] output: 9 rows of 9 symbols, row 9 first.
+  factory Board.fromJson(Object? json) {
+    final rows = readList(json, 'board');
+    if (rows.length != Position.size) {
+      throw FormatException('board: expected ${Position.size} rows', json);
+    }
+    final cells = List<Piece?>.filled(Position.count, null);
+    for (var i = 0; i < rows.length; i++) {
+      final symbols = rows[i];
+      if (symbols is! String || symbols.length != Position.size) {
+        throw FormatException('board: row ${9 - i} must be 9 symbols', symbols);
+      }
+      final row = Position.size - 1 - i;
+      for (var column = 0; column < Position.size; column++) {
+        final symbol = symbols[column];
+        if (symbol == '.') continue;
+        final piece = Piece.fromSymbol(symbol);
+        if (piece == null) {
+          throw FormatException('board: unknown symbol "$symbol"', symbols);
+        }
+        cells[row * Position.size + column] = piece;
+      }
+    }
+    return Board._(UnmodifiableListView(cells));
+  }
+
   final List<Piece?> _cells;
 
   @override
@@ -184,6 +211,16 @@ final class Board implements BoardView {
     cells[move.to.index] = move.promotes ? move.piece.promoted : move.piece;
     return Board._(UnmodifiableListView(cells));
   }
+
+  /// JSON representation: 9 strings of 9 symbols (`.`, `w`, `W`, `b`, `B`),
+  /// from row 9 down to row 1, as in a diagram.
+  List<String> toJson() => [
+    for (var row = Position.size - 1; row >= 0; row--)
+      [
+        for (var column = 0; column < Position.size; column++)
+          _cells[row * Position.size + column]?.symbol ?? '.',
+      ].join(),
+  ];
 
   /// The board as a diagram readable by [Board.parse].
   String toDiagram() {

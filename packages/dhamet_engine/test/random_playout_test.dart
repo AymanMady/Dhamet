@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 void main() {
   const ruleSets = {
     'standard': DhametRules.standard,
-    'black first': DhametRules(firstPlayer: Player.black),
+    'black first': DhametRules(startingPlayer: Player.black),
     'removal at end of sequence': DhametRules(
       capturedPieceRemoval: CapturedPieceRemoval.endOfSequence,
     ),
