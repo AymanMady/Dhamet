@@ -2,8 +2,9 @@
 
 L'application ne code aucun texte en dur dans les widgets : tout passe par
 `AppLocalizations`, généré par `gen-l10n` à partir des fichiers ARB de
-`lib/l10n/`. Seuls le nom ظامت, sa graphie latine DHAMET et le nom de chaque
-langue écrit dans sa propre langue sont volontairement fixes.
+`lib/l10n/`. Seuls le nom de l'application, ظامتنا et sa graphie latine
+DHAMETNA (`lib/app/brand.dart`), et le nom de chaque langue écrit dans sa
+propre langue sont volontairement fixes.
 
 | Langue | Locale | Fichier | Sens | État |
 |---|---|---|---|---|

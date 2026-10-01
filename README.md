@@ -1,12 +1,15 @@
-# Dhamet — ظامت
+# Dhametna — ظامتنا
 
-Application mobile du **Dhamet mauritanien** (ظامت, aussi appelé Srand /
-اصرند), jeu de plateau traditionnel de la famille de l'alquerque et des
-dames.
+<img src="assets/images/logo.png" alt="" width="96" align="right">
 
-> **État :** toutes les phases de la roadmap ont une première version
-> testée (voir [Roadmap](#roadmap)). Certaines règles restent à confirmer
-> auprès des joueurs : voir [docs/rules.md](docs/rules.md).
+**Dhametna** (ظامتنا, « notre Dhamet ») est l'application mobile du
+**Dhamet mauritanien** (ظامت, aussi appelé Srand / اصرند), jeu de plateau
+traditionnel de la famille de l'alquerque et des dames.
+
+> **État :** version 1.0.0, prête pour Google Play : voir
+> [docs/release.md](docs/release.md). Toutes les phases de la roadmap ont
+> une première version testée (voir [Roadmap](#roadmap)). Certaines règles
+> restent à confirmer auprès des joueurs : voir [docs/rules.md](docs/rules.md).
 
 ## Description
 
@@ -84,8 +87,15 @@ dhamet/
 │       └── tutorial/    Tutoriel interactif
 ├── server/              Serveur NestJS autoritaire (voir server/README.md)
 │   └── engine_bridge/   Le moteur Dart compilé en JavaScript pour Node
-├── docs/                rules.md, multiplayer.md (contrat client/serveur), localization.md
-└── tool/                l10n_status.dart, cut_design_assets.py (découpe de l'image du design)
+├── docs/                rules.md, multiplayer.md (contrat client/serveur), localization.md,
+│                        design.md, release.md (publication sur Google Play)
+├── store/google_play/   Fiche Play Store : textes, visuels, captures, politique de
+│                        confidentialité, réponses aux questionnaires
+└── tool/
+    ├── brand/           generate_brand_assets.py (logo et toutes les icônes)
+    ├── release/         create_upload_key.sh, build_release.sh
+    ├── store/           screenshots.sh (captures de la fiche Play Store)
+    └──                  l10n_status.dart, cut_design_assets.py (découpe de l'image du design)
 ```
 
 Principes :
@@ -139,9 +149,10 @@ Il n'est jamais activé par défaut.
 |---|---|---|
 | Moteur | `cd packages/dhamet_engine && dart test` | 198 tests, ≈ 99 % de couverture : règles, exemples des sources, fin de partie, historique et annulation, sérialisation, invariants sur parties aléatoires |
 | IA | `cd packages/dhamet_ai && dart test` | 71 tests : légalité, rafle maximale, positions tactiques prouvées par recherche exhaustive, temps, isolate |
-| App | `flutter test` | 69 tests : interaction, contrôleurs, sauvegarde sur disque, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur |
+| App | `flutter test` | 101 tests : interaction, contrôleurs, sauvegarde sur disque, réglages, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur, suppression de compte |
+| Captures Play Store | `tool/store/screenshots.sh` | Rend les captures de la fiche avec la vraie application (voir [docs/release.md](docs/release.md)) |
 | App + serveur réel | `flutter test test/integration --dart-define=DHAMET_SERVER=http://localhost:3999` | Deux clients jouent une partie classée à travers le serveur (voir l'en-tête du fichier) |
-| Serveur | `cd server && npm test && npm run test:e2e` | 72 tests unitaires et 60 tests de bout en bout |
+| Serveur | `cd server && npm test && npm run test:e2e` | 79 tests unitaires et 73 tests de bout en bout |
 
 Mesures de performance :
 
@@ -152,14 +163,19 @@ Mesures de performance :
 
 ```bash
 flutter build apk --debug
-flutter build appbundle          # release (signature à configurer)
+tool/release/create_upload_key.sh                       # une fois
+DHAMET_SERVER=https://… tool/release/build_release.sh   # bundle Google Play
 ```
 
-- Identifiant provisoire : `mr.dhamet.dhamet`.
-- Nom affiché : « Dhamet », et « ظامت » sur un appareil en arabe.
-- Les builds debug peuvent joindre un serveur local en HTTP
-  (`http://10.0.2.2:3000` depuis l'émulateur). En release, il faut
+- Identifiant : `mr.dhametna.app` (définitif après le premier envoi).
+- Nom affiché : « Dhametna », et « ظامتنا » sur un appareil en arabe.
+- targetSdk 36 (Android 16), minSdk 24 (Android 7.0).
+- Le serveur du jeu en ligne est fixé à la compilation
+  (`--dart-define=DHAMET_SERVER=…`). Sans lui, une version release n'a pas
+  de jeu en ligne. Les builds debug joignent par défaut un serveur local en
+  HTTP (`http://10.0.2.2:3000` depuis l'émulateur) ; en release, il faut
   HTTPS/WSS.
+- Signature, publication et mises à jour : [docs/release.md](docs/release.md).
 
 ## Build iOS
 
@@ -228,6 +244,10 @@ moins de 1 µs pour annuler ou rétablir.
   service Docker sur une seule instance et PostgreSQL 16. Le serveur garde
   les parties en mémoire, ce qui exclut Vercel (voir
   [server/README.md](server/README.md#déploiement-render)).
+- **Suppression de compte :** dans l'app (Jouer en ligne → Supprimer mon
+  compte), par `DELETE /api/users/me`. Le compte est anonymisé ; les parties
+  jouées restent chez les adversaires (voir
+  [docs/multiplayer.md](docs/multiplayer.md)).
 - **Pile serveur :**
   - NestJS 11 et WebSocket brut sur `/ws` ;
   - PostgreSQL 16 (sql.js en mémoire pour les tests) ;
