@@ -516,8 +516,9 @@ def main():
         save(out, appiconset.relative_to(ROOT) / entry["filename"])
 
     save(rounded(icon.resize((512, 512), Image.LANCZOS), 0.22), "assets/images/logo.png")
-    # Google Play: a full square (Play applies its own mask), no alpha.
-    save(icon.resize((512, 512), Image.LANCZOS).convert("RGB"), "store/google_play/icon_512.png")
+    # Google Play: a full square (Play applies its own mask), as a 32-bit
+    # PNG.
+    save(icon.resize((512, 512), Image.LANCZOS), "store/google_play/icon_512.png")
     save(feature_graphic(icon), "store/google_play/feature_graphic_1024x500.png")
 
 
