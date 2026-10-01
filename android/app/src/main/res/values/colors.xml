@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The sand of the logo; the dark theme uses the evening sky. -->
+    <color name="splash_background">#F0DCB4</color>
+</resources>

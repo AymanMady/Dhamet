@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/brand.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_radius.dart';
 import '../../app/theme/app_spacing.dart';
@@ -154,6 +155,27 @@ class _AlquerquePainter extends CustomPainter {
   @override
   bool shouldRepaint(_AlquerquePainter oldDelegate) =>
       oldDelegate.color != color;
+}
+
+/// The app's logo: a Sultan planted in a board drawn in the sand.
+class BrandLogo extends StatelessWidget {
+  const BrandLogo({super.key, this.size = 96});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: Image.asset(
+      Brand.logoAsset,
+      width: size,
+      height: size,
+      filterQuality: FilterQuality.medium,
+      errorBuilder: (context, error, stackTrace) => SizedBox.square(
+        dimension: size,
+        child: Center(child: AlquerqueMotif(size: size * 0.7)),
+      ),
+    ),
+  );
 }
 
 /// Asks for confirmation; resolves to `true` when confirmed.

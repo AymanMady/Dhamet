@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Languages offered by the app. [hassaniya] uses the `ar_MR` locale, so
@@ -44,8 +45,15 @@ class AppSettings {
     this.serverUrl = defaultServerUrl,
   });
 
-  /// Android emulators reach the development machine through 10.0.2.2.
-  static const String defaultServerUrl = 'http://10.0.2.2:3000';
+  /// The multiplayer server of this build, set with
+  /// `--dart-define=DHAMET_SERVER=https://…` (see docs/release.md). Debug
+  /// builds default to the development machine, which Android emulators
+  /// reach through 10.0.2.2; a release build without a server has no online
+  /// play.
+  static const String defaultServerUrl = String.fromEnvironment(
+    'DHAMET_SERVER',
+    defaultValue: kReleaseMode ? '' : 'http://10.0.2.2:3000',
+  );
 
   /// `null` follows the device language.
   final AppLanguage? language;
@@ -67,8 +75,10 @@ class AppSettings {
   /// Anonymous usage statistics; off until the user explicitly agrees.
   final bool analyticsConsent;
 
-  /// Base URL of the multiplayer server.
+  /// Base URL of the multiplayer server; empty when there is none.
   final String serverUrl;
+
+  bool get onlineAvailable => serverUrl.isNotEmpty;
 
   AppSettings copyWith({
     AppLanguage? Function()? language,

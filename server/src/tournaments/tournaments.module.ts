@@ -11,5 +11,6 @@ import { TournamentsService } from './tournaments.service';
   imports: [TypeOrmModule.forFeature([Tournament, TournamentPlayer, TournamentMatch]), RoomsModule],
   controllers: [TournamentsController],
   providers: [TournamentsService],
+  exports: [TournamentsService],
 })
 export class TournamentsModule {}

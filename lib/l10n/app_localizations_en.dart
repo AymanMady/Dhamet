@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Dhamet';
+  String get appName => 'Dhametna';
 
   @override
   String get appTagline => 'Mauritanian Traditional Game';
@@ -347,6 +347,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Nothing is sent without your consent.';
 
   @override
+  String get settingsPrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get privacyPolicyBody =>
+      'Dhametna has no ads and no trackers, and asks for no sensitive permission.\n\nOn your device: local games and games against the AI, your history, the game in progress and your settings. They never leave the device.\n\nOnline, only if you play online: the Dhametna server keeps your player name, your password in hashed form (never in plain text) or a guest account, your online games, your rating and your tournaments. This data is only used for the game; it is neither sold nor shared. Connections are encrypted (HTTPS).\n\nUsage statistics, if you turn them on, stay on the device in this version.\n\nYou can delete your account at any time: Play online → Delete my account. Your name and password are erased; your past games stay in your opponents\' history under an anonymous name.';
+
+  @override
   String get settingsDeveloper => 'Developer mode';
 
   @override
@@ -364,7 +371,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutBody =>
-      'Dhamet (ظامت) is the traditional draughts game of Mauritania. The rules applied and their sources are documented; some still need to be confirmed with players.';
+      'Dhametna brings you Dhamet (ظامت), the traditional draughts game of Mauritania. The rules applied and their sources are documented; some still need to be confirmed with players.';
 
   @override
   String get devPanelTitle => 'Developer';

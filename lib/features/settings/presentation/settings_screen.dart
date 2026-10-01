@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/brand.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/localization/l10n.dart';
+import '../../../core/services/app_version.dart';
 import '../../../core/widgets/common.dart';
 import '../domain/app_settings.dart';
 import 'settings_controller.dart';
@@ -14,6 +17,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
+    final version = ref.watch(appVersionProvider).value;
     final controller = ref.read(settingsProvider.notifier);
     void update(AppSettings Function(AppSettings) change) =>
         controller.update(change);
@@ -108,16 +112,23 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (value) =>
                   update((s) => s.copyWith(analyticsConsent: value)),
             ),
-            _Section(l10n.settingsSectionAdvanced),
             ListTile(
-              leading: const Icon(Icons.dns_outlined),
-              title: Text(l10n.settingsServerUrl),
-              subtitle: Text(
-                settings.serverUrl,
-                textDirection: TextDirection.ltr,
-              ),
-              onTap: () => _editServerUrl(context, ref, settings.serverUrl),
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: Text(l10n.settingsPrivacyPolicy),
+              onTap: () => _showPrivacyPolicy(context),
             ),
+            _Section(l10n.settingsSectionAdvanced),
+            // Players use the server of the build; testers may pick another.
+            if (!kReleaseMode || settings.developerMode)
+              ListTile(
+                leading: const Icon(Icons.dns_outlined),
+                title: Text(l10n.settingsServerUrl),
+                subtitle: Text(
+                  settings.serverUrl,
+                  textDirection: TextDirection.ltr,
+                ),
+                onTap: () => _editServerUrl(context, ref, settings.serverUrl),
+              ),
             SwitchListTile(
               secondary: const Icon(Icons.developer_mode),
               title: Text(l10n.settingsDeveloper),
@@ -139,14 +150,32 @@ class SettingsScreen extends ConsumerWidget {
               title: Text(l10n.settingsAbout),
               onTap: () => showAboutDialog(
                 context: context,
-                applicationName: 'ظامت — Dhamet',
-                applicationIcon: const AlquerqueMotif(size: 40),
+                applicationName: '${Brand.nameArabic} — ${Brand.nameLatin}',
+                applicationVersion: version,
+                applicationIcon: const BrandLogo(size: 48),
                 children: [Text(l10n.aboutBody)],
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showPrivacyPolicy(BuildContext context) {
+    final l10n = context.l10n;
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.settingsPrivacyPolicy),
+        content: SingleChildScrollView(child: Text(l10n.privacyPolicyBody)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+          ),
+        ],
       ),
     );
   }

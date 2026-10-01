@@ -11,16 +11,13 @@ import {
 import { IncomingMessage } from 'node:http';
 import { WebSocket } from 'ws';
 import { AuthService } from '../auth/auth.service';
-import { ConnectionRegistry } from './connection-registry';
+import { ConnectionRegistry, WS_UNAUTHENTICATED } from './connection-registry';
 import { CreateRoomDto, MoveDto, ReadyDto, RoomCodeDto } from './dto/room-messages.dto';
 import { GameError } from './game-error';
 import { GameplayService, GameSyncData } from './gameplay.service';
 import { RejoinReply, RoomsService } from './rooms.service';
 import { WsErrorFilter } from './ws-error.filter';
 import { wsValidationPipe } from './ws-validation.pipe';
-
-/** Close code for a missing or invalid token. */
-export const WS_UNAUTHENTICATED = 4401;
 
 /**
  * `ws://<host>/ws?token=<JWT>`, raw WebSocket, `{event, data}` frames
@@ -40,13 +37,23 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   handleConnection(socket: WebSocket, request: IncomingMessage): void {
-    const token = new URL(request.url ?? '/', 'http://localhost').searchParams.get('token');
-    const userId = token ? this.auth.userIdFromToken(token) : null;
+    const token = new URL(request.url ?? '/', 'http://localhost').searchParams.get('token') ?? '';
+    const userId = this.auth.userIdFromToken(token);
     if (!userId) {
       socket.close(WS_UNAUTHENTICATED, 'Unauthenticated');
       return;
     }
+    // Registered at once, for the messages that follow; a token outliving
+    // its deleted account is refused as soon as the database answers.
     this.connections.add(socket, userId);
+    this.auth
+      .authenticate(token)
+      .then((user) => {
+        if (!user) socket.close(WS_UNAUTHENTICATED, 'Unauthenticated');
+      })
+      .catch((error: unknown) => {
+        this.logger.error(error);
+      });
   }
 
   handleDisconnect(socket: WebSocket): void {

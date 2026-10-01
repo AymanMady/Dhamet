@@ -8,8 +8,9 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, EntityManager, IsNull, MoreThan, Repository } from 'typeorm';
 import { SerialQueue } from '../common/serial-queue';
+import { Color, GameResultJson, opponentOf } from '../engine/engine.types';
 import { FinishedGame, GameLifecycleListener, StartedGame } from '../rooms/game-lifecycle';
 import { GameplayService } from '../rooms/gameplay.service';
 import { RoomsService } from '../rooms/rooms.service';
@@ -173,34 +174,93 @@ export class TournamentsService
       this.dataSource.transaction(async (manager) => {
         const match = await manager.findOneBy(TournamentMatch, { id: tournamentMatchId });
         if (!match || match.resultJson) return;
-        await manager.update(TournamentMatch, match.id, {
-          gameId: game.gameId,
-          resultJson: game.result,
+        await this.recordResult(manager, match, game.gameId, game.result, game.players);
+      }),
+    );
+  }
+
+  /**
+   * The account of [userId] is being deleted. Its registrations to the
+   * tournaments not started yet are removed, and so are the tournaments not
+   * started yet that it created (nobody else could start them). Its matches
+   * without a result, in running tournaments, are lost by resignation, as
+   * when a player does not come back: `RoomsService.leaveAll` has resigned
+   * its game in progress and closed the rooms of the others.
+   */
+  withdraw(userId: string): Promise<void> {
+    return this.queue.run(() =>
+      this.dataSource.transaction(async (manager) => {
+        const created = await manager.findBy(Tournament, {
+          createdById: userId,
+          status: 'registering',
         });
-        const { winner } = game.result;
-        const points = winner
-          ? [{ userId: game.players[winner], score: 1 }]
-          : [
-              { userId: game.players.white, score: 0.5 },
-              { userId: game.players.black, score: 0.5 },
-            ];
-        for (const { userId, score } of points) {
-          await manager.increment(
+        for (const tournament of created) {
+          await manager.delete(TournamentPlayer, { tournamentId: tournament.id });
+          await manager.delete(Tournament, tournament.id);
+        }
+        const registrations = await manager.findBy(TournamentPlayer, {
+          userId,
+          tournament: { status: 'registering' },
+        });
+        for (const registration of registrations) {
+          await manager.delete(TournamentPlayer, registration.id);
+          // Seeds stay 1, 2, 3…: the registration order.
+          await manager.decrement(
             TournamentPlayer,
-            { tournamentId: match.tournamentId, userId },
-            'score',
-            score,
+            { tournamentId: registration.tournamentId, seed: MoreThan(registration.seed) },
+            'seed',
+            1,
           );
         }
-        const pending = await manager.countBy(TournamentMatch, {
-          tournamentId: match.tournamentId,
-          resultJson: IsNull(),
-        });
-        if (pending === 0) {
-          await manager.update(Tournament, match.tournamentId, { status: 'finished' });
+        const pending = await manager.findBy(TournamentMatch, [
+          { whiteId: userId, resultJson: IsNull() },
+          { blackId: userId, resultJson: IsNull() },
+        ]);
+        for (const match of pending) {
+          const winner = opponentOf(match.whiteId === userId ? 'white' : 'black');
+          await this.recordResult(
+            manager,
+            match,
+            match.gameId,
+            { winner, reason: 'resignation' },
+            { white: match.whiteId, black: match.blackId },
+          );
         }
       }),
     );
+  }
+
+  /** Saves the result of [match] and the points, and finishes the tournament after its last match. */
+  private async recordResult(
+    manager: EntityManager,
+    match: TournamentMatch,
+    gameId: string | null,
+    result: GameResultJson,
+    players: Record<Color, string>,
+  ): Promise<void> {
+    await manager.update(TournamentMatch, match.id, { gameId, resultJson: result });
+    const { winner } = result;
+    const points = winner
+      ? [{ userId: players[winner], score: 1 }]
+      : [
+          { userId: players.white, score: 0.5 },
+          { userId: players.black, score: 0.5 },
+        ];
+    for (const { userId, score } of points) {
+      await manager.increment(
+        TournamentPlayer,
+        { tournamentId: match.tournamentId, userId },
+        'score',
+        score,
+      );
+    }
+    const pending = await manager.countBy(TournamentMatch, {
+      tournamentId: match.tournamentId,
+      resultJson: IsNull(),
+    });
+    if (pending === 0) {
+      await manager.update(Tournament, match.tournamentId, { status: 'finished' });
+    }
   }
 
   private async load(id: string): Promise<Tournament> {

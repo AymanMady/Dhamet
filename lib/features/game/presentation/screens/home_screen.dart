@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/brand.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_theme.dart';
@@ -10,6 +11,7 @@ import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../../core/widgets/sand/sand_background.dart';
 import '../../../../core/widgets/sand/sand_plate.dart';
+import '../../../settings/presentation/settings_controller.dart';
 import '../../data/game_archive.dart';
 import '../../data/saved_game.dart';
 import '../controllers/game_controller.dart';
@@ -29,6 +31,9 @@ class HomeScreen extends ConsumerWidget {
     final session = ref.watch(gameControllerProvider);
     final saved = ref.watch(currentSavedGameProvider).value;
     final controller = ref.read(gameControllerProvider.notifier);
+    final onlineAvailable = ref.watch(
+      settingsProvider.select((s) => s.onlineAvailable),
+    );
 
     // A game in memory takes precedence over the saved copy.
     final resumable = session != null
@@ -53,7 +58,7 @@ class HomeScreen extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'ظامت',
+                        Brand.nameArabic,
                         textDirection: TextDirection.rtl,
                         style: AppTypography.logo.copyWith(
                           fontSize: 56,
@@ -61,7 +66,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        'DHAMET',
+                        Brand.nameLatin.toUpperCase(),
                         style: theme.textTheme.titleMedium?.copyWith(
                           letterSpacing: 8,
                           fontFamily: AppTypography.displayFamily,
@@ -116,12 +121,14 @@ class HomeScreen extends ConsumerWidget {
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
-              MenuButton(
-                icon: Icons.public,
-                label: l10n.homePlayOnline,
-                onPressed: () => context.push(AppRoutes.online),
-              ),
-              const SizedBox(height: AppSpacing.sm),
+              if (onlineAvailable) ...[
+                MenuButton(
+                  icon: Icons.public,
+                  label: l10n.homePlayOnline,
+                  onPressed: () => context.push(AppRoutes.online),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
               MenuButton(
                 icon: Icons.school_outlined,
                 label: l10n.homeHowToPlay,

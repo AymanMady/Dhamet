@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
 import { AppConfig, appConfig } from './config/app.config';
 import { typeOrmOptions } from './database/typeorm-options';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     GamesModule,
     RoomsModule,
     TournamentsModule,
+    AccountsModule,
   ],
   controllers: [HealthController],
 })

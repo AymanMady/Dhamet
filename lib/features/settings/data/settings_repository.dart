@@ -64,6 +64,12 @@ class SettingsRepository {
     for (final entry in flags.entries) {
       await _preferences.setBool('$_prefix${entry.key}', entry.value);
     }
-    await _preferences.setString('${_prefix}serverUrl', settings.serverUrl);
+    // Only an address chosen by the user is kept: the build's default may
+    // change with an update (a release without a server, then one with).
+    if (settings.serverUrl == AppSettings.defaultServerUrl) {
+      await _preferences.remove('${_prefix}serverUrl');
+    } else {
+      await _preferences.setString('${_prefix}serverUrl', settings.serverUrl);
+    }
   }
 }

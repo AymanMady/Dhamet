@@ -40,4 +40,11 @@ export class User {
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  /**
+   * Set when the account is deleted. The row stays, anonymized, for the
+   * games, ratings and tournaments of the other players.
+   */
+  @Column({ type: Date, nullable: true })
+  deletedAt!: Date | null;
 }

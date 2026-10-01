@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/brand.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/common.dart';
 
-/// ظامت — DHAMET — Mauritanian Traditional Game.
+/// The logo, then ظامتنا — DHAMETNA — Mauritanian Traditional Game.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -51,20 +52,17 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AlquerqueMotif(
-                  size: 72,
-                  color: theme.colorScheme.secondary.withValues(alpha: 0.8),
-                ),
+                const BrandLogo(size: 128),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'ظامت',
+                  Brand.nameArabic,
                   textDirection: TextDirection.rtl,
                   style: AppTypography.logo.copyWith(
                     color: theme.colorScheme.primary,
                   ),
                 ),
                 Text(
-                  'DHAMET',
+                  Brand.nameLatin.toUpperCase(),
                   style: theme.textTheme.titleLarge?.copyWith(
                     letterSpacing: 10,
                     fontFamily: AppTypography.displayFamily,

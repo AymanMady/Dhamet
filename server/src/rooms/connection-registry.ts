@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { sendEvent } from './ws-message';
 
+/** Close code for a missing or invalid token, or a deleted account. */
+export const WS_UNAUTHENTICATED = 4401;
+
 /** The open WebSocket connections of each authenticated user. */
 @Injectable()
 export class ConnectionRegistry {
@@ -29,6 +32,13 @@ export class ConnectionRegistry {
 
   userId(socket: WebSocket): string | undefined {
     return this.users.get(socket);
+  }
+
+  /** Closes every connection of [userId] with code 4401; they are forgotten once closed. */
+  closeAll(userId: string): void {
+    for (const socket of this.sockets.get(userId) ?? []) {
+      socket.close(WS_UNAUTHENTICATED, 'Unauthenticated');
+    }
   }
 
   /** Sends an event to every connection of every user in [userIds]. */

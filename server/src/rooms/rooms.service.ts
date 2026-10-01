@@ -99,26 +99,41 @@ export class RoomsService {
    */
   async leave(userId: string, code: string): Promise<void> {
     const room = this.store.getAsMember(code, userId);
-    await room.run(async () => {
-      if (room.status === 'playing') return this.gameplay.resignInRoom(room, userId);
-      if (room.status === 'finished') return;
-      const player = room.player(userId);
-      if (!player) return;
-      if (room.tournamentMatchId) {
-        player.ready = false;
+    await room.run(() => this.leaveInRoom(room, userId));
+  }
+
+  /**
+   * The account of [userId] is being deleted: it leaves every room as with
+   * `room:leave`, so a game in progress is resigned. The rooms of its
+   * tournament matches not started yet are closed: the tournament records
+   * those matches as lost (`TournamentsService.withdraw`).
+   */
+  async leaveAll(userId: string): Promise<void> {
+    for (const room of this.store.roomsOf(userId)) {
+      await room.run(async () => {
+        if (room.status !== 'waiting' || !room.tournamentMatchId) {
+          return this.leaveInRoom(room, userId);
+        }
+        await this.store.close(room);
         this.broadcastRoom(room);
-        return;
-      }
-      room.players.splice(room.players.indexOf(player), 1);
-      this.connections.broadcast([userId], 'room:updated', { room: room.view() });
-      const next = room.players[0];
-      if (!next) return this.store.close(room);
-      if (room.hostId === userId) {
-        room.hostId = next.user.id;
-        await this.store.saveStatus(room);
-      }
-      this.broadcastRoom(room);
-    });
+      });
+    }
+  }
+
+  /**
+   * The account [user] was deleted: the rooms still listing it (finished
+   * games, until they close) show its anonymous name, and its connections
+   * are closed as unauthenticated.
+   */
+  async accountDeleted(user: User): Promise<void> {
+    const view = toUserView(user);
+    for (const room of this.store.roomsOf(user.id)) {
+      await room.run(() => {
+        const player = room.player(user.id);
+        if (player) player.user = view;
+      });
+    }
+    this.connections.closeAll(user.id);
   }
 
   /** `room:ready`. The game starts when both players are ready. */
@@ -174,6 +189,27 @@ export class RoomsService {
           this.logger.error(error);
         });
     }
+  }
+
+  private async leaveInRoom(room: ActiveRoom, userId: string): Promise<void> {
+    if (room.status === 'playing') return this.gameplay.resignInRoom(room, userId);
+    if (room.status === 'finished') return;
+    const player = room.player(userId);
+    if (!player) return;
+    if (room.tournamentMatchId) {
+      player.ready = false;
+      this.broadcastRoom(room);
+      return;
+    }
+    room.players.splice(room.players.indexOf(player), 1);
+    this.connections.broadcast([userId], 'room:updated', { room: room.view() });
+    const next = room.players[0];
+    if (!next) return this.store.close(room);
+    if (room.hostId === userId) {
+      room.hostId = next.user.id;
+      await this.store.saveStatus(room);
+    }
+    this.broadcastRoom(room);
   }
 
   private rejoinInRoom(room: ActiveRoom, userId: string): RejoinReply {

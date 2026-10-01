@@ -10,7 +10,7 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appName => 'Dhamet';
+  String get appName => 'Dhametna';
 
   @override
   String get appTagline => 'Jeu traditionnel mauritanien';
@@ -349,6 +349,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Rien n\'est envoyé sans votre accord.';
 
   @override
+  String get settingsPrivacyPolicy => 'Politique de confidentialité';
+
+  @override
+  String get privacyPolicyBody =>
+      'Dhametna ne contient ni publicité ni traceur, et ne demande aucune autorisation sensible.\n\nSur votre appareil : les parties locales et contre l\'IA, l\'historique, la partie en cours et vos réglages. Ils ne quittent pas l\'appareil.\n\nEn ligne, seulement si vous jouez en ligne : le serveur de Dhametna conserve votre nom de joueur, votre mot de passe sous forme hachée (jamais en clair) ou un compte invité, vos parties en ligne, votre classement et vos tournois. Ces données servent uniquement au jeu ; elles ne sont ni vendues ni partagées. Les échanges sont chiffrés (HTTPS).\n\nLes statistiques d\'usage, si vous les activez, restent sur l\'appareil dans cette version.\n\nVous pouvez supprimer votre compte à tout moment : Jouer en ligne → Supprimer mon compte. Votre nom et votre mot de passe sont effacés ; vos parties passées restent dans l\'historique de vos adversaires sous un nom anonyme.';
+
+  @override
   String get settingsDeveloper => 'Mode développeur';
 
   @override
@@ -366,7 +373,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aboutBody =>
-      'Dhamet (ظامت) est le jeu de dames traditionnel de Mauritanie. Les règles appliquées et leurs sources sont documentées ; certaines restent à confirmer auprès des joueurs.';
+      'Dhametna fait vivre le Dhamet (ظامت), le jeu de dames traditionnel de Mauritanie. Les règles appliquées et leurs sources sont documentées ; certaines restent à confirmer auprès des joueurs.';
 
   @override
   String get devPanelTitle => 'Développeur';

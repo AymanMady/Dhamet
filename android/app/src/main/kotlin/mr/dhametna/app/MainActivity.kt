@@ -1,4 +1,4 @@
-package mr.dhamet.dhamet
+package mr.dhametna.app
 
 import io.flutter.embedding.android.FlutterActivity
 

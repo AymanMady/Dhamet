@@ -10,7 +10,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appName => 'ظامت';
+  String get appName => 'ظامتنا';
 
   @override
   String get appTagline => 'لعبة موريتانية تقليدية';
@@ -358,6 +358,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsAnalyticsDescription => 'لا يُرسَل أي شيء دون موافقتك.';
 
   @override
+  String get settingsPrivacyPolicy => 'سياسة الخصوصية';
+
+  @override
+  String get privacyPolicyBody =>
+      'ظامتنا لا تحتوي على إعلانات ولا على أدوات تتبّع، ولا تطلب أي إذن حساس.\n\nعلى جهازك: الألعاب المحلية والألعاب ضد الحاسوب، والسجل، واللعبة الجارية، وإعداداتك. لا تغادر هذه البيانات جهازك.\n\nعبر الإنترنت، فقط إذا لعبت عبر الإنترنت: يحتفظ خادم ظامتنا باسم اللاعب، وبكلمة المرور في صيغة مُجزَّأة (لا تُحفظ أبدًا كما هي) أو بحساب ضيف، وبألعابك عبر الإنترنت وترتيبك وبطولاتك. تُستخدم هذه البيانات للّعبة فقط، ولا تُباع ولا تُشارَك. الاتصالات مشفّرة (HTTPS).\n\nإحصاءات الاستخدام، إن فعّلتها، تبقى على الجهاز في هذا الإصدار.\n\nيمكنك حذف حسابك في أي وقت: اللعب عبر الإنترنت ← حذف حسابي. يُمحى اسمك وكلمة مرورك، وتبقى ألعابك السابقة في سجل خصومك باسم مجهول.';
+
+  @override
   String get settingsDeveloper => 'وضع المطوّر';
 
   @override
@@ -375,7 +382,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get aboutBody =>
-      'ظامت هي لعبة الداما التقليدية في موريتانيا. القواعد المطبقة ومصادرها موثقة، وبعضها ما زال بحاجة إلى تأكيد من اللاعبين.';
+      'ظامتنا تتيح لك لعب ظامت، لعبة الداما التقليدية في موريتانيا. القواعد المطبقة ومصادرها موثقة، وبعضها ما زال بحاجة إلى تأكيد من اللاعبين.';
 
   @override
   String get devPanelTitle => 'المطوّر';
