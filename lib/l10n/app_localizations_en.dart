@@ -600,6 +600,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onlineSignOut => 'Sign out';
 
   @override
+  String get onlineDeleteAccount => 'Delete my account';
+
+  @override
+  String get onlineDeleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get onlineDeleteAccountBody =>
+      'Your player name and password will be erased, and you will no longer be able to sign in with this account. A game in progress and your remaining tournament matches will be lost by resignation. Your past games stay in your opponents\' history under an anonymous name. This cannot be undone.';
+
+  @override
+  String get onlineDeleteAccountConfirm => 'Delete';
+
+  @override
+  String get onlineAccountDeleted => 'Your account has been deleted.';
+
+  @override
   String get onlineGuestBadge => 'Guest';
 
   @override

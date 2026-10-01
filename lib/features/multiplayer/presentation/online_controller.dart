@@ -199,6 +199,34 @@ class OnlineController extends Notifier<OnlineState> {
     state = const OnlineState();
   }
 
+  /// Deletes the account on the server, then forgets it on this device.
+  /// Resolves to `false` if the server could not delete it.
+  Future<bool> deleteAccount() async {
+    state = state.copyWith(
+      busy: true,
+      errorCode: () => null,
+      errorMessage: () => null,
+    );
+    try {
+      await _api.deleteAccount();
+    } on ApiException catch (error) {
+      // An expired session: signing in again lets the player retry.
+      if (error.isUnauthorized) {
+        await signOut();
+        return false;
+      }
+      state = state.copyWith(
+        busy: false,
+        errorCode: () =>
+            error.isNetwork ? 'NETWORK' : 'HTTP_${error.statusCode}',
+        errorMessage: () => error.message,
+      );
+      return false;
+    }
+    await signOut();
+    return true;
+  }
+
   /// Refreshes the profile (rating, results) from the server.
   Future<void> refreshProfile() async {
     if (!state.signedIn) return;

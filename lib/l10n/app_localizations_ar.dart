@@ -611,6 +611,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onlineSignOut => 'تسجيل الخروج';
 
   @override
+  String get onlineDeleteAccount => 'حذف حسابي';
+
+  @override
+  String get onlineDeleteAccountTitle => 'حذف حسابك؟';
+
+  @override
+  String get onlineDeleteAccountBody =>
+      'سيُمحى اسم اللاعب وكلمة المرور، ولن تتمكن بعد ذلك من تسجيل الدخول بهذا الحساب. ستُحتسب اللعبة الجارية ومبارياتك المتبقية في البطولات خسارةً بالاستسلام. تبقى ألعابك السابقة في سجل خصومك باسم مجهول. لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get onlineDeleteAccountConfirm => 'حذف';
+
+  @override
+  String get onlineAccountDeleted => 'تم حذف حسابك.';
+
+  @override
   String get onlineGuestBadge => 'ضيف';
 
   @override

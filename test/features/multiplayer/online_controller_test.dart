@@ -70,9 +70,14 @@ void main() {
   late ProviderContainer container;
   late OnlineController controller;
   var networkDown = false;
+  final deletions = <String?>[];
 
   final api = MockClient((request) async {
     if (networkDown) throw const SocketException('offline');
+    if (request.method == 'DELETE' && request.url.path == '/api/users/me') {
+      deletions.add(request.headers['Authorization']);
+      return http.Response('', 204);
+    }
     final body = request.body.isEmpty
         ? const <String, Object?>{}
         : jsonDecode(request.body) as Map<String, Object?>;
@@ -185,6 +190,27 @@ void main() {
       expect(read().errorCode, 'NETWORK');
       controller.clearError();
       expect(read().errorCode, isNull);
+    });
+
+    test('an account can be deleted from the app', () async {
+      deletions.clear();
+      await controller.signInAsGuest();
+      await controller.connect();
+      await settle();
+      final prefs = container.read(sharedPreferencesProvider);
+
+      networkDown = true;
+      expect(await controller.deleteAccount(), isFalse);
+      expect(read().errorCode, 'NETWORK');
+      expect(read().signedIn, isTrue);
+
+      networkDown = false;
+      expect(await controller.deleteAccount(), isTrue);
+      expect(deletions, ['Bearer token-1']);
+      expect(read().signedIn, isFalse);
+      expect(read().connection, ConnectionStatus.disconnected);
+      expect(prefs.getString('online.token'), isNull);
+      expect(prefs.getString('online.user'), isNull);
     });
   });
 

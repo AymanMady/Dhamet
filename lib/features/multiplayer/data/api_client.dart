@@ -52,6 +52,10 @@ class ApiClient {
 
   Future<OnlineUser> me() async => OnlineUser.fromJson(await _get('users/me'));
 
+  /// Deletes the signed-in account: the server anonymises it and plays
+  /// out what it was taking part in (docs/multiplayer.md).
+  Future<void> deleteAccount() => _send('DELETE', 'users/me', null);
+
   Future<List<LeaderboardEntry>> leaderboard({int limit = 50}) async => [
     for (final entry in await _getList('leaderboard?limit=$limit'))
       LeaderboardEntry.fromJson(entry),

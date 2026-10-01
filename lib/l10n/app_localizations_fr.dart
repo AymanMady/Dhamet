@@ -602,6 +602,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get onlineSignOut => 'Se déconnecter';
 
   @override
+  String get onlineDeleteAccount => 'Supprimer mon compte';
+
+  @override
+  String get onlineDeleteAccountTitle => 'Supprimer votre compte ?';
+
+  @override
+  String get onlineDeleteAccountBody =>
+      'Votre nom de joueur et votre mot de passe seront effacés, et vous ne pourrez plus vous connecter avec ce compte. Une partie en cours et vos matchs de tournoi restants seront perdus par abandon. Vos parties passées restent dans l\'historique de vos adversaires sous un nom anonyme. Cette action est définitive.';
+
+  @override
+  String get onlineDeleteAccountConfirm => 'Supprimer';
+
+  @override
+  String get onlineAccountDeleted => 'Votre compte a été supprimé.';
+
+  @override
   String get onlineGuestBadge => 'Invité';
 
   @override

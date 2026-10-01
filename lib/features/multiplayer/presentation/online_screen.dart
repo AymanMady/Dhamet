@@ -321,6 +321,29 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
         onPressed: controller.signOut,
         label: Text(l10n.onlineSignOut),
       ),
+      TextButton.icon(
+        icon: const Icon(Icons.delete_forever_outlined),
+        style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+        onPressed: online.busy ? null : () => _deleteAccount(controller),
+        label: Text(l10n.onlineDeleteAccount),
+      ),
     ];
+  }
+
+  Future<void> _deleteAccount(OnlineController controller) async {
+    final l10n = context.l10n;
+    final confirmed = await confirmDialog(
+      context,
+      title: l10n.onlineDeleteAccountTitle,
+      body: l10n.onlineDeleteAccountBody,
+      confirmLabel: l10n.onlineDeleteAccountConfirm,
+      cancelLabel: l10n.cancel,
+    );
+    if (!confirmed) return;
+    final deleted = await controller.deleteAccount();
+    if (deleted && mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.onlineAccountDeleted)));
+    }
   }
 }

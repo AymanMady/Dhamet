@@ -1127,6 +1127,36 @@ abstract class AppLocalizations {
   /// **'Se déconnecter'**
   String get onlineSignOut;
 
+  /// No description provided for @onlineDeleteAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer mon compte'**
+  String get onlineDeleteAccount;
+
+  /// No description provided for @onlineDeleteAccountTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer votre compte ?'**
+  String get onlineDeleteAccountTitle;
+
+  /// No description provided for @onlineDeleteAccountBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom de joueur et votre mot de passe seront effacés, et vous ne pourrez plus vous connecter avec ce compte. Une partie en cours et vos matchs de tournoi restants seront perdus par abandon. Vos parties passées restent dans l\'historique de vos adversaires sous un nom anonyme. Cette action est définitive.'**
+  String get onlineDeleteAccountBody;
+
+  /// No description provided for @onlineDeleteAccountConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get onlineDeleteAccountConfirm;
+
+  /// No description provided for @onlineAccountDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte a été supprimé.'**
+  String get onlineAccountDeleted;
+
   /// No description provided for @onlineGuestBadge.
   ///
   /// In fr, this message translates to:
