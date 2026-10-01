@@ -30,6 +30,7 @@ protégées attendent l'en-tête `Authorization: Bearer <token>` (JWT).
 | POST | `/api/auth/login` | `{username, password}` | `200 {token, user}` |
 | POST | `/api/auth/guest` | `{username?}` | `201 {token, user}` (compte invité, sans mot de passe) |
 | GET | `/api/users/me` | — | `200 user` |
+| DELETE | `/api/users/me` | — | `204` sans corps (suppression du compte, voir plus bas) |
 | GET | `/api/users/:id` | — | `200 user` (profil public) |
 
 `user` = `{id, username, isGuest, rating, wins, losses, draws, gamesPlayed, createdAt}`.
@@ -40,7 +41,42 @@ protégées attendent l'en-tête `Authorization: Bearer <token>` (JWT).
 - Un invité sans `username` reçoit un nom `invite_XXXX`.
 
 Erreurs : `{statusCode, message, error}` au format Nest. Codes utilisés :
-400 (données invalides), 401 (non authentifié), 404, 409 (nom déjà pris).
+400 (données invalides), 401 (non authentifié, jeton expiré ou compte
+supprimé), 404, 409 (nom déjà pris).
+
+### Suppression de compte
+
+`DELETE /api/users/me` supprime le compte du jeton, invité compris
+(exigence de Google Play : un compte créé dans l'application doit pouvoir
+y être supprimé). Elle n'est jamais refusée : pas de `409`. Avant de la
+confirmer, le client doit donc prévenir le joueur qu'une partie en cours et
+ses rencontres de tournoi restantes seront perdues.
+
+- Le compte est **anonymisé**, pas effacé : son nom devient `deleted_`
+  suivi de 4 caractères `[a-z0-9]` (plus en cas de collision), et son mot de
+  passe et son avatar sont effacés. Les parties, classements et tournois des
+  autres joueurs restent intacts et le montrent sous ce nom.
+- L'ancien nom redevient libre pour une nouvelle inscription.
+- Le compte ne peut plus servir : ses jetons reçoivent `401` (REST) et la
+  fermeture `4401` (WebSocket), et ses connexions ouvertes sont fermées avec
+  ce code. La connexion par mot de passe échoue (`401`).
+  `GET /api/users/:id` et `GET /api/users/:id/games` renvoient `404`, et le
+  compte disparaît du classement.
+- **Partie en cours** : elle est perdue par abandon
+  (`GameEndReason.resignation`), comme avec `room:leave`. L'adversaire
+  reçoit `game:over` (et `ratingChanges` si elle est classée).
+- **Salon en attente** : le compte le quitte comme avec `room:leave`.
+  L'autre joueur devient hôte et un salon vide est fermé.
+- **Tournoi pas encore commencé** : l'inscription est retirée. Un tournoi
+  que le compte a créé est supprimé, car personne d'autre ne pourrait le
+  démarrer (`GET /api/tournaments/:id` renvoie alors `404`).
+- **Tournoi en cours** : chaque rencontre du compte sans résultat est
+  perdue par abandon. `result` vaut `{winner: <couleur de l'adversaire>,
+  reason: "resignation"}` et l'adversaire marque 1 point ; `gameId` reste
+  `null` si la partie n'avait pas commencé. Les salons de ces rencontres
+  sont fermés : l'adversaire présent reçoit `room:updated` avec
+  `status: "finished"`. Le tournoi se termine quand toutes les rencontres
+  ont un résultat, comme d'habitude.
 
 ## Classement et parties (REST)
 
@@ -91,8 +127,9 @@ Erreurs : `{statusCode, message, error}` au format Nest. Codes utilisés :
 ## Temps réel (WebSocket)
 
 Connexion : `ws://<hôte>:<port>/ws?token=<JWT>`, en WebSocket brut (pas de
-Socket.IO). Un jeton absent ou invalide provoque la fermeture avec le code
-`4401`.
+Socket.IO). Un jeton absent ou invalide, ou celui d'un compte supprimé,
+provoque la fermeture avec le code `4401`. Les connexions ouvertes d'un
+compte sont fermées avec ce code quand il est supprimé.
 
 Chaque message, dans un sens comme dans l'autre, est un objet JSON
 `{"event": "<nom>", "data": {...}}`.
@@ -186,7 +223,7 @@ décroît. Quand il atteint zéro, la partie se termine par
 
 | Entité | Contenu |
 |---|---|
-| `User` | id, username, passwordHash (vide pour un invité), isGuest, avatar, rating, wins, losses, draws, createdAt |
+| `User` | id, username, passwordHash (vide pour un invité), isGuest, avatar, rating, wins, losses, draws, createdAt, deletedAt (compte supprimé et anonymisé, sinon `null`) |
 | `Game` | id, roomCode, rated, status, gameJson (JSON `Game` du moteur), resultJson, timeControl, tournamentMatchId, startedAt, finishedAt |
 | `GamePlayer` | gameId, userId, color, ratingBefore, ratingAfter |
 | `Move` | id, gameId, ply, userId, moveJson, playedAt |

@@ -342,6 +342,44 @@ Choix faits là où le contrat est muet ou ambigu :
     n'écoute qu'après avoir joint la base et appliqué les migrations, et un
     échec ferait redémarrer l'instance, donc perdre les parties en cours.
 
+## Suppression de compte
+
+`DELETE /api/users/me` (contrat : [`docs/multiplayer.md`](../docs/multiplayer.md),
+« Suppression de compte »), module `src/accounts/`, qui dépend de `rooms`,
+`tournaments` et `users`. Le compte est anonymisé et désactivé
+(`User.deletedAt`, migration `AddUserDeletedAt1790812378732`), jamais
+effacé : parties, coups, historique Elo et tournois y font référence.
+
+- **Ordre** : quitter les salons (`RoomsService.leaveAll`), puis les
+  tournois (`TournamentsService.withdraw`), puis anonymiser, puis fermer
+  les connexions (`4401`). Les deux premières étapes peuvent être rejouées
+  sans effet : si l'une échoue, le compte n'est pas encore supprimé et le
+  joueur peut réessayer.
+- **Partie en cours : abandon plutôt que `409`.** `room:leave` abandonne
+  déjà une partie en cours, par le même chemin que le forfait après le
+  délai de reconnexion (`GameplayService.resignInRoom`, dans la file du
+  salon). Et un refus ne suffirait pas : une rencontre de tournoi n'a pas
+  de date limite, un tournoi en cours pourrait donc bloquer la suppression
+  indéfiniment.
+- Les salons de rencontres de tournoi encore en attente sont fermés
+  **avant** d'enregistrer leur forfait, hors de la file des tournois : la
+  file d'un salon attend déjà celle des tournois (`gameFinished`), l'ordre
+  inverse pourrait bloquer les deux.
+- Les numéros d'inscription (`seed`) d'un tournoi non commencé sont
+  renumérotés après un retrait : ils restent 1, 2, 3… (ordre d'appariement).
+- WebSocket : la connexion est enregistrée dès la vérification du jeton,
+  puis fermée en `4401` si la base ne connaît plus le compte. Les messages
+  reçus entre-temps ne peuvent rien modifier : créer ou rejoindre un salon
+  exige un compte existant, et le compte supprimé n'est plus membre d'aucun
+  salon en attente ou en cours.
+- `UsersService.findById` ignore les comptes supprimés (jeton, profil,
+  salons) ; `findByUsername` les voit, pour que leur nom `deleted_XXXX`
+  reste réservé.
+- Tests : `src/users/users.service.spec.ts`, `src/rooms/rooms.service.spec.ts`
+  et `test/account-deletion.e2e-spec.ts` (204, `401` et `4401` ensuite, nom
+  libéré, classement, parties de l'adversaire conservées, abandon de la
+  partie en cours, salons en attente, tournois à venir et en cours).
+
 ## Limites connues
 
 - Une seule instance de serveur (salons, pendules et files en mémoire) :
