@@ -37,8 +37,8 @@ void main() {
 
   testWidgets('splash screen then home menu', (tester) async {
     await pumpApp(tester);
-    expect(find.text('ظامت'), findsOneWidget);
-    expect(find.text('DHAMET'), findsOneWidget);
+    expect(find.text('ظامتنا'), findsOneWidget);
+    expect(find.text('DHAMETNA'), findsOneWidget);
     expect(find.text('Mauritanian Traditional Game'), findsOneWidget);
     await skipSplash(tester);
     expect(find.byType(HomeScreen), findsOneWidget);
