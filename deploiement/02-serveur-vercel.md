@@ -31,8 +31,8 @@ lui-même, moteur Dart compris.
 
 | Fichier | Rôle |
 |---|---|
-| [`Dockerfile.vercel`](../Dockerfile.vercel) | Image du serveur : compile le moteur Dart en JavaScript, puis le serveur NestJS. Vercel le détecte à la racine et lui envoie tout le trafic du projet, WebSockets compris |
-| [`vercel.json`](../vercel.json) | Région `fra1` (Francfort), nettoyage quotidien (`/api/cron/sweep`), et pas de nouveau déploiement quand seule l'application Flutter change |
+| [`Dockerfile.vercel`](../Dockerfile.vercel) | Image du serveur : compile le moteur Dart en JavaScript, puis le serveur NestJS |
+| [`vercel.json`](../vercel.json) | Un seul service, `dhamet-server` (l'image ci-dessus), qui reçoit tout le trafic du projet, WebSockets compris ; région `fra1` (Francfort), nettoyage quotidien (`/api/cron/sweep`), et pas de nouveau déploiement quand seule l'application Flutter change |
 | [`.vercelignore`](../.vercelignore), [`Dockerfile.vercel.dockerignore`](../Dockerfile.vercel.dockerignore) | N'envoient à Vercel que `server/` et le moteur, pas l'application ni ses images |
 | [`server/src/database/migrations/`](../server/src/database/migrations/) | Schéma de la base, appliqué au démarrage du serveur |
 | [`server/src/legal/privacy-policy.html`](../server/src/legal/privacy-policy.html) | Politique de confidentialité, publiée par le serveur |
@@ -48,9 +48,9 @@ ou public. Vercel déploie la branche de production, en général `main`.
 2. Réglages de l'import :
    - **Root Directory** : laissez la racine du dépôt (`./`). Le Dockerfile
      a besoin de `server/` et de `packages/dhamet_engine/` ;
-   - **Framework Preset** : `Other` ;
+   - **Framework Preset** : `Services`, choisi d'après `vercel.json` ;
    - ne touchez pas aux commandes de build : Vercel construit
-     `Dockerfile.vercel`.
+     `Dockerfile.vercel`, l'image du service `dhamet-server`.
 3. **Deploy**. Ce premier déploiement échoue ou démarre sans base de
    données : c'est normal, les étapes 3 et 4 le complètent.
 

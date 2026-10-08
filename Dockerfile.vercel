@@ -1,6 +1,6 @@
-# The multiplayer server (server/) on Vercel. Vercel detects this file at the
-# root of the project, builds the image and sends all the traffic of the
-# project to it, WebSockets included. See deploiement/02-serveur-vercel.md.
+# The multiplayer server (server/) on Vercel: the `dhamet-server` service of
+# vercel.json, which receives all the traffic of the project, WebSockets
+# included. See deploiement/02-serveur-vercel.md.
 #
 # Local check:  docker build -f Dockerfile.vercel -t dhamet-vercel .
 #

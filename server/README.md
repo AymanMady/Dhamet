@@ -233,11 +233,11 @@ Le port PostgreSQL publié par `docker-compose.yml` est **5436** : 5432 et
 Guide pas à pas : [`deploiement/02-serveur-vercel.md`](../deploiement/02-serveur-vercel.md).
 En bref :
 
-- [`Dockerfile.vercel`](../Dockerfile.vercel), à la racine du dépôt, que
-  Vercel détecte : mêmes étapes que `server/Dockerfile`, puis une image
-  allégée (~175 Mo, sous la limite de 250 Mo des fonctions) qui écoute sur
-  le port 80 ;
-- [`vercel.json`](../vercel.json) : région `fra1`, nettoyage quotidien
+- [`Dockerfile.vercel`](../Dockerfile.vercel), à la racine du dépôt : mêmes
+  étapes que `server/Dockerfile`, puis une image allégée (~175 Mo, sous la
+  limite de 250 Mo des fonctions) qui écoute sur le port 80 ;
+- [`vercel.json`](../vercel.json) : un seul service, `dhamet-server` (cette
+  image), qui reçoit tout le trafic ; région `fra1`, nettoyage quotidien
   `GET /api/cron/sweep`, et pas de déploiement pour un commit qui ne touche
   ni le serveur ni le moteur ;
 - base Neon créée depuis Vercel, qui fournit `DATABASE_URL` (poolée) et

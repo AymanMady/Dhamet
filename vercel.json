@@ -1,6 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "dhamet-server": {
+      "root": ".",
+      "framework": "container",
+      "runtime": "container",
+      "entrypoint": "Dockerfile.vercel",
+      "ignoreCommand": "git diff --quiet HEAD^ HEAD -- server packages/dhamet_engine Dockerfile.vercel Dockerfile.vercel.dockerignore vercel.json .vercelignore"
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": { "service": "dhamet-server" } }],
   "regions": ["fra1"],
-  "crons": [{ "path": "/api/cron/sweep", "schedule": "0 4 * * *" }],
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- server packages/dhamet_engine Dockerfile.vercel Dockerfile.vercel.dockerignore vercel.json .vercelignore"
+  "crons": [{ "path": "/api/cron/sweep", "schedule": "0 4 * * *" }]
 }
