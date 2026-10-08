@@ -160,6 +160,10 @@ class OnlineController extends Notifier<OnlineState> {
   RealtimeClient? _client;
   StreamSubscription<ServerEvent>? _events;
   StreamSubscription<ConnectionStatus>? _statuses;
+  Timer? _deadline;
+
+  /// How long after a deadline the app asks the server for the game.
+  static const _deadlineMargin = Duration(seconds: 1);
 
   static const _tokenKey = 'online.token';
   static const _userKey = 'online.user';
@@ -405,6 +409,28 @@ class OnlineController extends Notifier<OnlineState> {
     } on FormatException catch (error) {
       debugPrint('Ignored malformed ${event.event}: $error');
     }
+    _watchDeadline();
+  }
+
+  /// When the opponent's time to come back or a clock runs out, asks the
+  /// server for the game. The server applies the forfeit or the timeout and
+  /// answers with the result; usually it has done so already, but its
+  /// instances may have missed the moment.
+  void _watchDeadline() {
+    _deadline?.cancel();
+    _deadline = null;
+    final game = state.game;
+    if (state.room == null || state.result != null || game == null) return;
+    if (game.isOver) return;
+    final now = DateTime.now();
+    var at = state.opponentAwayUntil;
+    final remaining = state.remainingMs(game.state.currentPlayer, now);
+    if (remaining != null) {
+      final flag = now.add(Duration(milliseconds: remaining));
+      if (at == null || flag.isBefore(at)) at = flag;
+    }
+    if (at == null) return;
+    _deadline = Timer(at.difference(now) + _deadlineMargin, _requestSync);
   }
 
   void _handle(ServerEvent event) {
@@ -429,8 +455,12 @@ class OnlineController extends Notifier<OnlineState> {
       case 'game:sync':
         final room = Room.fromJson(data['room']);
         final game = Game.fromJson(data['game']);
+        final opponentBack = room.players.every(
+          (player) => player.user.id == state.user?.id || player.connected,
+        );
         state = state.copyWith(
           room: () => room,
+          opponentAwayUntil: opponentBack ? () => null : null,
           gameId: () => data['gameId'] as String?,
           game: () => game,
           myColor: () => _myColor(room),
@@ -553,6 +583,8 @@ class OnlineController extends Notifier<OnlineState> {
       data['clocks'] == null ? null : Clocks.fromJson(data['clocks']);
 
   Future<void> _disconnect() async {
+    _deadline?.cancel();
+    _deadline = null;
     await _events?.cancel();
     await _statuses?.cancel();
     final client = _client;

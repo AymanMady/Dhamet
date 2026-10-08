@@ -5,7 +5,7 @@ Store → Fiche principale), langue par défaut **français (fr-FR)**, avec les
 traductions **arabe (ar)** et **anglais (en-US)**.
 
 Les lignes marquées **[EN LIGNE]** ne valent que pour une version compilée
-avec un serveur (`DHAMET_SERVER`, voir [docs/release.md](../../docs/release.md)).
+avec un serveur (`DHAMET_SERVER`, voir [01-google-play.md](../01-google-play.md)).
 Sans serveur, supprimez-les et prenez la description courte « sans jeu en
 ligne ».
 

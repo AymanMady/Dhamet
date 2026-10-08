@@ -5,11 +5,18 @@ export type DatabaseConfig =
   | {
       type: 'postgres';
       url?: string;
+      /**
+       * A direct connection, not through a pooler (Neon: the "unpooled"
+       * URL): LISTEN and session locks need one. Defaults to [url].
+       */
+      directUrl?: string;
       host: string;
       port: number;
       username: string;
       password: string;
       database: string;
+      /** Connections of this instance's pool. */
+      poolSize: number;
       synchronize: boolean;
       migrationsRun: boolean;
     };
@@ -21,6 +28,16 @@ export interface Settings {
   database: DatabaseConfig;
   /** How long a player may stay disconnected from a game before forfeiting. */
   reconnectGraceSeconds: number;
+  /**
+   * How long a dropped connection waits before the other players are told.
+   * Vercel closes every WebSocket at the end of the function's maximum
+   * duration and the app reconnects at once: the opponent never notices.
+   */
+  disconnectNoticeSeconds: number;
+  /** `Authorization: Bearer <secret>` of the scheduled cleanup (`/api/cron/sweep`); null disables it. */
+  cronSecret: string | null;
+  /** The address shown in the privacy policy (`/confidentialite`); null keeps the placeholder. */
+  contactEmail: string | null;
   /** Allowed CORS origins; `true` reflects any origin. */
   corsOrigins: string[] | true;
   /** Rate limit of the auth routes: `limit` requests per `ttlSeconds` and client. */
@@ -56,6 +73,9 @@ export function readSettings(env: Env): Settings {
     },
     database: readDatabaseSettings(env),
     reconnectGraceSeconds: number(env, 'RECONNECT_GRACE_SECONDS', 60, { min: 0.1, max: 3600 }),
+    disconnectNoticeSeconds: number(env, 'DISCONNECT_NOTICE_SECONDS', 5, { min: 0, max: 60 }),
+    cronSecret: env.CRON_SECRET?.trim() || null,
+    contactEmail: env.CONTACT_EMAIL?.trim() || null,
     corsOrigins:
       !cors || cors === '*'
         ? true
@@ -75,15 +95,19 @@ export function readDatabaseSettings(env: Env): DatabaseConfig {
   const type = env.DB_TYPE ?? 'postgres';
   if (type === 'sqljs') return { type };
   if (type !== 'postgres') throw new Error(`DB_TYPE must be "postgres" or "sqljs", not "${type}"`);
+  // DATABASE_URL, or POSTGRES_URL as set by some Vercel integrations.
+  const url = env.DATABASE_URL || env.POSTGRES_URL || undefined;
   return {
     type,
-    url: env.DATABASE_URL || undefined,
+    url,
+    directUrl: env.DATABASE_URL_UNPOOLED || env.POSTGRES_URL_NON_POOLING || url,
     host: env.DB_HOST ?? 'localhost',
     // The docker-compose database; 5432 belongs to other local projects.
     port: number(env, 'DB_PORT', 5436, { min: 1, max: 65535, integer: true }),
     username: env.DB_USER ?? 'dhamet',
     password: env.DB_PASSWORD ?? 'dhamet',
     database: env.DB_NAME ?? 'dhamet',
+    poolSize: number(env, 'DB_POOL_SIZE', 10, { min: 1, max: 100, integer: true }),
     synchronize: flag(env, 'DB_SYNCHRONIZE', false),
     migrationsRun: flag(env, 'DB_MIGRATIONS_RUN', true),
   };

@@ -1,17 +1,24 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { GamesModule } from '../games/games.module';
-import { UsersModule } from '../users/users.module';
 import { ConnectionRegistry } from './connection-registry';
+import { CronController } from './cron.controller';
 import { GameplayService } from './gameplay.service';
-import { Room } from './room.entity';
+import { RoomDeadlines } from './room-deadlines';
 import { RoomStore } from './room-store';
 import { RoomsGateway } from './rooms.gateway';
 import { RoomsService } from './rooms.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Room]), UsersModule, GamesModule],
-  providers: [RoomStore, ConnectionRegistry, GameplayService, RoomsService, RoomsGateway],
+  imports: [GamesModule],
+  controllers: [CronController],
+  providers: [
+    RoomStore,
+    ConnectionRegistry,
+    GameplayService,
+    RoomsService,
+    RoomDeadlines,
+    RoomsGateway,
+  ],
   exports: [RoomsService, GameplayService],
 })
 export class RoomsModule {}

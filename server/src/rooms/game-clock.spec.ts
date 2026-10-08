@@ -30,3 +30,17 @@ describe('GameClock', () => {
     expect(clock.read(start + 4000)).toEqual({ white: 4000, black: 5000 });
   });
 });
+
+describe('GameClock state', () => {
+  it('is saved and restored without losing time', () => {
+    const start = 1_000_000;
+    const clock = new GameClock({ initialSeconds: 10, incrementSeconds: 1 }, 'white', start);
+    clock.press(start + 2500);
+    const restored = GameClock.restore(JSON.parse(JSON.stringify(clock.state())));
+    expect(restored.read(start + 4000)).toEqual(clock.read(start + 4000));
+    expect(restored.flagAt()).toBe(start + 2500 + 10_000);
+    restored.stop(start + 3000);
+    expect(restored.flagAt()).toBeNull();
+    expect(clock.flagAt()).toBe(start + 12_500);
+  });
+});

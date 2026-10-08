@@ -1,0 +1,18 @@
+# Vercel deploys the multiplayer server only (Dockerfile.vercel): the app,
+# its assets and the store files stay out of the upload.
+/*
+!/Dockerfile.vercel
+!/Dockerfile.vercel.dockerignore
+!/vercel.json
+!/server
+!/packages
+/packages/*
+!/packages/dhamet_engine
+/server/node_modules
+/server/dist
+/server/coverage
+/server/.env
+/server/src/engine/generated
+/server/engine_bridge/.dart_tool
+/server/engine_bridge/build
+/packages/dhamet_engine/.dart_tool

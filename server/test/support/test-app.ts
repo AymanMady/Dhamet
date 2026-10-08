@@ -92,6 +92,18 @@ export class TestApp {
     return { code: room.code, gameId: started.gameId, game: started.game };
   }
 
+  /**
+   * Like [startGame], with [guest] connected to another instance: waits for
+   * each event on the connection that receives it.
+   */
+  async startGameAcross(
+    host: WsClient,
+    guest: WsClient,
+    options: { timeControl?: { initialSeconds: number; incrementSeconds: number } } = {},
+  ): Promise<{ code: string; gameId: string; game: GameJson }> {
+    return this.startGame(host, guest, options);
+  }
+
   /** The legal move written [notation] in [game], computed by the engine. */
   legalMove(game: GameJson, notation: string): MoveJson {
     const moves = this.legalMoves(game);

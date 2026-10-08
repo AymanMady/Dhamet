@@ -1,0 +1,58 @@
+# The multiplayer server (server/) on Vercel. Vercel detects this file at the
+# root of the project, builds the image and sends all the traffic of the
+# project to it, WebSockets included. See deploiement/02-serveur-vercel.md.
+#
+# Local check:  docker build -f Dockerfile.vercel -t dhamet-vercel .
+#
+# Same build as server/Dockerfile (Render, docker compose). The runtime
+# differs: Vercel sends the traffic to $PORT, 80 by default, and a function
+# must stay under 250 MB, so the image is trimmed and flattened.
+
+# 1. The rules engine, from Dart to JavaScript.
+FROM dart:3.13 AS engine
+WORKDIR /src
+COPY packages/dhamet_engine/lib packages/dhamet_engine/lib
+COPY packages/dhamet_engine/pubspec.yaml packages/dhamet_engine/
+COPY server/engine_bridge server/engine_bridge
+WORKDIR /src/server/engine_bridge
+RUN dart pub get && dart run tool/build.dart /out/dhamet_engine.js
+
+# 2. The NestJS application.
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY server/package.json server/package-lock.json ./
+RUN npm ci
+COPY server/nest-cli.json server/tsconfig.json server/tsconfig.build.json ./
+COPY server/src src
+COPY --from=engine /out/dhamet_engine.js src/engine/generated/dhamet_engine.js
+# --ignore-scripts: the engine is already built (no Dart SDK in this stage).
+RUN npm run build --ignore-scripts
+
+# 3. Production dependencies only, without what running never reads.
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY server/package.json server/package-lock.json ./
+# --omit=peer: TypeORM's optional drivers (sql.js, ts-node) only serve the tests.
+RUN npm ci --omit=dev --omit=peer --ignore-scripts \
+ && rm -rf node_modules/typescript node_modules/sql.js node_modules/ts-node node_modules/@types \
+ && find node_modules \( -name '*.d.ts' -o -name '*.map' -o -name '*.md' -o -name '*.ts.map' \) -type f -delete
+
+# 4. Runtime, without npm nor yarn.
+FROM node:22-alpine AS runtime
+RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx \
+    /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-*
+WORKDIR /app
+COPY --from=build /app/package.json ./
+COPY --from=deps /app/node_modules node_modules
+COPY --from=build /app/dist dist
+
+# 5. One layer: what was removed above no longer counts.
+FROM scratch
+COPY --from=runtime / /
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    NODE_ENV=production TZ=UTC PORT=80
+WORKDIR /app
+# It runs as root to listen on port 80, inside the isolated environment of
+# the function.
+EXPOSE 80
+CMD ["node", "dist/main"]

@@ -10,8 +10,12 @@ listés plus bas.
   mémoire pour les tests automatisés.
 - **Les règles viennent uniquement du moteur Dart** (`packages/dhamet_engine`),
   compilé en JavaScript. Il n'y a pas de second moteur.
-- Mise en ligne : Render, décrite par [`render.yaml`](../render.yaml) (voir
-  [Déploiement](#déploiement-render)).
+- **Plusieurs instances.** L'état partagé (salons, pendules, parties) est
+  dans PostgreSQL. Les instances se parlent par `LISTEN/NOTIFY` : le serveur
+  tourne sur Vercel, qui lance et arrête des instances selon le trafic.
+- Mise en ligne : Vercel ([`Dockerfile.vercel`](../Dockerfile.vercel),
+  guide [`deploiement/02-serveur-vercel.md`](../deploiement/02-serveur-vercel.md)),
+  ou Render ([`render.yaml`](../render.yaml)). Voir [Déploiement](#déploiement).
 
 ## Démarrage rapide
 
@@ -66,9 +70,13 @@ server/
 │   ├── users/                entité User, profils
 │   ├── ranking/              Elo, historique (Ranking), leaderboard
 │   ├── games/                Game, GamePlayer, Move ; REST des parties
-│   ├── rooms/                salons en mémoire, passerelle WebSocket, pendule
+│   ├── realtime/             transactions verrouillées, messages entre instances
+│   ├── rooms/                salons en base, passerelle WebSocket, échéances, pendule
 │   ├── tournaments/          round robin (méthode du cercle), classement
+│   ├── accounts/             suppression de compte
+│   ├── legal/                politique de confidentialité (/confidentialite)
 │   ├── database/             options TypeORM, DataSource CLI, migrations
+│   ├── testing/              banc d'essai des tests unitaires (hors build)
 │   └── config/               lecture et validation de l'environnement
 └── test/                     tests e2e
 ```
@@ -114,9 +122,12 @@ la machine de développement chargée) :
 | `load` d'une partie de 111 coups (rejeu vérifié) | ~5,3 ms |
 
 Le registre évite donc ~5 ms par coup en fin de partie et un coût
-quadratique sur la partie. Les parties en cours vivant de toute façon en
-mémoire (salons actifs), le registre suit leur cycle de vie : `create` au
-démarrage, `close` à la fin.
+quadratique sur la partie. La base reste la référence : `EngineService`
+garde ouvertes les parties récemment jouées par l'instance (200 au plus,
+les plus anciennes d'abord fermées) et, avant de s'en servir, vérifie que
+la copie ouverte est bien la partie enregistrée (`ensure`). Si une autre
+instance a joué depuis, ou si une transaction a échoué, la partie est
+rechargée.
 
 ### Autorité du serveur
 
@@ -129,12 +140,46 @@ enregistre la ligne `Move` et le JSON `Game`, puis diffuse **la copie du
 coup produite par le moteur** (jamais celle du client). Captures, fin de
 partie et résultat sont toujours recalculés par le moteur.
 
-Chaque salon traite ses opérations une par une (file `SerialQueue`) : coups,
-abandons, pendule et forfaits ne s'entremêlent pas. Les fins de partie
-(mises à jour d'Elo) et les résultats de tournoi passent aussi par des
-files : le serveur est **mono-instance** (salons en mémoire). Passer à
-plusieurs instances demanderait un état partagé (Redis…) et des sessions
-collantes.
+### Plusieurs instances
+
+Sur Vercel, chaque connexion WebSocket est tenue par une instance, et les
+deux joueurs d'une partie peuvent être sur deux instances différentes. Une
+instance peut aussi s'arrêter à tout moment. D'où :
+
+- **L'état partagé est en base.** Un salon ouvert (`rooms.closedAt` nul)
+  porte ses joueurs (`players`), sa partie (`gameId`), sa pendule (`clock`)
+  et ses échéances. Aucune instance ne garde rien en mémoire d'indispensable.
+- **Une modification à la fois.** `TransactionRunner.run(clé, …)` ouvre une
+  transaction qui prend d'abord le verrou consultatif PostgreSQL de sa clé
+  (`pg_advisory_xact_lock`) : `room:<code>` pour un salon, puis `ratings`
+  pour les fins de partie, puis `tournaments`, toujours dans cet ordre. Dans
+  une même instance, les tâches d'une même clé attendent aussi en mémoire.
+  Avec sql.js (tests), tout passe par une seule file.
+- **Les messages partent au commit.** Les événements d'une transaction
+  (`tx.publish`) sont envoyés par `pg_notify` dans cette transaction :
+  PostgreSQL ne les livre qu'au commit, dans l'ordre des commits, et jamais
+  pour une modification annulée. Chaque instance qui a des connexions écoute
+  (`LISTEN`, sur une connexion directe, pas celle du pooler) et transmet à
+  ses joueurs (`RealtimeBus`). Une requête attend que son instance écoute.
+  Après une coupure de l'écoute, l'instance renvoie à ses joueurs l'état de
+  leurs salons.
+- **Les délais sont des dates.** Abandon d'un absent (`forfeitAt`), pendule
+  (`clock`), fermeture (`expiresAt`), annonce d'une déconnexion (`leftAt`).
+  Le prochain délai d'un salon (`deadlineAt`) est diffusé à chaque
+  modification. Les instances qui tiennent une connexion d'un de ses joueurs
+  programment une minuterie (`RoomDeadlines`), et le salon est réglé à ce
+  moment (`RoomsService.settle`). Toute requête sur le salon règle d'abord
+  ce qui est échu. Les instances avec des connexions balaient aussi les
+  salons en retard toutes les 30 s, et `GET /api/cron/sweep` le fait une
+  fois par jour (Vercel Cron). Régler un salon deux fois ne change rien.
+- **Reconnexions forcées.** Vercel ferme chaque WebSocket au bout de 5 min
+  (offre Hobby). L'application se reconnecte aussitôt et envoie
+  `room:rejoin`. L'adversaire n'est prévenu qu'après
+  `DISCONNECT_NOTICE_SECONDS` : un joueur revenu entre-temps n'a jamais été
+  « déconnecté » pour lui.
+- **Arrêt d'une instance** (`SIGTERM`, 30 s de grâce) : ses joueurs sont
+  marqués partis tout de suite, et les instances de leurs adversaires
+  prennent le relais.
 
 ### Base de données
 
@@ -149,9 +194,11 @@ Entités portables (aucun type propre à PostgreSQL : `simple-json` → `text`,
 - **Tests** : sql.js en mémoire, schéma synchronisé.
 - Le processus Node tourne en UTC (`TZ=UTC`) : les colonnes `timestamp`
   PostgreSQL sont lues et écrites en UTC.
-- Au démarrage, les parties restées `playing` passent en `aborted` et les
-  salons non terminés en `finished` (ils ne vivaient qu'en mémoire) ; les
-  rencontres de tournoi sans résultat reçoivent un nouveau salon.
+- Les migrations s'appliquent au démarrage sous un verrou de session
+  PostgreSQL (`runMigrationsLocked`) : si plusieurs instances démarrent
+  ensemble, une seule migre. `SharedRooms1791600000000` a déplacé les
+  salons ouverts dans la base ; les parties encore `playing` de l'ancien
+  serveur, qui les gardait en mémoire, y sont passées en `aborted`.
 
 ## Configuration
 
@@ -162,81 +209,70 @@ Voir [`.env.example`](.env.example).
 | `PORT` | 3000 | port HTTP et WebSocket |
 | `JWT_SECRET` | secret de dev | **obligatoire** si `NODE_ENV=production` |
 | `JWT_EXPIRES_IN_SECONDS` | 2 592 000 (30 j) | durée des jetons |
-| `DATABASE_URL` ou `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | `localhost:5436`, `dhamet`/`dhamet`/`dhamet` | PostgreSQL |
+| `DATABASE_URL` (ou `POSTGRES_URL`), ou `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | `localhost:5436`, `dhamet`/`dhamet`/`dhamet` | PostgreSQL ; derrière un pooler (Neon), l'URL « poolée » |
+| `DATABASE_URL_UNPOOLED` (ou `POSTGRES_URL_NON_POOLING`) | `DATABASE_URL` | connexion directe, pour `LISTEN` et le verrou des migrations |
+| `DB_POOL_SIZE` | 10 | connexions du pool de chaque instance |
 | `DB_TYPE` | `postgres` | `sqljs` pour les tests |
 | `DB_MIGRATIONS_RUN` / `DB_SYNCHRONIZE` | `true` / `false` | gestion du schéma |
 | `RECONNECT_GRACE_SECONDS` | 60 | délai de reconnexion (décimales permises) |
+| `DISCONNECT_NOTICE_SECONDS` | 5 | délai avant d'annoncer une déconnexion aux autres joueurs (0 à 60) |
+| `CRON_SECRET` | aucun | jeton de `GET /api/cron/sweep` (sans lui, la route répond 404) |
+| `CONTACT_EMAIL` | aucune | adresse affichée par `/confidentialite` à la place de `contact@example.org` |
 | `CORS_ORIGINS` | `*` | origines autorisées, séparées par des virgules |
 | `AUTH_THROTTLE_LIMIT` / `AUTH_THROTTLE_TTL_SECONDS` | 20 / 60 | limite de débit de `/api/auth/*`, par adresse de client |
-| `TRUST_PROXY` | `false` | proxys à croire pour lire l'adresse du client (`trust proxy` d'Express) : `true`/`false`, nombre de sauts, ou adresses et sous-réseaux (`loopback, 10.0.0.0/8`) ; `3` sur Render |
+| `TRUST_PROXY` | `false` | proxys à croire pour lire l'adresse du client (`trust proxy` d'Express) : `true`/`false`, nombre de sauts, ou adresses et sous-réseaux (`loopback, 10.0.0.0/8`) ; `1` sur Vercel, `3` sur Render |
 | `DB_HOST_PORT`, `API_PORT` | 5436, 3000 | ports publiés par docker compose |
 
 Le port PostgreSQL publié par `docker-compose.yml` est **5436** : 5432 et
 5433 sont déjà pris par d'autres projets sur la machine de développement.
 
-## Déploiement (Render)
+## Déploiement
 
-Le serveur garde en mémoire les salons, les pendules et les parties en
-cours, et chaque joueur garde une connexion WebSocket pendant toute la
-partie. Il lui faut donc **un processus permanent, sur une seule
-instance**. C'est pourquoi il tourne sur Render (service Docker) et pas sur
-Vercel. Sur Vercel, NestJS devient une *Function* dont les instances
-naissent et meurent selon le trafic. Les WebSocket y sont en bêta et coupés
-au bout de 5 min (13 min sur le plan Pro). Une reconnexion peut arriver sur
-une autre instance, qui ne connaît pas le salon, et chaque nouvelle instance
-passerait les parties en cours en `aborted`.
+### Vercel
 
-Le Blueprint [`render.yaml`](../render.yaml), à la racine du dépôt, décrit :
+Guide pas à pas : [`deploiement/02-serveur-vercel.md`](../deploiement/02-serveur-vercel.md).
+En bref :
+
+- [`Dockerfile.vercel`](../Dockerfile.vercel), à la racine du dépôt, que
+  Vercel détecte : mêmes étapes que `server/Dockerfile`, puis une image
+  allégée (~175 Mo, sous la limite de 250 Mo des fonctions) qui écoute sur
+  le port 80 ;
+- [`vercel.json`](../vercel.json) : région `fra1`, nettoyage quotidien
+  `GET /api/cron/sweep`, et pas de déploiement pour un commit qui ne touche
+  ni le serveur ni le moteur ;
+- base Neon créée depuis Vercel, qui fournit `DATABASE_URL` (poolée) et
+  `DATABASE_URL_UNPOOLED` (directe) ;
+- à définir : `JWT_SECRET`, `CRON_SECRET`, `CONTACT_EMAIL`,
+  `TRUST_PROXY=1`.
+
+Un déploiement n'interrompt pas les parties : elles sont dans la base, et
+les applications se reconnectent à la nouvelle version.
+
+### Render
+
+Le Blueprint [`render.yaml`](../render.yaml), à la racine du dépôt, décrit
+une autre mise en ligne :
 
 - **`dhamet-server`** : l'image de `server/Dockerfile`, construite depuis la
   racine du dépôt (le moteur Dart est compilé pendant la construction). Une
-  seule instance, région Francfort (la plus proche de la Mauritanie parmi
-  celles de Render), health check `GET /api/health` ;
+  instance toujours allumée, région Francfort, health check
+  `GET /api/health` ;
 - **`dhamet-db`** : PostgreSQL 16, relié par `DATABASE_URL` (URL interne,
-  sans TLS sur le réseau privé de Render) ;
-- `JWT_SECRET`, généré une fois par Render, et `TRUST_PROXY=3`.
+  sans TLS sur le réseau privé de Render), qui sert aussi à `LISTEN` ;
+- `JWT_SECRET`, généré une fois par Render, et `TRUST_PROXY=3` (Cloudflare,
+  répartiteur de charge, proxy interne : chacun ajoute une adresse à
+  `X-Forwarded-For`).
 
-Mise en ligne :
+Mise en ligne : Render → **New → Blueprint**, puis le dépôt et la branche.
+Les plans du Blueprint sont payants ; un service `free` s'endort après
+15 min sans trafic et une base gratuite expire au bout de 30 jours.
 
-1. Pousser la branche sur GitHub ou GitLab.
-2. Render → **New → Blueprint**, puis choisir le dépôt et la branche. Render
-   affiche les ressources et leur coût avant de créer la base et le service.
-3. Au premier démarrage, le serveur applique les migrations.
-   `https://<service>.onrender.com/api/health` doit répondre
-   `{"status":"ok"}`.
-4. Construire l'app avec
-   `--dart-define=DHAMET_SERVER=https://<service>.onrender.com`. Le client
-   en déduit `wss://…/ws`.
+### Ailleurs
 
-Ensuite, Render redéploie à chaque commit qui touche `server/`,
-`packages/dhamet_engine/` ou `render.yaml` (`autoDeployTrigger: commit`).
-Les commits qui ne changent que de la documentation ou des tests ne
-déclenchent rien.
-
-À savoir :
-
-- **Un déploiement ou un redémarrage interrompt les parties en cours.**
-  Mieux vaut déployer quand personne ne joue. Au démarrage, les parties
-  interrompues passent en `aborted` et chaque rencontre de tournoi sans
-  résultat reçoit un nouveau salon.
-- **Plans.** Le service est en `0.5c-512mb` et la base en `0.1c-256mb`,
-  tous deux payants ; on peut les changer dans `render.yaml` ou dans le
-  tableau de bord. Les plans `free` ne conviennent qu'à un essai : le
-  service s'endort après 15 min sans trafic, et la base gratuite expire au
-  bout de 30 jours, sans sauvegarde.
-- **`TRUST_PROXY=3`.** Sur Render, une requête traverse Cloudflare, le
-  répartiteur de charge, puis un proxy interne. Chacun ajoute une adresse à
-  `X-Forwarded-For`. Avec 3, Express lit l'adresse du client, et une
-  adresse forgée par le client (à gauche de la liste) est ignorée. Sans ce
-  réglage, l'adresse vue est celle du dernier proxy : **tous les joueurs
-  partageraient la même limite** de `/api/auth/*`.
-- **Keepalive.** Le client envoie `ping` toutes les 25 s. Render ne coupe
-  pas une connexion WebSocket active.
-- **Base externe** (Neon, Supabase…) : mettre son URL dans `DATABASE_URL`,
-  avec `?sslmode=verify-full`.
-- **Autre hébergeur Docker** (Railway, Fly.io…) : même image
-  (`docker build -f server/Dockerfile .` depuis la racine du dépôt), une
-  seule instance, et un `TRUST_PROXY` adapté aux proxys de l'hébergeur.
+Même image (`docker build -f server/Dockerfile .` depuis la racine du
+dépôt), autant d'instances que voulu, avec une base PostgreSQL et un
+`TRUST_PROXY` adapté aux proxys de l'hébergeur. Une base externe (Neon,
+Supabase…) se met dans `DATABASE_URL`, avec `?sslmode=verify-full`.
 
 ## Tests
 
@@ -260,7 +296,23 @@ déclenchent rien.
   (`timeout`) ; tournoi (création, inscriptions, départ, salons, résultat et
   classement, fin du tournoi) ; fermeture `4401` sans jeton valide ;
   `GET /api/health` ; limite de débit de `/api/auth/*` par adresse de
-  client derrière trois proxys (`TRUST_PROXY=3`), adresse forgée ignorée.
+  client derrière trois proxys (`TRUST_PROXY=3`), adresse forgée ignorée ;
+  `/confidentialite` ; `/api/cron/sweep` protégé par `CRON_SECRET`.
+- **Plusieurs instances** (`test/multi-instance.e2e-spec.ts`) : deux
+  serveurs sur une même base PostgreSQL, chaque joueur connecté à l'un
+  d'eux. Ils démarrent ensemble sur une base vide, dont un seul applique
+  les migrations. Le test couvre ensuite une partie complète, l'abandon
+  d'un joueur parti et le retour d'un joueur sur l'autre instance. Il
+  vérifie aussi la pendule. Il demande une base jetable, dont il efface le
+  schéma :
+
+  ```bash
+  docker compose up -d db
+  docker compose exec db createdb -U dhamet dhamet_e2e
+  E2E_DATABASE_URL=postgres://dhamet:dhamet@localhost:5436/dhamet_e2e npm run test:e2e
+  ```
+
+  Sans `E2E_DATABASE_URL`, il est ignoré.
 
 ## Deviations from docs/multiplayer.md
 
@@ -275,8 +327,11 @@ Choix faits là où le contrat est muet ou ambigu :
    hors plateau, pièce inconnue…) est traité à l'étape 5 : `ILLEGAL_MOVE`.
    Une trame non JSON ou un événement inconnu donnent `INVALID_MESSAGE`
    (avec `event: null` si la trame n'est pas lisible).
-3. **`graceSeconds`** vaut `RECONNECT_GRACE_SECONDS` (60 par défaut, comme
-   le contrat).
+3. **`graceSeconds`** est le temps qui reste au joueur pour revenir quand
+   l'annonce part : `RECONNECT_GRACE_SECONDS` (60 par défaut, comme le
+   contrat) moins `DISCONNECT_NOTICE_SECONDS` (5), soit 55 s par défaut.
+   L'annonce `player:disconnected` attend ce délai d'annonce ; un joueur
+   revenu avant n'est jamais annoncé (ni `player:reconnected`).
 4. **Parties classées.** Un salon créé par un invité n'est jamais classé
    (`room.rated = false`). Si un invité rejoint un salon classé, la partie
    ne l'est pas (`gameSummary.rated = false`, pas de `ratingChanges`) ; le
@@ -302,14 +357,18 @@ Choix faits là où le contrat est muet ou ambigu :
    - Dans un salon en attente, un joueur déconnecté perd son statut « prêt ».
      Un salon en attente sans aucun joueur connecté est fermé après le délai
      de grâce (sauf salon de tournoi).
-   - Un salon terminé reste en mémoire pendant le délai de grâce
+   - Un salon terminé reste ouvert pendant le délai de grâce
      (`game:sync`, `room:rejoin`), puis son code est libéré ; la partie
      reste consultable par `GET /api/games/:id`.
 9. **Diffusion.** Les événements de salon et de partie vont à toutes les
    connexions ouvertes des membres (un compte peut en avoir plusieurs).
    `game:sync`, la réponse à `room:rejoin`, `pong` et `error` ne vont qu'à
    la connexion qui a fait la demande. Un joueur qui garde une autre
-   connexion ouverte n'est pas considéré comme déconnecté.
+   connexion ouverte sur la même instance n'est pas considéré comme
+   déconnecté. Toute action d'un joueur dans un salon (`game:move`,
+   `game:sync`, `game:resign`, `room:ready`, `room:rejoin`) le marque
+   présent. Après une coupure de l'écoute entre instances, le serveur
+   renvoie de lui-même `game:sync` ou `room:updated` aux joueurs concernés.
 10. **Pendule.** `initialSeconds` entre 0,1 et 10 800, `incrementSeconds`
     entre 0 et 600. `clocks` est en millisecondes entières. Si un coup
     arrive alors que le temps de son auteur est écoulé, la partie se termine
@@ -334,14 +393,18 @@ Choix faits là où le contrat est muet ou ambigu :
       tenir compte de la casse ;
     - `Game.plyCount`, `Room.tournamentMatchId`, `TournamentPlayer.seed` ;
     - `GamePlayer.ratingAfter` reste `null` pour une partie non classée.
-13. **Statut `aborted`** : attribué au démarrage du serveur aux parties
-    restées en cours lors de l'exécution précédente.
+13. **Statut `aborted`** : attribué par la migration
+    `SharedRooms1791600000000` aux parties restées en cours sur l'ancien
+    serveur, qui les gardait en mémoire.
 14. **Invités** : `invite_` suivi de 4 caractères `[a-z0-9]` (plus en cas
     de collision). Sans mot de passe, leur jeton est leur seul identifiant.
 15. **`GET /api/health`** (hors contrat) répond `{"status":"ok"}` pour les
     health checks de l'hébergeur. Il n'interroge pas la base : le serveur
-    n'écoute qu'après avoir joint la base et appliqué les migrations, et un
-    échec ferait redémarrer l'instance, donc perdre les parties en cours.
+    n'écoute qu'après avoir joint la base et appliqué les migrations.
+16. **Autres routes hors contrat** : `GET /confidentialite` et
+    `GET /privacy` (politique de confidentialité, hors du préfixe `/api`) ;
+    `GET /api/cron/sweep` (nettoyage planifié, `Authorization: Bearer
+    <CRON_SECRET>`), qui renvoie `{"settled": n}`.
 
 ## Suppression de compte
 
@@ -358,14 +421,14 @@ effacé : parties, coups, historique Elo et tournois y font référence.
   joueur peut réessayer.
 - **Partie en cours : abandon plutôt que `409`.** `room:leave` abandonne
   déjà une partie en cours, par le même chemin que le forfait après le
-  délai de reconnexion (`GameplayService.resignInRoom`, dans la file du
+  délai de reconnexion (`GameplayService.resignInRoom`, sous le verrou du
   salon). Et un refus ne suffirait pas : une rencontre de tournoi n'a pas
   de date limite, un tournoi en cours pourrait donc bloquer la suppression
   indéfiniment.
 - Les salons de rencontres de tournoi encore en attente sont fermés
-  **avant** d'enregistrer leur forfait, hors de la file des tournois : la
-  file d'un salon attend déjà celle des tournois (`gameFinished`), l'ordre
-  inverse pourrait bloquer les deux.
+  **avant** d'enregistrer leur forfait, hors du verrou des tournois : le
+  verrou d'un salon est toujours pris avant celui des tournois
+  (`gameFinished`), l'ordre inverse pourrait bloquer les deux.
 - Les numéros d'inscription (`seed`) d'un tournoi non commencé sont
   renumérotés après un retrait : ils restent 1, 2, 3… (ordre d'appariement).
 - WebSocket : la connexion est enregistrée dès la vérification du jeton,
@@ -383,8 +446,13 @@ effacé : parties, coups, historique Elo et tournois y font référence.
 
 ## Limites connues
 
-- Une seule instance de serveur (salons, pendules et files en mémoire) :
-  un déploiement interrompt les parties en cours.
+- Une instance qui plante sans recevoir `SIGTERM` laisse ses joueurs
+  « connectés » jusqu'à leur retour : leur adversaire n'est pas prévenu et
+  peut seulement abandonner ou attendre. Vercel envoie `SIGTERM` avant
+  d'arrêter une instance.
+- La limite de débit de `/api/auth/*` est comptée par instance. Pour une
+  limite globale sur Vercel : règle de pare-feu (Vercel Firewall).
+- Sur Vercel, les WebSockets et les images Docker sont en bêta.
 - Pas de proposition de nulle en ligne (`end.draw` est NEEDS_VERIFICATION
   et désactivé dans `DhametRules.standard`) ; le demi-point de nulle est
   prévu dans le classement et les tournois, mais ne peut pas survenir avec

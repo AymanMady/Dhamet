@@ -3,7 +3,7 @@
 #
 # Usage: [DHAMET_SERVER=https://…] tool/store/screenshots.sh
 #
-# Writes store/google_play/screenshots/<language>/*.jpg, 1080 x 1920. Set
+# Writes deploiement/google-play/screenshots/<language>/*.jpg, 1080 x 1920. Set
 # DHAMET_SERVER as for the release build: the home screen then shows online
 # play. Requires python3 with fontTools and Pillow, and the Noto Sans Arabic
 # font (fonts-noto-core).
@@ -24,7 +24,7 @@ from pathlib import Path
 from PIL import Image
 
 source = Path("build/store_screenshots")
-target = Path("store/google_play/screenshots")
+target = Path("deploiement/google-play/screenshots")
 for old in target.glob("*/*"):
     old.unlink()
 for png in sorted(source.glob("*/*.png")):

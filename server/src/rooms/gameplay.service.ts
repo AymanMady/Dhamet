@@ -1,13 +1,12 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { AppConfig, appConfig } from '../config/app.config';
 import { EngineService } from '../engine/engine.service';
 import { Color, EngineSnapshot, GameJson } from '../engine/engine.types';
+import { Game } from '../games/game.entity';
 import { GamesService } from '../games/games.service';
-import { toUserView } from '../users/user.view';
-import { UsersService } from '../users/users.service';
-import { ActiveGame, ActiveRoom, RoomView } from './active-room';
-import { ConnectionRegistry } from './connection-registry';
+import { Tx } from '../realtime/transactions';
+import { ActiveRoom, RoomView } from './active-room';
 import { Clocks, GameClock } from './game-clock';
 import { GameError } from './game-error';
 import { GameLifecycleListener } from './game-lifecycle';
@@ -25,20 +24,17 @@ export interface GameSyncData {
  * (membership, game state, turn, ply, then legality by the engine), played
  * by the engine, timestamped, saved and broadcast.
  *
- * Methods whose name ends in `InRoom` must be called from inside
- * `room.run`; the others queue themselves.
+ * Every method runs inside the transaction holding the lock of the room
+ * (`RoomsService`), with the time [now] of the request.
  */
 @Injectable()
 export class GameplayService {
-  private readonly logger = new Logger(GameplayService.name);
   private readonly listeners: GameLifecycleListener[] = [];
 
   constructor(
     private readonly engine: EngineService,
     private readonly games: GamesService,
-    private readonly users: UsersService,
     private readonly store: RoomStore,
-    private readonly connections: ConnectionRegistry,
     @Inject(appConfig.KEY) private readonly settings: AppConfig,
   ) {}
 
@@ -47,15 +43,14 @@ export class GameplayService {
   }
 
   /** Starts the game of [room], whose two players are ready. */
-  async startInRoom(room: ActiveRoom): Promise<void> {
-    const white = room.playerWithColor('white').user;
-    const black = room.playerWithColor('black').user;
+  async startInRoom(tx: Tx, room: ActiveRoom, now: number): Promise<void> {
+    const white = room.user(room.playerWithColor('white').userId);
+    const black = room.user(room.playerWithColor('black').userId);
     const id = randomUUID();
-    const startedAt = new Date();
     const snapshot = this.engine.create(id);
     const rated = room.rated && !white.isGuest && !black.isGuest;
     try {
-      await this.games.start({
+      await this.games.start(tx, {
         id,
         roomCode: room.code,
         rated,
@@ -63,23 +58,21 @@ export class GameplayService {
         tournamentMatchId: room.tournamentMatchId,
         game: snapshot.game,
         players: { white, black },
-        startedAt,
+        startedAt: new Date(now),
       });
     } catch (error) {
       this.engine.close(id);
       throw error;
     }
-    const clock = room.timeControl
-      ? new GameClock(room.timeControl, snapshot.currentPlayer, startedAt.getTime())
-      : null;
-    room.game = { id, rated, snapshot, clock };
-    room.status = 'playing';
-    await this.persist(`status of room ${room.code}`, () => this.store.saveStatus(room));
-    await this.notify((listener) =>
-      listener.gameStarted({ gameId: id, tournamentMatchId: room.tournamentMatchId }),
+    room.entity.gameId = id;
+    room.setClock(
+      room.timeControl ? new GameClock(room.timeControl, snapshot.currentPlayer, now) : null,
     );
-    this.armFlagTimer(room);
-    this.connections.broadcast(room.memberIds(), 'game:started', {
+    room.status = 'playing';
+    for (const listener of this.listeners) {
+      await listener.gameStarted(tx, { gameId: id, tournamentMatchId: room.tournamentMatchId });
+    }
+    this.send(tx, room.memberIds(), 'game:started', {
       room: room.view(),
       gameId: id,
       game: snapshot.game,
@@ -87,104 +80,99 @@ export class GameplayService {
   }
 
   /** `game:move`, validated in the order of docs/multiplayer.md. */
-  async move(userId: string, code: string, ply: number, move: unknown): Promise<void> {
-    const room = this.store.getAsMember(code, userId);
-    await room.run(async () => {
-      const game = this.gameInProgress(room);
-      const color = this.colorOf(room, userId);
-      if (color !== game.snapshot.currentPlayer) {
-        throw new GameError('NOT_YOUR_TURN', `It is ${game.snapshot.currentPlayer}'s turn`);
-      }
-      if (ply !== game.snapshot.plyCount) {
-        throw new GameError('STALE_PLY', `Expected ply ${game.snapshot.plyCount}, got ${ply}`);
-      }
-      const now = new Date();
-      if (game.clock?.hasFlagged(now.getTime())) {
-        await this.endInRoom(room, this.engine.loseOnTime(game.id, color), now);
-        throw new GameError('GAME_OVER', 'Your time is up');
-      }
-      const outcome = this.engine.play(game.id, move, now);
-      if (!outcome.ok) throw new GameError(outcome.code, outcome.message);
-      game.snapshot = outcome.snapshot;
-      game.clock?.press(now.getTime());
-      await this.persist(`move ${outcome.snapshot.plyCount} of game ${game.id}`, () =>
-        this.games.recordMove({
-          gameId: game.id,
-          ply: outcome.snapshot.plyCount,
-          userId,
-          move: outcome.move,
-          playedAt: now,
-          game: outcome.snapshot.game,
-        }),
-      );
-      this.connections.broadcast(room.memberIds(), 'game:moved', {
-        code: room.code,
-        gameId: game.id,
-        ply: outcome.snapshot.plyCount,
-        move: outcome.move,
-        ...this.clocksOf(game, now),
-      });
-      if (outcome.snapshot.result) await this.endInRoom(room, outcome.snapshot, now);
-      else this.armFlagTimer(room);
+  async moveInRoom(
+    tx: Tx,
+    room: ActiveRoom,
+    userId: string,
+    ply: number,
+    move: unknown,
+    now: number,
+  ): Promise<void> {
+    const game = await this.gameInProgress(tx, room);
+    const color = this.colorOf(room, userId);
+    const snapshot = this.engine.ensure(game.id, game.gameJson);
+    if (color !== snapshot.currentPlayer) {
+      throw new GameError('NOT_YOUR_TURN', `It is ${snapshot.currentPlayer}'s turn`);
+    }
+    if (ply !== snapshot.plyCount) {
+      throw new GameError('STALE_PLY', `Expected ply ${snapshot.plyCount}, got ${ply}`);
+    }
+    // A clock that ran out has already ended the game (`settleInRoom`).
+    const outcome = this.engine.play(game.id, move, new Date(now));
+    if (!outcome.ok) throw new GameError(outcome.code, outcome.message);
+    const clock = room.clock();
+    clock?.press(now);
+    room.setClock(clock);
+    await this.games.recordMove(tx, {
+      gameId: game.id,
+      ply: outcome.snapshot.plyCount,
+      userId,
+      move: outcome.move,
+      playedAt: new Date(now),
+      game: outcome.snapshot.game,
     });
+    this.send(tx, room.memberIds(), 'game:moved', {
+      code: room.code,
+      gameId: game.id,
+      ply: outcome.snapshot.plyCount,
+      move: outcome.move,
+      ...room.clocksAt(now),
+    });
+    if (outcome.snapshot.result) await this.endInRoom(tx, room, outcome.snapshot, now, now);
   }
 
-  async resign(userId: string, code: string): Promise<void> {
-    const room = this.store.getAsMember(code, userId);
-    await room.run(() => this.resignInRoom(room, userId));
-  }
-
-  async resignInRoom(room: ActiveRoom, userId: string): Promise<void> {
-    const game = this.gameInProgress(room);
-    await this.endInRoom(room, this.engine.resign(game.id, this.colorOf(room, userId)), new Date());
-  }
-
-  async sync(userId: string, code: string): Promise<GameSyncData> {
-    const room = this.store.getAsMember(code, userId);
-    return await room.run(() => this.syncInRoom(room));
+  /** [userId] resigns at [at]; the request came at [now]. */
+  async resignInRoom(
+    tx: Tx,
+    room: ActiveRoom,
+    userId: string,
+    at: number,
+    now: number,
+  ): Promise<void> {
+    const game = await this.gameInProgress(tx, room);
+    this.engine.ensure(game.id, game.gameJson);
+    const snapshot = this.engine.resign(game.id, this.colorOf(room, userId));
+    await this.endInRoom(tx, room, snapshot, at, now);
   }
 
   /** The full state of the game of [room] (in progress or over). */
-  syncInRoom(room: ActiveRoom): GameSyncData {
-    const game = room.game;
-    if (!game) throw new GameError('GAME_NOT_STARTED', 'The game has not started');
-    return {
-      room: room.view(),
-      gameId: game.id,
-      game: game.snapshot.game,
-      ...this.clocksOf(game, new Date()),
-    };
+  async syncInRoom(tx: Tx, room: ActiveRoom, now: number): Promise<GameSyncData> {
+    if (!room.gameId) throw new GameError('GAME_NOT_STARTED', 'The game has not started');
+    const game = await this.games.get(tx, room.gameId);
+    return { room: room.view(), gameId: game.id, game: game.gameJson, ...room.clocksAt(now) };
   }
 
-  /** [userId] left a game in progress: they forfeit unless they come back in time. */
-  startForfeitTimerInRoom(room: ActiveRoom, userId: string): void {
-    this.cancelForfeitTimerInRoom(room, userId);
-    const timer = setTimeout(() => {
-      room
-        .run(async () => {
-          room.forfeitTimers.delete(userId);
-          if (room.status === 'playing' && room.player(userId)?.connected === false) {
-            await this.resignInRoom(room, userId);
-          }
-        })
-        .catch((error: unknown) => {
-          this.logger.error(error);
-        });
-    }, this.settings.reconnectGraceSeconds * 1000);
-    room.forfeitTimers.set(userId, timer);
+  /**
+   * Ends the game of [room] if, at [now], a clock has run out or a
+   * disconnected player has not come back in time: whichever came first,
+   * at the time it happened.
+   */
+  async settleInRoom(tx: Tx, room: ActiveRoom, now: number): Promise<void> {
+    if (room.status !== 'playing') return;
+    const flagAt = room.clock()?.flagAt() ?? null;
+    let forfeit: { userId: string; at: number } | null = null;
+    for (const seat of room.players) {
+      if (seat.connected || seat.forfeitAt === null) continue;
+      if (!forfeit || seat.forfeitAt < forfeit.at) {
+        forfeit = { userId: seat.userId, at: seat.forfeitAt };
+      }
+    }
+    if (flagAt !== null && flagAt <= now && (!forfeit || flagAt <= forfeit.at)) {
+      const game = await this.gameInProgress(tx, room);
+      const snapshot = this.engine.ensure(game.id, game.gameJson);
+      const lost = this.engine.loseOnTime(game.id, snapshot.currentPlayer);
+      await this.endInRoom(tx, room, lost, flagAt, now);
+    } else if (forfeit && forfeit.at <= now) {
+      await this.resignInRoom(tx, room, forfeit.userId, forfeit.at, now);
+    }
   }
 
-  cancelForfeitTimerInRoom(room: ActiveRoom, userId: string): void {
-    clearTimeout(room.forfeitTimers.get(userId));
-    room.forfeitTimers.delete(userId);
-  }
-
-  private gameInProgress(room: ActiveRoom): ActiveGame {
-    if (room.status === 'waiting' || !room.game) {
+  private async gameInProgress(tx: Tx, room: ActiveRoom): Promise<Game> {
+    if (room.status === 'waiting' || !room.gameId) {
       throw new GameError('GAME_NOT_STARTED', 'The game has not started');
     }
     if (room.status === 'finished') throw new GameError('GAME_OVER', 'The game is over');
-    return room.game;
+    return this.games.get(tx, room.gameId);
   }
 
   private colorOf(room: ActiveRoom, userId: string): Color {
@@ -193,109 +181,59 @@ export class GameplayService {
     return player.color;
   }
 
-  private clocksOf(game: ActiveGame, now: Date): { clocks?: Clocks } {
-    return game.clock ? { clocks: game.clock.read(now.getTime()) } : {};
-  }
-
-  /** Ends the game on time when the side to move runs out of it. */
-  private armFlagTimer(room: ActiveRoom): void {
-    if (room.flagTimer) clearTimeout(room.flagTimer);
-    room.flagTimer = null;
-    const clock = room.game?.clock;
-    if (!clock) return;
-    room.flagTimer = setTimeout(
-      () => {
-        room
-          .run(async () => {
-            const game = room.game;
-            if (room.status !== 'playing' || !game) return;
-            const now = new Date();
-            if (!clock.hasFlagged(now.getTime())) {
-              this.armFlagTimer(room);
-              return;
-            }
-            await this.endInRoom(
-              room,
-              this.engine.loseOnTime(game.id, game.snapshot.currentPlayer),
-              now,
-            );
-          })
-          .catch((error: unknown) => {
-            this.logger.error(error);
-          });
-      },
-      Math.max(0, clock.msUntilFlag(Date.now())),
-    );
-  }
-
   /**
-   * Finishes the game of [room] with [snapshot] (which has a result): saves
-   * it, updates ratings and listeners, then broadcasts `game:over`.
+   * Finishes the game of [room] with [snapshot] (which has a result), as of
+   * [at]: saves it, updates ratings and listeners, then broadcasts
+   * `game:over`. The room stays open for the grace period from [now], for
+   * the players to see the result.
    */
-  private async endInRoom(room: ActiveRoom, snapshot: EngineSnapshot, at: Date): Promise<void> {
-    const game = room.game;
+  private async endInRoom(
+    tx: Tx,
+    room: ActiveRoom,
+    snapshot: EngineSnapshot,
+    at: number,
+    now: number,
+  ): Promise<void> {
+    const gameId = room.gameId;
     const result = snapshot.result;
-    if (!game || !result) throw new Error(`Room ${room.code} has no finished game`);
-    game.snapshot = snapshot;
-    game.clock?.stop(at.getTime());
+    if (!gameId || !result) throw new Error(`Room ${room.code} has no finished game`);
+    const clock = room.clock();
+    clock?.stop(at);
+    room.setClock(clock);
     room.status = 'finished';
-    room.clearTimers();
-    this.engine.close(game.id);
-    const players = {
-      white: room.playerWithColor('white').user.id,
-      black: room.playerWithColor('black').user.id,
-    };
-    const ratingChanges = await this.persist(`end of game ${game.id}`, async () => {
-      const changes = await this.games.finish(game.id, {
-        game: snapshot.game,
-        result,
-        plyCount: snapshot.plyCount,
-        finishedAt: at,
-      });
-      await this.store.saveStatus(room);
-      for (const player of room.players) {
-        const user = await this.users.findById(player.user.id);
-        if (user) player.user = toUserView(user);
-      }
-      return changes;
+    for (const seat of room.players) seat.forfeitAt = null;
+    room.entity.expiresAt = new Date(
+      Math.max(at, now) + this.settings.reconnectGraceSeconds * 1000,
+    );
+    this.engine.close(gameId);
+    const ratingChanges = await this.games.finish(tx, gameId, {
+      game: snapshot.game,
+      result,
+      plyCount: snapshot.plyCount,
+      finishedAt: new Date(at),
     });
-    await this.notify((listener) =>
-      listener.gameFinished({
-        gameId: game.id,
+    await this.store.refreshUsers(tx, room);
+    const players = {
+      white: room.playerWithColor('white').userId,
+      black: room.playerWithColor('black').userId,
+    };
+    for (const listener of this.listeners) {
+      await listener.gameFinished(tx, {
+        gameId,
         tournamentMatchId: room.tournamentMatchId,
         result,
         players,
-      }),
-    );
-    this.connections.broadcast(room.memberIds(), 'game:over', {
+      });
+    }
+    this.send(tx, room.memberIds(), 'game:over', {
       code: room.code,
-      gameId: game.id,
+      gameId,
       result,
       ...(ratingChanges ? { ratingChanges } : {}),
     });
-    this.store.scheduleEviction(room, this.settings.reconnectGraceSeconds);
   }
 
-  /**
-   * Runs a database write whose failure must not stop the game: the game
-   * in memory is the authority, and its full JSON is saved again at the end.
-   */
-  private async persist<T>(what: string, write: () => Promise<T>): Promise<T | undefined> {
-    try {
-      return await write();
-    } catch (error) {
-      this.logger.error(`Could not save the ${what}`, error);
-      return undefined;
-    }
-  }
-
-  private async notify(call: (listener: GameLifecycleListener) => Promise<void>): Promise<void> {
-    for (const listener of this.listeners) {
-      try {
-        await call(listener);
-      } catch (error) {
-        this.logger.error('Game lifecycle listener failed', error);
-      }
-    }
+  private send(tx: Tx, to: string[], event: string, data: unknown): void {
+    tx.publish({ deliveries: [{ to, event, data }] });
   }
 }

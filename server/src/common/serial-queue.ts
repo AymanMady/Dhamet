@@ -1,8 +1,8 @@
 /**
  * Runs async tasks one after the other, in submission order.
  *
- * The server is a single process: queuing the updates of one room, or of
- * the ratings, keeps them consistent without database locks.
+ * Used by `TransactionRunner` so that, within one instance, the changes of
+ * the same key wait in memory rather than on a database lock.
  */
 export class SerialQueue {
   private tail: Promise<unknown> = Promise.resolve();

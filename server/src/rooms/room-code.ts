@@ -16,13 +16,13 @@ export function generateRoomCode(random: (max: number) => number = randomInt): s
 }
 
 /** A code for which [isTaken] is false. With 32^6 ≈ 10^9 codes, a retry is rare. */
-export function uniqueRoomCode(
-  isTaken: (code: string) => boolean,
+export async function uniqueRoomCode(
+  isTaken: (code: string) => Promise<boolean>,
   random: (max: number) => number = randomInt,
-): string {
+): Promise<string> {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const code = generateRoomCode(random);
-    if (!isTaken(code)) return code;
+    if (!(await isTaken(code))) return code;
   }
   throw new Error('No free room code found');
 }

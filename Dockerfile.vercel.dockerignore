@@ -1,0 +1,17 @@
+# Build context of Dockerfile.vercel: the repository root. Only send what the image needs.
+*
+!packages/dhamet_engine/lib
+!packages/dhamet_engine/pubspec.yaml
+!server/engine_bridge/bin
+!server/engine_bridge/lib
+!server/engine_bridge/tool
+!server/engine_bridge/pubspec.yaml
+!server/engine_bridge/pubspec.lock
+!server/engine_bridge/analysis_options.yaml
+!server/package.json
+!server/package-lock.json
+!server/nest-cli.json
+!server/tsconfig.json
+!server/tsconfig.build.json
+!server/src
+server/src/engine/generated

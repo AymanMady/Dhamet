@@ -31,14 +31,18 @@ describe('room codes', () => {
     expect(generateRoomCode((max) => max - 1)).toBe('999999');
   });
 
-  it('skip the codes already taken', () => {
+  it('skip the codes already taken', async () => {
     const sequence = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1];
     let index = 0;
     const random = (): number => sequence[index++] ?? 2;
-    expect(uniqueRoomCode((code) => code === 'AAAAAA', random)).toBe('BBBBBB');
+    await expect(
+      uniqueRoomCode((code) => Promise.resolve(code === 'AAAAAA'), random),
+    ).resolves.toBe('BBBBBB');
   });
 
-  it('give up when no code is free', () => {
-    expect(() => uniqueRoomCode(() => true)).toThrow('No free room code found');
+  it('give up when no code is free', async () => {
+    await expect(uniqueRoomCode(() => Promise.resolve(true))).rejects.toThrow(
+      'No free room code found',
+    );
   });
 });

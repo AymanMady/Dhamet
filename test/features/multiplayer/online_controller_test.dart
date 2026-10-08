@@ -361,6 +361,36 @@ void main() {
       expect(read().opponentAwayUntil, isNull);
     });
 
+    test(
+      'asks the server for the game when the opponent does not come back',
+      () async {
+        await gameStarted();
+        server.last.emit('player:disconnected', {
+          'code': 'ABC234',
+          'userId': 'u2',
+          'graceSeconds': 0,
+        });
+        await settle(1200);
+        // The server applies the forfeit and answers with the game.
+        expect(server.last.sentEvents('game:sync'), [
+          {'code': 'ABC234'},
+        ]);
+      },
+    );
+
+    test('asks the server for the game when a clock runs out', () async {
+      await signedInAndConnected();
+      server.last.emit('room:updated', {'room': roomJson()});
+      server.last.emit('game:started', {
+        'room': roomJson(status: 'playing', withOpponent: true),
+        'gameId': 'g1',
+        'game': Game.start().toJson(),
+        'clocks': {'white': 50, 'black': 300000},
+      });
+      await settle(1200);
+      expect(server.last.sentEvents('game:sync'), isNotEmpty);
+    });
+
     test('clocks count down for the side to move only', () async {
       await signedInAndConnected();
       server.last.emit('game:started', {

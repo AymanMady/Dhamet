@@ -4,6 +4,8 @@ import { TestApp } from './support/test-app';
 // Render (Cloudflare, load balancer, internal proxy) and a low auth rate limit.
 process.env.TRUST_PROXY = '3';
 process.env.AUTH_THROTTLE_LIMIT = '2';
+process.env.CRON_SECRET = 'cron-secret';
+process.env.CONTACT_EMAIL = 'dhametna@example.net';
 
 describe('Deployment behind a reverse proxy', () => {
   let t: TestApp;
@@ -18,6 +20,25 @@ describe('Deployment behind a reverse proxy', () => {
 
   it('answers the health check: 200 {status: "ok"}', async () => {
     await t.http.get('/api/health').expect(200, { status: 'ok' });
+  });
+
+  it('publishes the privacy policy, with the contact address: GET /confidentialite', async () => {
+    const page = await t.http.get('/confidentialite').expect(200);
+    expect(page.headers['content-type']).toMatch(/^text\/html/);
+    expect(page.text).toContain('id="suppression"');
+    expect(page.text).toContain('mailto:dhametna@example.net');
+    expect(page.text).not.toContain('contact@example.org');
+    await t.http.get('/privacy').expect(200);
+    await t.http.get('/api/confidentialite').expect(404);
+  });
+
+  it('runs the scheduled sweep only for the scheduler: GET /api/cron/sweep', async () => {
+    await t.http.get('/api/cron/sweep').expect(401);
+    await t.http.get('/api/cron/sweep').set('Authorization', 'Bearer wrong').expect(401);
+    await t.http
+      .get('/api/cron/sweep')
+      .set('Authorization', 'Bearer cron-secret')
+      .expect(200, { settled: 0 });
   });
 
   it('rate-limits /api/auth per client address, read through the proxies', async () => {

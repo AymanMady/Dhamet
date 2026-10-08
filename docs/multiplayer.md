@@ -200,16 +200,26 @@ aussi `game:over` et met à jour le classement.
 
 ### Reconnexion
 
-1. **Déconnexion d'un joueur pendant une partie** : le serveur le marque
-   `connected: false` et diffuse `player:disconnected` avec
-   `graceSeconds = 60`.
+1. **Déconnexion d'un joueur pendant une partie** : le délai de retour
+   (60 s) commence. Après un court délai d'annonce (5 s), le serveur marque
+   le joueur `connected: false` et diffuse `player:disconnected`.
+   `graceSeconds` est alors le temps qui lui reste, 55 s par défaut.
 2. **Retour dans le délai** : le joueur se reconnecte avec le même compte
    et envoie `room:rejoin`. Il reçoit `game:sync` et l'adversaire reçoit
-   `player:reconnected`.
+   `player:reconnected`. Revenu avant l'annonce, il n'a jamais été
+   déconnecté pour l'adversaire : rien n'est diffusé. C'est le cas des
+   reconnexions imposées par l'hébergeur (Vercel ferme chaque WebSocket au
+   bout de quelques minutes).
 3. **Délai expiré** : la partie se termine par **abandon** du joueur
    absent (`GameEndReason.resignation`).
 
 La pendule continue de tourner pendant la déconnexion.
+
+Le client doit se reconnecter de lui-même et renvoyer `room:rejoin`. Quand
+le délai de l'adversaire ou sa pendule arrive à zéro, il envoie `game:sync` :
+le serveur applique alors l'abandon ou le temps écoulé, s'il ne l'a pas déjà
+fait, et répond avec la partie. Le serveur peut aussi envoyer `game:sync` ou
+`room:updated` sans demande, pour rattraper des événements perdus.
 
 ### Pendule (optionnelle)
 
@@ -227,7 +237,7 @@ décroît. Quand il atteint zéro, la partie se termine par
 | `Game` | id, roomCode, rated, status, gameJson (JSON `Game` du moteur), resultJson, timeControl, tournamentMatchId, startedAt, finishedAt |
 | `GamePlayer` | gameId, userId, color, ratingBefore, ratingAfter |
 | `Move` | id, gameId, ply, userId, moveJson, playedAt |
-| `Room` | code, hostId, status, rated, timeControl, createdAt. Les salons actifs vivent en mémoire ; la table sert à l'historique. |
+| `Room` | code, hostId, status, rated, timeControl, createdAt, et pour un salon ouvert : players, gameId, clock, échéances (forfait, fermeture). Les salons ouverts (`closedAt` nul) sont l'état partagé par toutes les instances du serveur ; les salons fermés servent d'historique. |
 | `Ranking` | historique Elo : userId, gameId, ratingBefore, ratingAfter, createdAt |
 | `Tournament` | id, name, format, status, maxPlayers, createdById, createdAt |
 | `TournamentPlayer` | tournamentId, userId, score |

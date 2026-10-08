@@ -1,7 +1,8 @@
-# Publication sur Google Play
+# 1. Publier l'application sur Google Play
 
 Ce guide mène du code source à l'application publiée. Les textes et les
-visuels de la fiche sont dans [store/google_play/](../store/google_play/).
+visuels de la fiche sont dans [google-play/](google-play/) ; le serveur du
+jeu en ligne a son propre guide : [02-serveur-vercel.md](02-serveur-vercel.md).
 
 ## Identité de l'application
 
@@ -19,9 +20,9 @@ visuels de la fiche sont dans [store/google_play/](../store/google_play/).
 Un carré de sable où l'on a tracé au doigt une cellule du plateau : le
 carré, la croix et les deux diagonales. Comme sur le vrai plateau, les
 milieux des côtés sont des points « étroits », sans diagonale. Au centre se
-dresse un Sultan : deux bâtonnets croisés, liés par une cordelette indigo,
-comme le dessine le jeu (voir [design.md](design.md)). Un caillou attend dans
-un coin.
+dresse une ظايمة : deux bâtonnets croisés, liés par une cordelette indigo,
+comme le dessine le jeu (voir [docs/design.md](../docs/design.md)). Une
+بعرة attend dans un coin.
 
 Le script produit, à partir d'un seul dessin :
 
@@ -31,7 +32,8 @@ Le script produit, à partir d'un seul dessin :
   lancement ;
 - les icônes iOS ;
 - `assets/images/logo.png`, affiché dans l'application ;
-- l'icône 512 × 512 et l'image de présentation 1024 × 500 de Google Play.
+- l'icône 512 × 512 et l'image de présentation 1024 × 500 de Google Play,
+  dans [google-play/](google-play/).
 
 ```bash
 python3 tool/brand/generate_brand_assets.py   # numpy, Pillow avec libraqm
@@ -66,21 +68,21 @@ son serveur :
   « aucune donnée collectée » ;
 - **avec serveur**, l'application a des comptes : il faut la politique de
   confidentialité, l'URL de suppression de compte et la déclaration
-  détaillée de [data-safety.md](../store/google_play/data-safety.md).
+  détaillée de [google-play/data-safety.md](google-play/data-safety.md).
 
-Le serveur se déploie sur Render avec [render.yaml](../render.yaml) (voir
-[server/README.md](../server/README.md)). L'adresse attendue est
-`https://dhamet-server.onrender.com` ; elle n'est sûre qu'une fois le
-Blueprint créé : vérifiez-la dans le tableau de bord Render. L'application
-exige HTTPS en release.
+Le serveur se déploie sur Vercel : suivez
+[02-serveur-vercel.md](02-serveur-vercel.md). Il vous donne l'adresse du
+serveur, par exemple `https://dhametna.vercel.app`, et publie la politique
+de confidentialité à `https://dhametna.vercel.app/confidentialite`.
+L'application exige HTTPS en release.
 
-L'application n'a aucun réglage de serveur : pour essayer un autre
-serveur, construisez une version avec une autre adresse `DHAMET_SERVER`.
+L'application n'a aucun réglage de serveur : pour en essayer un autre,
+construisez une version avec une autre adresse `DHAMET_SERVER`.
 
 ## 3. Construire le bundle
 
 ```bash
-DHAMET_SERVER=https://dhamet-server.onrender.com tool/release/build_release.sh
+DHAMET_SERVER=https://dhametna.vercel.app tool/release/build_release.sh
 # ou, sans jeu en ligne :
 tool/release/build_release.sh
 ```
@@ -111,7 +113,7 @@ flutter analyze && flutter test
 ## 4. Première publication
 
 1. **Compte développeur** : [play.google.com/console](https://play.google.com/console),
-   frais d'inscription uniques et vérification d'identité. Un compte
+   frais d'inscription uniques (25 $) et vérification d'identité. Un compte
    **personnel** créé après le 13 novembre 2023 doit d'abord faire un
    **test fermé avec au moins 12 testeurs inscrits pendant 14 jours d'affilée**
    avant de pouvoir demander l'accès à la production. Prévoyez la liste des
@@ -119,20 +121,28 @@ flutter analyze && flutter test
 2. **Créer l'application** : nom « Dhametna », langue par défaut français
    (fr-FR), type **Jeu**, **gratuit**. Une application gratuite ne peut plus
    devenir payante.
-3. **Fiche Play Store** : textes de [listing.md](../store/google_play/listing.md),
-   icône, image de présentation et captures de
-   [store/google_play/](../store/google_play/). Ajoutez les traductions
-   arabe (ar) et anglaise (en-US).
+3. **Fiche Play Store** (Croissance → Présence sur le Play Store → Fiche
+   principale) : textes de [google-play/listing.md](google-play/listing.md),
+   puis les visuels de [google-play/](google-play/) :
+
+   | Champ de la Play Console | Fichier |
+   |---|---|
+   | Icône de l'application | `icon_512.png` |
+   | Image de présentation | `feature_graphic_1024x500.png` |
+   | Captures d'écran du téléphone (français) | `screenshots/fr/*.jpg` |
+   | Captures, traduction arabe (ar) | `screenshots/ar/*.jpg` |
+   | Captures, traduction anglaise (en-US) | `screenshots/en/*.jpg` |
+
+   Ajoutez les traductions arabe (ar) et anglaise (en-US) de la fiche.
 4. **Contenu de l'application** : suivez
-   [data-safety.md](../store/google_play/data-safety.md) (politique de
+   [google-play/data-safety.md](google-play/data-safety.md) (politique de
    confidentialité, accès à l'application, annonces, classification du
    contenu, public cible, sécurité des données, suppression de compte).
-5. **Politique de confidentialité** : remplacez `contact@example.org` dans
-   [privacy-policy.html](../store/google_play/privacy-policy.html), puis
-   publiez le fichier à une adresse publique, par exemple GitHub Pages ou
-   Google Sites. Déclarez cette adresse dans la Play Console. Pour la version
-   en ligne, déclarez aussi l'adresse de suppression :
-   `…/privacy-policy.html#suppression`.
+5. **Politique de confidentialité** : déclarez
+   `https://dhametna.vercel.app/confidentialite`. Vérifiez d'abord que
+   votre adresse de contact y figure (variable `CONTACT_EMAIL` du serveur).
+   Pour la version en ligne, déclarez aussi l'adresse de suppression de
+   compte : `https://dhametna.vercel.app/confidentialite#suppression`.
 6. **Test fermé** : Test et publication → Tests → Test fermé. Envoyez
    `app-release.aab` et ajoutez les testeurs. Activez Play App Signing
    (proposé au premier envoi).
@@ -148,9 +158,10 @@ flutter analyze && flutter test
 2. Si l'interface a changé, régénérez les captures :
 
    ```bash
-   DHAMET_SERVER=https://dhamet-server.onrender.com tool/store/screenshots.sh
+   DHAMET_SERVER=https://dhametna.vercel.app tool/store/screenshots.sh
    ```
 
+   Elles arrivent dans [google-play/screenshots/](google-play/screenshots/).
    Sans `DHAMET_SERVER`, les captures montrent une version sans jeu en
    ligne. Le script demande Python (fontTools, Pillow) et la police Noto
    Sans Arabic (paquet `fonts-noto-core`).
@@ -175,8 +186,17 @@ le 1<sup>er</sup> octobre 2026 :
 
 Le bundle est signé avec la clé d'import (`CN=Dhametna`).
 
+Le serveur prévu pour Vercel a été vérifié le 8 octobre 2026 avec deux
+conteneurs de son image de production sur une même base PostgreSQL. Un
+joueur était connecté à chacun, pour une partie complète :
+
+- coups transmis d'une instance à l'autre ;
+- reconnexion rapide invisible pour l'adversaire ;
+- abandon après le délai de grâce.
+
 À vérifier sur un vrai téléphone pendant le test fermé :
 
 - le geste retour (Android 16 active le « retour prédictif ») ;
 - les vibrations ;
-- le jeu en ligne contre le serveur de production.
+- le jeu en ligne contre le serveur de production sur Vercel, en laissant
+  une partie durer plus de 5 minutes (reconnexion forcée par Vercel).

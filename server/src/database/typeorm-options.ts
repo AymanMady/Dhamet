@@ -21,9 +21,12 @@ export function typeOrmOptions(config: DatabaseConfig): DataSourceOptions {
     password: config.password,
     database: config.database,
     entities: ENTITIES,
-    migrations: [join(__dirname, 'migrations', '*.js')],
-    migrationsRun: config.migrationsRun,
+    // .js once built; .ts when the tests run the sources.
+    migrations: [join(__dirname, 'migrations', '*.{js,ts}')],
+    // Run by MigrationRunner, under a lock: several instances may start at once.
+    migrationsRun: false,
     synchronize: config.synchronize,
     uuidExtension: 'pgcrypto',
+    extra: { max: config.poolSize },
   };
 }

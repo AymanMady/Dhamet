@@ -1,24 +1,8 @@
-import { SerialQueue } from '../common/serial-queue';
-import { Color, EngineSnapshot } from '../engine/engine.types';
+import { Color } from '../engine/engine.types';
 import { UserView } from '../users/user.view';
-import { GameClock } from './game-clock';
-import { RoomStatus } from './room.entity';
+import { Clocks, GameClock } from './game-clock';
+import { Room, RoomSeat, RoomStatus } from './room.entity';
 import { TimeControl } from './time-control';
-
-export interface RoomPlayer {
-  user: UserView;
-  color: Color;
-  ready: boolean;
-  connected: boolean;
-}
-
-/** The game of a room, from its start; kept after its end for `game:sync`. */
-export interface ActiveGame {
-  id: string;
-  rated: boolean;
-  snapshot: EngineSnapshot;
-  clock: GameClock | null;
-}
 
 /** `room` in docs/multiplayer.md. */
 export interface RoomView {
@@ -32,34 +16,71 @@ export interface RoomView {
 }
 
 /**
- * A room in memory. Its state changes only inside [run], one task at a
- * time, so that moves, resignations, clocks and forfeits never interleave.
+ * An open room, loaded from the database inside the transaction that holds
+ * its lock (`RoomStore.load`). Changes are written back by `RoomStore.save`.
  */
 export class ActiveRoom {
-  status: RoomStatus = 'waiting';
-  game: ActiveGame | null = null;
-  /** Forfeits pending for disconnected players, by user id. */
-  readonly forfeitTimers = new Map<string, NodeJS.Timeout>();
-  flagTimer: NodeJS.Timeout | null = null;
-  evictionTimer: NodeJS.Timeout | null = null;
-  private readonly queue = new SerialQueue();
-
   constructor(
-    readonly id: string,
-    readonly code: string,
-    public hostId: string,
-    readonly rated: boolean,
-    readonly timeControl: TimeControl | null,
-    /** Set for the rooms of tournament matches, whose seats are fixed. */
-    readonly tournamentMatchId: string | null,
-    readonly players: RoomPlayer[],
+    readonly entity: Room,
+    /** The public profile of each player, by user id. */
+    private users: Map<string, UserView>,
   ) {}
 
-  player(userId: string): RoomPlayer | undefined {
-    return this.players.find((player) => player.user.id === userId);
+  get id(): string {
+    return this.entity.id;
   }
 
-  playerWithColor(color: Color): RoomPlayer {
+  get code(): string {
+    return this.entity.code;
+  }
+
+  get status(): RoomStatus {
+    return this.entity.status;
+  }
+
+  set status(status: RoomStatus) {
+    this.entity.status = status;
+  }
+
+  get hostId(): string {
+    return this.entity.hostId;
+  }
+
+  set hostId(hostId: string) {
+    this.entity.hostId = hostId;
+  }
+
+  get rated(): boolean {
+    return this.entity.rated;
+  }
+
+  get timeControl(): TimeControl | null {
+    return this.entity.timeControl;
+  }
+
+  /** Set for the rooms of tournament matches, whose seats are fixed. */
+  get tournamentMatchId(): string | null {
+    return this.entity.tournamentMatchId;
+  }
+
+  get players(): RoomSeat[] {
+    return this.entity.players;
+  }
+
+  get gameId(): string | null {
+    return this.entity.gameId;
+  }
+
+  /** A method, not a getter: it changes during a request. */
+  isClosed(): boolean {
+    return this.entity.closedAt !== null;
+  }
+
+  player(userId: string): RoomSeat | undefined {
+    return this.players.find((player) => player.userId === userId);
+  }
+
+  playerWithColor(color: Color): RoomSeat {
     const player = this.players.find((p) => p.color === color);
     if (!player) throw new Error(`Room ${this.code} has no ${color} player`);
     return player;
@@ -67,20 +88,32 @@ export class ActiveRoom {
 
   /** User ids of the members, except [excluded]. */
   memberIds(excluded?: string): string[] {
-    return this.players.map((player) => player.user.id).filter((id) => id !== excluded);
+    return this.players.map((player) => player.userId).filter((id) => id !== excluded);
   }
 
-  run<T>(task: () => Promise<T> | T): Promise<T> {
-    return this.queue.run(task);
+  user(userId: string): UserView {
+    const user = this.users.get(userId);
+    if (!user) throw new Error(`Room ${this.code}: unknown user ${userId}`);
+    return user;
   }
 
-  clearTimers(): void {
-    for (const timer of this.forfeitTimers.values()) clearTimeout(timer);
-    this.forfeitTimers.clear();
-    if (this.flagTimer) clearTimeout(this.flagTimer);
-    if (this.evictionTimer) clearTimeout(this.evictionTimer);
-    this.flagTimer = null;
-    this.evictionTimer = null;
+  setUsers(users: Map<string, UserView>): void {
+    this.users = users;
+  }
+
+  /** The clock of the game, if it has one. */
+  clock(): GameClock | null {
+    return this.entity.clock ? GameClock.restore(this.entity.clock) : null;
+  }
+
+  setClock(clock: GameClock | null): void {
+    this.entity.clock = clock?.state() ?? null;
+  }
+
+  /** `{clocks}` at [now] for the events of a game with a clock, `{}` otherwise. */
+  clocksAt(now: number): { clocks?: Clocks } {
+    const clock = this.clock();
+    return clock ? { clocks: clock.read(now) } : {};
   }
 
   view(): RoomView {
@@ -90,13 +123,13 @@ export class ActiveRoom {
       hostId: this.hostId,
       rated: this.rated,
       timeControl: this.timeControl,
-      players: this.players.map(({ user, color, ready, connected }) => ({
-        user,
+      players: this.players.map(({ userId, color, ready, connected }) => ({
+        user: this.user(userId),
         color,
         ready,
         connected,
       })),
-      gameId: this.game?.id ?? null,
+      gameId: this.gameId,
     };
   }
 }

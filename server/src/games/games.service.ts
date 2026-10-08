@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { Color, COLORS, GameJson, GameResultJson, MoveJson } from '../engine/engine.types';
 import { RankingService, RatingChanges } from '../ranking/ranking.service';
+import { Tx } from '../realtime/transactions';
 import { TimeControl } from '../rooms/time-control';
 import { User } from '../users/user.entity';
 import { toUserView, UserView } from '../users/user.view';
@@ -44,106 +45,102 @@ export interface PlayedMove {
   game: GameJson;
 }
 
-/** Persistence of online games. The games themselves are run by `GameplayService`. */
-@Injectable()
-export class GamesService implements OnApplicationBootstrap {
-  /** Game ends are applied one at a time: they update the players' ratings. */
-  private finishing: Promise<unknown> = Promise.resolve();
+/** The lock key of the ratings, which every game end changes. */
+const RATINGS_KEY = 'ratings';
 
+/**
+ * Persistence of online games, inside the transaction of their room. The
+ * games themselves are run by `GameplayService`.
+ */
+@Injectable()
+export class GamesService {
   constructor(
     @InjectRepository(Game) private readonly games: Repository<Game>,
-    @InjectDataSource() private readonly dataSource: DataSource,
     private readonly ranking: RankingService,
   ) {}
 
-  /** Games still "playing" were cut by a restart: active games only live in memory. */
-  async onApplicationBootstrap(): Promise<void> {
-    await this.games.update({ status: 'playing' }, { status: 'aborted', finishedAt: new Date() });
+  /** The saved state of game [id]. */
+  get(tx: Tx, id: string): Promise<Game> {
+    return tx.manager.findOneByOrFail(Game, { id });
   }
 
-  async start(game: NewGame): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      await manager.insert(Game, {
-        id: game.id,
-        roomCode: game.roomCode,
-        rated: game.rated,
-        status: 'playing',
-        gameJson: game.game,
-        resultJson: null,
-        timeControl: game.timeControl,
-        tournamentMatchId: game.tournamentMatchId,
-        plyCount: 0,
-        startedAt: game.startedAt,
-        finishedAt: null,
-      });
-      for (const color of COLORS) {
-        const player = game.players[color];
-        await manager.insert(GamePlayer, {
-          gameId: game.id,
-          userId: player.id,
-          color,
-          ratingBefore: player.rating,
-          ratingAfter: null,
-        });
-      }
+  async start(tx: Tx, game: NewGame): Promise<void> {
+    await tx.manager.insert(Game, {
+      id: game.id,
+      roomCode: game.roomCode,
+      rated: game.rated,
+      status: 'playing',
+      gameJson: game.game,
+      resultJson: null,
+      timeControl: game.timeControl,
+      tournamentMatchId: game.tournamentMatchId,
+      plyCount: 0,
+      startedAt: game.startedAt,
+      finishedAt: null,
     });
+    for (const color of COLORS) {
+      const player = game.players[color];
+      await tx.manager.insert(GamePlayer, {
+        gameId: game.id,
+        userId: player.id,
+        color,
+        ratingBefore: player.rating,
+        ratingAfter: null,
+      });
+    }
   }
 
-  async recordMove(move: PlayedMove): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      await manager.insert(Move, {
-        gameId: move.gameId,
-        ply: move.ply,
-        userId: move.userId,
-        moveJson: move.move,
-        playedAt: move.playedAt,
-      });
-      await manager.update(Game, move.gameId, { gameJson: move.game, plyCount: move.ply });
+  async recordMove(tx: Tx, move: PlayedMove): Promise<void> {
+    await tx.manager.insert(Move, {
+      gameId: move.gameId,
+      ply: move.ply,
+      userId: move.userId,
+      moveJson: move.move,
+      playedAt: move.playedAt,
     });
+    await tx.manager.update(Game, move.gameId, { gameJson: move.game, plyCount: move.ply });
   }
 
   /**
    * Saves the end of a game and updates its players (statistics, and
    * ratings for a rated game). Returns the rating changes of a rated game.
+   * Game ends wait for each other: they change the players' ratings.
    */
-  finish(
+  async finish(
+    tx: Tx,
     gameId: string,
     end: { game: GameJson; result: GameResultJson; plyCount: number; finishedAt: Date },
   ): Promise<RatingChanges | null> {
-    const task = this.finishing.then(() =>
-      this.dataSource.transaction(async (manager) => {
-        const game = await manager.findOneOrFail(Game, {
-          where: { id: gameId },
-          relations: { players: true },
+    await tx.lock(RATINGS_KEY);
+    const manager = tx.manager;
+    const game = await manager.findOneOrFail(Game, {
+      where: { id: gameId },
+      relations: { players: true },
+    });
+    const users = await manager.findBy(User, { id: In(game.players.map((p) => p.userId)) });
+    const byColor = (color: Color): User => {
+      const player = game.players.find((p) => p.color === color);
+      const user = users.find((u) => u.id === player?.userId);
+      if (!user) throw new Error(`Game ${gameId} has no ${color} player`);
+      return user;
+    };
+    const players = { white: byColor('white'), black: byColor('black') };
+    const changes = await this.ranking.recordResult(manager, game, players, end.result);
+    if (changes) {
+      for (const player of game.players) {
+        await manager.update(GamePlayer, player.id, {
+          ratingAfter: players[player.color].rating,
         });
-        const users = await manager.findBy(User, { id: In(game.players.map((p) => p.userId)) });
-        const byColor = (color: Color): User => {
-          const player = game.players.find((p) => p.color === color);
-          const user = users.find((u) => u.id === player?.userId);
-          if (!user) throw new Error(`Game ${gameId} has no ${color} player`);
-          return user;
-        };
-        const players = { white: byColor('white'), black: byColor('black') };
-        const changes = await this.ranking.recordResult(manager, game, players, end.result);
-        if (changes) {
-          for (const player of game.players) {
-            await manager.update(GamePlayer, player.id, {
-              ratingAfter: players[player.color].rating,
-            });
-          }
-        }
-        await manager.update(Game, gameId, {
-          status: 'finished',
-          gameJson: end.game,
-          resultJson: end.result,
-          plyCount: end.plyCount,
-          finishedAt: end.finishedAt,
-        });
-        return changes;
-      }),
-    );
-    this.finishing = task.catch(() => undefined);
-    return task;
+      }
+    }
+    await manager.update(Game, gameId, {
+      status: 'finished',
+      gameJson: end.game,
+      resultJson: end.result,
+      plyCount: end.plyCount,
+      finishedAt: end.finishedAt,
+    });
+    return changes;
   }
 
   /** The summary and the engine `Game` JSON of game [id]. */

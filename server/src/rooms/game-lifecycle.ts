@@ -1,4 +1,5 @@
 import { Color, GameResultJson } from '../engine/engine.types';
+import { Tx } from '../realtime/transactions';
 
 export interface StartedGame {
   gameId: string;
@@ -11,8 +12,11 @@ export interface FinishedGame extends StartedGame {
   players: Record<Color, string>;
 }
 
-/** Notified of the start and end of every online game (e.g. by tournaments). */
+/**
+ * Notified of the start and end of every online game (e.g. by tournaments),
+ * inside the transaction of its room.
+ */
 export interface GameLifecycleListener {
-  gameStarted(game: StartedGame): Promise<void>;
-  gameFinished(game: FinishedGame): Promise<void>;
+  gameStarted(tx: Tx, game: StartedGame): Promise<void>;
+  gameFinished(tx: Tx, game: FinishedGame): Promise<void>;
 }

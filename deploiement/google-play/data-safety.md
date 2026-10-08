@@ -60,14 +60,16 @@ Types de données à cocher :
 
 Obligatoire dès que l'application permet de créer un compte (version avec
 serveur) : l'adresse de la section « Supprimer votre compte » de la
-politique de confidentialité, par exemple
-`https://<votre-hébergement>/privacy-policy.html#suppression`.
+politique de confidentialité publiée par le serveur, par exemple
+`https://dhametna.vercel.app/confidentialite#suppression`.
 
 ## Politique de confidentialité
 
-URL publique de `store/google_play/privacy-policy.html`, à héberger avant
-de remplir la fiche (GitHub Pages, Google Sites, Netlify…). Remplacez
-d'abord l'adresse e-mail de contact (`contact@example.org`) dans le fichier.
+`https://dhametna.vercel.app/confidentialite` : le serveur publie
+[`server/src/legal/privacy-policy.html`](../../server/src/legal/privacy-policy.html)
+avec l'adresse de contact de sa variable `CONTACT_EMAIL` (voir
+[02-serveur-vercel.md](../02-serveur-vercel.md)). Sans serveur, publiez ce
+fichier ailleurs, après y avoir remplacé `contact@example.org`.
 
 ## Accès à l'application
 

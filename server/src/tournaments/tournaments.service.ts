@@ -3,14 +3,13 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  OnApplicationBootstrap,
   OnModuleInit,
 } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
-import { DataSource, EntityManager, IsNull, MoreThan, Repository } from 'typeorm';
-import { SerialQueue } from '../common/serial-queue';
+import { EntityManager, IsNull, MoreThan, Repository } from 'typeorm';
 import { Color, GameResultJson, opponentOf } from '../engine/engine.types';
+import { TransactionRunner, Tx } from '../realtime/transactions';
 import { FinishedGame, GameLifecycleListener, StartedGame } from '../rooms/game-lifecycle';
 import { GameplayService } from '../rooms/gameplay.service';
 import { RoomsService } from '../rooms/rooms.service';
@@ -28,42 +27,26 @@ const RELATIONS = {
   matches: { white: true, black: true },
 } as const;
 
+/** The lock key of the tournaments: their changes never interleave. */
+const TOURNAMENTS_KEY = 'tournaments';
+
 /**
  * Tournaments. Only the round robin is implemented; the format is a field
- * so that other formats can be added. Every change goes through one queue,
- * so registrations, starts and results never interleave.
+ * so that other formats can be added. Every change holds one lock, on every
+ * instance of the server, so registrations, starts and results never
+ * interleave.
  */
 @Injectable()
-export class TournamentsService
-  implements OnModuleInit, OnApplicationBootstrap, GameLifecycleListener
-{
-  private readonly queue = new SerialQueue();
-
+export class TournamentsService implements OnModuleInit, GameLifecycleListener {
   constructor(
     @InjectRepository(Tournament) private readonly tournaments: Repository<Tournament>,
-    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly runner: TransactionRunner,
     private readonly rooms: RoomsService,
     private readonly gameplay: GameplayService,
   ) {}
 
   onModuleInit(): void {
     this.gameplay.subscribe(this);
-  }
-
-  /**
-   * Active rooms live in memory: after a restart, the matches of running
-   * tournaments without a result get a new room (and code).
-   */
-  async onApplicationBootstrap(): Promise<void> {
-    const matches = this.dataSource.getRepository(TournamentMatch);
-    const pending = await matches.find({
-      where: { resultJson: IsNull(), tournament: { status: 'running' } },
-      relations: { white: true, black: true },
-    });
-    for (const match of pending) {
-      const roomCode = await this.rooms.createForMatch(match.id, match.white, match.black);
-      await matches.update(match.id, { roomCode, gameId: null });
-    }
   }
 
   async create(user: User, dto: CreateTournamentDto): Promise<TournamentView> {
@@ -91,13 +74,13 @@ export class TournamentsService
   }
 
   async view(id: string): Promise<TournamentView> {
-    return toTournamentView(await this.load(id));
+    return toTournamentView(await this.load(this.tournaments.manager, id));
   }
 
   /** Registers [user]; joining twice is harmless. */
   join(user: User, id: string): Promise<TournamentView> {
-    return this.queue.run(async () => {
-      const tournament = await this.load(id);
+    return this.runner.run(TOURNAMENTS_KEY, async ({ manager }) => {
+      const tournament = await this.load(manager, id);
       if (tournament.players.some((player) => player.userId === user.id)) {
         return toTournamentView(tournament);
       }
@@ -107,10 +90,12 @@ export class TournamentsService
       if (tournament.players.length >= tournament.maxPlayers) {
         throw new BadRequestException('The tournament is full');
       }
-      await this.dataSource
-        .getRepository(TournamentPlayer)
-        .insert({ tournamentId: id, userId: user.id, seed: tournament.players.length + 1 });
-      return this.view(id);
+      await manager.insert(TournamentPlayer, {
+        tournamentId: id,
+        userId: user.id,
+        seed: tournament.players.length + 1,
+      });
+      return toTournamentView(await this.load(manager, id));
     });
   }
 
@@ -119,8 +104,9 @@ export class TournamentsService
    * private rated room for each match.
    */
   start(user: User, id: string): Promise<TournamentView> {
-    return this.queue.run(async () => {
-      const tournament = await this.load(id);
+    return this.runner.run(TOURNAMENTS_KEY, async (tx) => {
+      const { manager } = tx;
+      const tournament = await this.load(manager, id);
       if (tournament.createdById !== user.id) {
         throw new ForbiddenException('Only the creator can start the tournament');
       }
@@ -133,13 +119,12 @@ export class TournamentsService
       const seeds = [...tournament.players]
         .sort((a, b) => a.seed - b.seed)
         .map((player) => player.user);
-      const matches = this.dataSource.getRepository(TournamentMatch);
       const rounds = roundRobin(seeds);
       for (const [index, pairings] of rounds.entries()) {
         for (const { white, black } of pairings) {
           const matchId = randomUUID();
-          const roomCode = await this.rooms.createForMatch(matchId, white, black);
-          await matches.insert({
+          const roomCode = await this.rooms.createForMatch(tx, matchId, white, black);
+          await manager.insert(TournamentMatch, {
             id: matchId,
             tournamentId: id,
             round: index + 1,
@@ -151,32 +136,30 @@ export class TournamentsService
           });
         }
       }
-      await this.tournaments.update(id, { status: 'running' });
-      return this.view(id);
+      await manager.update(Tournament, id, { status: 'running' });
+      return toTournamentView(await this.load(manager, id));
     });
   }
 
-  async gameStarted(game: StartedGame): Promise<void> {
+  /** In the transaction of the room of the match. */
+  async gameStarted(tx: Tx, game: StartedGame): Promise<void> {
     const { tournamentMatchId } = game;
     if (!tournamentMatchId) return;
-    await this.queue.run(() =>
-      this.dataSource
-        .getRepository(TournamentMatch)
-        .update(tournamentMatchId, { gameId: game.gameId }),
-    );
+    await tx.lock(TOURNAMENTS_KEY);
+    await tx.manager.update(TournamentMatch, tournamentMatchId, { gameId: game.gameId });
   }
 
-  /** Records the result of a match: 1 point for a win, 0.5 for a draw. */
-  async gameFinished(game: FinishedGame): Promise<void> {
+  /**
+   * Records the result of a match: 1 point for a win, 0.5 for a draw. In
+   * the transaction of the room of the match.
+   */
+  async gameFinished(tx: Tx, game: FinishedGame): Promise<void> {
     const { tournamentMatchId } = game;
     if (!tournamentMatchId) return;
-    await this.queue.run(() =>
-      this.dataSource.transaction(async (manager) => {
-        const match = await manager.findOneBy(TournamentMatch, { id: tournamentMatchId });
-        if (!match || match.resultJson) return;
-        await this.recordResult(manager, match, game.gameId, game.result, game.players);
-      }),
-    );
+    await tx.lock(TOURNAMENTS_KEY);
+    const match = await tx.manager.findOneBy(TournamentMatch, { id: tournamentMatchId });
+    if (!match || match.resultJson) return;
+    await this.recordResult(tx.manager, match, game.gameId, game.result, game.players);
   }
 
   /**
@@ -188,46 +171,44 @@ export class TournamentsService
    * its game in progress and closed the rooms of the others.
    */
   withdraw(userId: string): Promise<void> {
-    return this.queue.run(() =>
-      this.dataSource.transaction(async (manager) => {
-        const created = await manager.findBy(Tournament, {
-          createdById: userId,
-          status: 'registering',
-        });
-        for (const tournament of created) {
-          await manager.delete(TournamentPlayer, { tournamentId: tournament.id });
-          await manager.delete(Tournament, tournament.id);
-        }
-        const registrations = await manager.findBy(TournamentPlayer, {
-          userId,
-          tournament: { status: 'registering' },
-        });
-        for (const registration of registrations) {
-          await manager.delete(TournamentPlayer, registration.id);
-          // Seeds stay 1, 2, 3…: the registration order.
-          await manager.decrement(
-            TournamentPlayer,
-            { tournamentId: registration.tournamentId, seed: MoreThan(registration.seed) },
-            'seed',
-            1,
-          );
-        }
-        const pending = await manager.findBy(TournamentMatch, [
-          { whiteId: userId, resultJson: IsNull() },
-          { blackId: userId, resultJson: IsNull() },
-        ]);
-        for (const match of pending) {
-          const winner = opponentOf(match.whiteId === userId ? 'white' : 'black');
-          await this.recordResult(
-            manager,
-            match,
-            match.gameId,
-            { winner, reason: 'resignation' },
-            { white: match.whiteId, black: match.blackId },
-          );
-        }
-      }),
-    );
+    return this.runner.run(TOURNAMENTS_KEY, async ({ manager }) => {
+      const created = await manager.findBy(Tournament, {
+        createdById: userId,
+        status: 'registering',
+      });
+      for (const tournament of created) {
+        await manager.delete(TournamentPlayer, { tournamentId: tournament.id });
+        await manager.delete(Tournament, tournament.id);
+      }
+      const registrations = await manager.findBy(TournamentPlayer, {
+        userId,
+        tournament: { status: 'registering' },
+      });
+      for (const registration of registrations) {
+        await manager.delete(TournamentPlayer, registration.id);
+        // Seeds stay 1, 2, 3…: the registration order.
+        await manager.decrement(
+          TournamentPlayer,
+          { tournamentId: registration.tournamentId, seed: MoreThan(registration.seed) },
+          'seed',
+          1,
+        );
+      }
+      const pending = await manager.findBy(TournamentMatch, [
+        { whiteId: userId, resultJson: IsNull() },
+        { blackId: userId, resultJson: IsNull() },
+      ]);
+      for (const match of pending) {
+        const winner = opponentOf(match.whiteId === userId ? 'white' : 'black');
+        await this.recordResult(
+          manager,
+          match,
+          match.gameId,
+          { winner, reason: 'resignation' },
+          { white: match.whiteId, black: match.blackId },
+        );
+      }
+    });
   }
 
   /** Saves the result of [match] and the points, and finishes the tournament after its last match. */
@@ -263,8 +244,8 @@ export class TournamentsService
     }
   }
 
-  private async load(id: string): Promise<Tournament> {
-    const tournament = await this.tournaments.findOne({ where: { id }, relations: RELATIONS });
+  private async load(manager: EntityManager, id: string): Promise<Tournament> {
+    const tournament = await manager.findOne(Tournament, { where: { id }, relations: RELATIONS });
     if (!tournament) throw new NotFoundException('Tournament not found');
     return tournament;
   }

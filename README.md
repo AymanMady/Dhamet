@@ -6,8 +6,9 @@
 **Dhamet mauritanien** (ظامت, aussi appelé Srand / اصرند), jeu de plateau
 traditionnel de la famille de l'alquerque et des dames.
 
-> **État :** version 1.0.0, prête pour Google Play : voir
-> [docs/release.md](docs/release.md). Toutes les phases de la roadmap ont
+> **État :** version 1.0.0, prête pour Google Play, avec son serveur de jeu
+> en ligne prêt pour Vercel : voir [deploiement/](deploiement/). Toutes les
+> phases de la roadmap ont
 > une première version testée (voir [Roadmap](#roadmap)). Certaines règles
 > restent à confirmer auprès des joueurs : voir [docs/rules.md](docs/rules.md).
 
@@ -93,9 +94,10 @@ dhamet/
 ├── server/              Serveur NestJS autoritaire (voir server/README.md)
 │   └── engine_bridge/   Le moteur Dart compilé en JavaScript pour Node
 ├── docs/                rules.md, multiplayer.md (contrat client/serveur), localization.md,
-│                        design.md, release.md (publication sur Google Play)
-├── store/google_play/   Fiche Play Store : textes, visuels, captures, politique de
-│                        confidentialité, réponses aux questionnaires
+│                        design.md
+├── deploiement/         Guides de publication (Google Play, serveur sur Vercel) et
+│                        fiche Play Store : textes, visuels, captures, questionnaires
+├── Dockerfile.vercel    Le serveur sur Vercel (avec vercel.json)
 └── tool/
     ├── brand/           generate_brand_assets.py (logo et toutes les icônes)
     ├── release/         create_upload_key.sh, build_release.sh
@@ -144,10 +146,10 @@ dart run tool/l10n_status.dart      # état des traductions
 |---|---|---|
 | Moteur | `cd packages/dhamet_engine && dart test` | 198 tests, ≈ 99 % de couverture : règles, exemples des sources, fin de partie, historique et annulation, sérialisation, invariants sur parties aléatoires |
 | IA | `cd packages/dhamet_ai && dart test` | 71 tests : légalité, rafle maximale, positions tactiques prouvées par recherche exhaustive, temps, isolate |
-| App | `flutter test` | 102 tests : interaction, contrôleurs, sauvegarde sur disque, réglages, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur, suppression de compte |
-| Captures Play Store | `tool/store/screenshots.sh` | Rend les captures de la fiche avec la vraie application (voir [docs/release.md](docs/release.md)) |
+| App | `flutter test` | 104 tests : interaction, contrôleurs, sauvegarde sur disque, réglages, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur, suppression de compte |
+| Captures Play Store | `tool/store/screenshots.sh` | Rend les captures de la fiche avec la vraie application (voir [deploiement/01-google-play.md](deploiement/01-google-play.md)) |
 | App + serveur réel | `flutter test test/integration --dart-define=DHAMET_SERVER=http://localhost:3999` | Deux clients jouent une partie classée à travers le serveur (voir l'en-tête du fichier) |
-| Serveur | `cd server && npm test && npm run test:e2e` | 79 tests unitaires et 73 tests de bout en bout |
+| Serveur | `cd server && npm test && npm run test:e2e` | 86 tests unitaires et 79 tests de bout en bout, dont 4 avec deux instances sur une vraie base PostgreSQL (`E2E_DATABASE_URL`, voir [server/README.md](server/README.md#tests)) |
 
 Mesures de performance :
 
@@ -170,7 +172,7 @@ DHAMET_SERVER=https://… tool/release/build_release.sh   # bundle Google Play
   de jeu en ligne. Les builds debug joignent par défaut un serveur local en
   HTTP (`http://10.0.2.2:3000` depuis l'émulateur) ; en release, il faut
   HTTPS/WSS.
-- Signature, publication et mises à jour : [docs/release.md](docs/release.md).
+- Signature, publication et mises à jour : [deploiement/01-google-play.md](deploiement/01-google-play.md).
 
 ## Build iOS
 
@@ -235,10 +237,13 @@ moins de 1 µs pour annuler ou rétablir.
 - **Protocole :** [docs/multiplayer.md](docs/multiplayer.md).
 - **Serveur :** [server/README.md](server/README.md) (installation, Docker,
   déploiement, écarts au contrat).
-- **Mise en ligne :** Render, par le Blueprint [render.yaml](render.yaml) :
-  service Docker sur une seule instance et PostgreSQL 16. Le serveur garde
-  les parties en mémoire, ce qui exclut Vercel (voir
-  [server/README.md](server/README.md#déploiement-render)).
+- **Mise en ligne :** Vercel, avec une base PostgreSQL Neon (guide
+  [deploiement/02-serveur-vercel.md](deploiement/02-serveur-vercel.md)).
+  Les salons, les pendules et les parties sont dans la base ; les instances
+  se parlent par `LISTEN/NOTIFY` de PostgreSQL. Render reste possible
+  ([render.yaml](render.yaml)).
+- **Politique de confidentialité :** publiée par le serveur à
+  `/confidentialite`.
 - **Suppression de compte :** dans l'app (Jouer en ligne → Supprimer mon
   compte), par `DELETE /api/users/me`. Le compte est anonymisé ; les parties
   jouées restent chez les adversaires (voir

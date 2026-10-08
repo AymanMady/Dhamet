@@ -44,7 +44,7 @@ class AppSettings {
   });
 
   /// The multiplayer server of this build, set with
-  /// `--dart-define=DHAMET_SERVER=https://…` (see docs/release.md). Debug
+  /// `--dart-define=DHAMET_SERVER=https://…` (see deploiement/01-google-play.md). Debug
   /// builds default to the development machine, which Android emulators
   /// reach through 10.0.2.2; a release build without a server has no online
   /// play.

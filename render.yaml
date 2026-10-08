@@ -1,10 +1,11 @@
-# Render Blueprint: the Dhamet server (server/) and its PostgreSQL database.
+# Render Blueprint: the Dhamet server (server/) and its PostgreSQL database,
+# an alternative to Vercel (deploiement/02-serveur-vercel.md).
 # Render dashboard → New → Blueprint → this repository. See server/README.md,
 # "Déploiement".
 #
-# The server holds rooms, clocks and live games in memory: it runs as a
-# single instance, without autoscaling, and a deploy or a restart ends the
-# games in progress.
+# Rooms, clocks and games live in the database, which the instances share:
+# a deploy or a restart does not end the games in progress. One always-on
+# instance is enough.
 
 services:
   - type: web

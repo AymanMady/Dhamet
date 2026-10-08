@@ -16,7 +16,7 @@ Writes:
   the launch screen before Android 12;
 - ios/Runner/Assets.xcassets/AppIcon.appiconset/   the iOS icons (opaque);
 - assets/images/logo.png   the logo shown inside the app;
-- store/google_play/   the 512 x 512 Play icon and the 1024 x 500 feature
+- deploiement/google-play/   the 512 x 512 Play icon and the 1024 x 500 feature
   graphic.
 
 Requires numpy and Pillow (with libraqm, for the Arabic name).
@@ -518,8 +518,8 @@ def main():
     save(rounded(icon.resize((512, 512), Image.LANCZOS), 0.22), "assets/images/logo.png")
     # Google Play: a full square (Play applies its own mask), as a 32-bit
     # PNG.
-    save(icon.resize((512, 512), Image.LANCZOS), "store/google_play/icon_512.png")
-    save(feature_graphic(icon), "store/google_play/feature_graphic_1024x500.png")
+    save(icon.resize((512, 512), Image.LANCZOS), "deploiement/google-play/icon_512.png")
+    save(feature_graphic(icon), "deploiement/google-play/feature_graphic_1024x500.png")
 
 
 if __name__ == "__main__":
