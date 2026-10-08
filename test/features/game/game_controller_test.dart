@@ -180,7 +180,6 @@ void main() {
       expect(session.state.plyCount, 1);
       expect(session.state.currentPlayer, Player.black);
       expect(session.aiThinking, isFalse);
-      expect(session.lastAiDuration, isNotNull);
     });
 
     test(

@@ -39,8 +39,6 @@ class AppSettings {
     this.animationsEnabled = true,
     this.showCoordinates = false,
     this.showMoveHints = true,
-    this.developerMode = false,
-    this.showPerformanceOverlay = false,
     this.analyticsConsent = false,
     this.serverUrl = defaultServerUrl,
   });
@@ -66,12 +64,6 @@ class AppSettings {
   /// Highlight the legal destinations of the selected piece.
   final bool showMoveHints;
 
-  /// Shows coordinates, legal moves, the game state and AI timings.
-  final bool developerMode;
-
-  /// Frame timing overlay (developer mode only).
-  final bool showPerformanceOverlay;
-
   /// Anonymous usage statistics; off until the user explicitly agrees.
   final bool analyticsConsent;
 
@@ -88,8 +80,6 @@ class AppSettings {
     bool? animationsEnabled,
     bool? showCoordinates,
     bool? showMoveHints,
-    bool? developerMode,
-    bool? showPerformanceOverlay,
     bool? analyticsConsent,
     String? serverUrl,
   }) => AppSettings(
@@ -100,9 +90,6 @@ class AppSettings {
     animationsEnabled: animationsEnabled ?? this.animationsEnabled,
     showCoordinates: showCoordinates ?? this.showCoordinates,
     showMoveHints: showMoveHints ?? this.showMoveHints,
-    developerMode: developerMode ?? this.developerMode,
-    showPerformanceOverlay:
-        showPerformanceOverlay ?? this.showPerformanceOverlay,
     analyticsConsent: analyticsConsent ?? this.analyticsConsent,
     serverUrl: serverUrl ?? this.serverUrl,
   );
@@ -117,8 +104,6 @@ class AppSettings {
       other.animationsEnabled == animationsEnabled &&
       other.showCoordinates == showCoordinates &&
       other.showMoveHints == showMoveHints &&
-      other.developerMode == developerMode &&
-      other.showPerformanceOverlay == showPerformanceOverlay &&
       other.analyticsConsent == analyticsConsent &&
       other.serverUrl == serverUrl;
 
@@ -131,8 +116,6 @@ class AppSettings {
     animationsEnabled,
     showCoordinates,
     showMoveHints,
-    developerMode,
-    showPerformanceOverlay,
     analyticsConsent,
     serverUrl,
   );

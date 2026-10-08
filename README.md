@@ -29,10 +29,15 @@ traditionnel de la famille de l'alquerque et des dames.
 - **Design :** une partie jouée sur le sable, comme au village. Le fond,
   les pièces, le sable et les planches sont découpés dans l'image de
   référence du design (`tool/cut_design_assets.py`). Le plateau est tracé
-  au doigt dans un carré de sable lissé ; les Blancs sont des bâtonnets
-  plantés, les Noirs des cailloux ; un Sultan reçoit une seconde pièce. Les
-  deux camps se distinguent par la forme de leurs pièces, pas seulement par
+  au doigt dans un carré de sable lissé ; les العودان jouent avec des
+  bâtonnets plantés, les لبعر avec des crottes de chameau ; une ظايمة est
+  doublée. Les deux camps se distinguent par leur forme, pas seulement par
   la couleur. Voir [docs/design.md](docs/design.md).
+- **Vocabulaire traditionnel :** l'application dit العودان et لبعر pour les
+  camps, عود et بعرة pour ce qu'ils jouent, ظايمة pour la pièce promue ;
+  jamais Blancs, Noirs, pièce, soldat ni Sultan. En français et en anglais,
+  les mêmes mots en lettres latines : Laoudane, Lebaar, aoud, baara, Dhayma.
+- **Simple :** pas de mode développeur ni de réglage technique.
 
 ## Règles
 
@@ -133,23 +138,13 @@ flutter analyze
 dart run tool/l10n_status.dart      # état des traductions
 ```
 
-Le **mode développeur** (Paramètres → Avancé) affiche :
-
-- les coordonnées ;
-- les coups légaux ;
-- l'état de la partie en JSON ;
-- le temps de l'IA ;
-- les FPS.
-
-Il n'est jamais activé par défaut.
-
 ## Tests
 
 | Où | Commande | Contenu |
 |---|---|---|
 | Moteur | `cd packages/dhamet_engine && dart test` | 198 tests, ≈ 99 % de couverture : règles, exemples des sources, fin de partie, historique et annulation, sérialisation, invariants sur parties aléatoires |
 | IA | `cd packages/dhamet_ai && dart test` | 71 tests : légalité, rafle maximale, positions tactiques prouvées par recherche exhaustive, temps, isolate |
-| App | `flutter test` | 101 tests : interaction, contrôleurs, sauvegarde sur disque, réglages, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur, suppression de compte |
+| App | `flutter test` | 102 tests : interaction, contrôleurs, sauvegarde sur disque, réglages, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur, suppression de compte |
 | Captures Play Store | `tool/store/screenshots.sh` | Rend les captures de la fiche avec la vraie application (voir [docs/release.md](docs/release.md)) |
 | App + serveur réel | `flutter test test/integration --dart-define=DHAMET_SERVER=http://localhost:3999` | Deux clients jouent une partie classée à travers le serveur (voir l'en-tête du fichier) |
 | Serveur | `cd server && npm test && npm run test:e2e` | 79 tests unitaires et 73 tests de bout en bout |
@@ -266,7 +261,9 @@ moins de 1 µs pour annuler ou rétablir.
 cd server && npm ci && docker compose up -d db && npm run start:dev
 ```
 
-Dans l'app : Paramètres → Adresse du serveur, puis « Jouer en ligne ».
+Puis `flutter run`, qui vise `http://10.0.2.2:3000` (le serveur de la
+machine vu depuis l'émulateur Android) ; sur un vrai téléphone :
+`flutter run --dart-define=DHAMET_SERVER=http://<ip-de-la-machine>:3000`.
 
 ## Localization
 
@@ -274,7 +271,8 @@ Dans l'app : Paramètres → Adresse du serveur, puis « Jouer en ligne ».
   français, l'anglais et l'arabe sont complets, avec les pluriels arabes
   ICU.
 - Le hassaniya utilise `ar_MR` et se replie sur l'arabe pour tout message
-  non traduit. Seul le vocabulaire attesté (ظايم) est traduit à ce jour.
+  non traduit. Le vocabulaire du jeu (العودان، لبعر، عود، بعرة، ظايمة) est
+  déjà celui de l'arabe.
 - Détails et glossaire : [docs/localization.md](docs/localization.md).
 
 ## Roadmap

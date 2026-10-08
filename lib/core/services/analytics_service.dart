@@ -12,7 +12,7 @@ abstract interface class AnalyticsSink {
   void record(AnalyticsEvent event, Map<String, Object> properties);
 }
 
-/// Keeps events in memory only; useful for tests and the developer screen.
+/// Keeps events in memory only; useful for tests.
 class InMemoryAnalyticsSink implements AnalyticsSink {
   final List<(AnalyticsEvent, Map<String, Object>)> events = [];
 

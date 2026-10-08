@@ -96,16 +96,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sideRandom => 'Random';
 
   @override
-  String get whiteStarts => 'White moves first.';
+  String get whiteStarts => 'Laoudane moves first.';
 
   @override
   String get startGame => 'Start';
 
   @override
-  String get playerWhite => 'White';
+  String get playerWhite => 'Laoudane';
 
   @override
-  String get playerBlack => 'Black';
+  String get playerBlack => 'Lebaar';
 
   @override
   String get playerYou => 'You';
@@ -130,19 +130,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toMove => 'To move';
 
   @override
-  String get mustCapture =>
-      'Capture is mandatory: take as many pieces as possible.';
+  String get mustCapture => 'Capture is mandatory: play the longest sequence.';
 
   @override
-  String piecesCount(int count) {
+  String piecesCount(String side, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count pieces',
-      one: '1 piece',
-      zero: 'no pieces',
+      other: '$count aouds',
+      one: '1 aoud',
+      zero: 'no aouds',
     );
-    return '$_temp0';
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count baaras',
+      one: '1 baara',
+      zero: 'no baaras',
+    );
+    String _temp2 = intl.Intl.selectLogic(side, {
+      'white': '$_temp0',
+      'other': '$_temp1',
+    });
+    return '$_temp2';
   }
 
   @override
@@ -150,9 +160,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count Sultans',
-      one: '1 Sultan',
-      zero: 'no Sultan',
+      other: '$count Dhaymas',
+      one: '1 Dhayma',
+      zero: 'no Dhayma',
     );
     return '$_temp0';
   }
@@ -224,7 +234,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get reasonElimination => 'All the opponent\'s pieces were captured.';
+  String get reasonElimination => 'The opponent has nothing left on the board.';
 
   @override
   String get reasonBlocked => 'The opponent has no move left.';
@@ -301,9 +311,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionPrivacy => 'Privacy';
 
   @override
-  String get settingsSectionAdvanced => 'Advanced';
-
-  @override
   String get settingsLanguage => 'Language';
 
   @override
@@ -354,45 +361,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Dhametna has no ads and no trackers, and asks for no sensitive permission.\n\nOn your device: local games and games against the AI, your history, the game in progress and your settings. They never leave the device.\n\nOnline, only if you play online: the Dhametna server keeps your player name, your password in hashed form (never in plain text) or a guest account, your online games, your rating and your tournaments. This data is only used for the game; it is neither sold nor shared. Connections are encrypted (HTTPS).\n\nUsage statistics, if you turn them on, stay on the device in this version.\n\nYou can delete your account at any time: Play online → Delete my account. Your name and password are erased; your past games stay in your opponents\' history under an anonymous name.';
 
   @override
-  String get settingsDeveloper => 'Developer mode';
-
-  @override
-  String get settingsDeveloperDescription =>
-      'Coordinates, legal moves, game state, AI timing.';
-
-  @override
-  String get settingsPerformanceOverlay => 'Show performance (FPS)';
-
-  @override
-  String get settingsServerUrl => 'Server address';
-
-  @override
   String get settingsAbout => 'About';
 
   @override
   String get aboutBody =>
       'Dhametna brings you Dhamet (ظامت), the traditional draughts game of Mauritania. The rules applied and their sources are documented; some still need to be confirmed with players.';
-
-  @override
-  String get devPanelTitle => 'Developer';
-
-  @override
-  String devLegalMoves(int count) {
-    return 'Legal moves ($count)';
-  }
-
-  @override
-  String devAiTime(int milliseconds) {
-    return 'AI time: $milliseconds ms';
-  }
-
-  @override
-  String devPly(int ply) {
-    return 'Plies played: $ply';
-  }
-
-  @override
-  String get devState => 'Game state (JSON)';
 
   @override
   String get historyTitle => 'History';
@@ -445,10 +418,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsWinRate => 'Win rate';
 
   @override
-  String get statsPiecesCaptured => 'Pieces captured';
+  String get statsPiecesCaptured => 'Captures';
 
   @override
-  String get statsSultansCreated => 'Sultans made';
+  String get statsSultansCreated => 'Dhaymas made';
 
   @override
   String get statsLongestGame => 'Longest game';
@@ -487,53 +460,53 @@ class AppLocalizationsEn extends AppLocalizations {
       'Dhamet is played on the 81 intersections of a 9 × 9 grid of lines, drawn like four alquerque boards. Diagonals only run through every other point, the \"wide\" points. The other, \"narrow\" points have no diagonal.';
 
   @override
-  String get tutorialPiecesTitle => 'The pieces';
+  String get tutorialPiecesTitle => 'Laoudane and Lebaar';
 
   @override
   String get tutorialPiecesBody =>
-      'Each side has 40 pieces; only the central intersection is empty at the start. Traditionally one side plays with sticks and the other with camel-dung pellets: here White plays sticks planted in the sand and Black plays pebbles.';
+      'Two sides face each other: Laoudane plays with aouds, small sticks planted in the sand, and Lebaar with baaras, camel-dung pellets. Each side has 40; only the central intersection is empty at the start.';
 
   @override
   String get tutorialMoveTitle => 'Moving';
 
   @override
   String get tutorialMoveBody =>
-      'A pawn moves one step to an empty intersection, straight or diagonally along a line. It never moves backwards or sideways. Move the white pawn forward.';
+      'An aoud or a baara moves one step to an empty intersection, straight or diagonally along a line. Never backwards, never sideways. Move the aoud forward.';
 
   @override
   String get tutorialCaptureTitle => 'Capturing';
 
   @override
   String get tutorialCaptureBody =>
-      'You capture by jumping over a neighbouring enemy piece to the free intersection right behind it, in any direction, even backwards. Capturing is mandatory. Capture the black pawn.';
+      'You capture by jumping over a neighbouring opponent to the free intersection right behind it, in any direction, even backwards. Capturing is mandatory. Capture the baara.';
 
   @override
   String get tutorialRafleTitle => 'Multiple captures';
 
   @override
   String get tutorialRafleBody =>
-      'If the pawn can capture again after a capture, it goes on: a multiple capture. Captured pieces are removed at once, and you must always play the sequence taking the most pieces. Play the five-piece capture.';
+      'If the aoud can capture again after a capture, it goes on: a multiple capture. Whatever is captured is removed at once, and you must always play the sequence that captures the most. Capture the five baaras in one move.';
 
   @override
   String get tutorialPromotionTitle => 'Promotion';
 
   @override
   String get tutorialPromotionBody =>
-      'A pawn that ends its move on the opponent\'s last row becomes a Sultan. As on the sand, a second piece is added to it: two crossed sticks, or a light pebble set on the dark one. Take the pawn to the last row.';
+      'An aoud or a baara that ends its move on the opponent\'s last row becomes a Dhayma. As on the sand, it is doubled: two crossed aouds, or a second, lighter baara set on the first. Take the aoud to the last row.';
 
   @override
-  String get tutorialSultanTitle => 'The Sultan';
+  String get tutorialSultanTitle => 'The Dhayma';
 
   @override
   String get tutorialSultanBody =>
-      'The Sultan moves any number of intersections along a line, forwards or backwards. It captures a piece at a distance if the intersection behind it is free. Capture the black pawn with the Sultan.';
+      'The Dhayma moves any number of intersections along a line, forwards or backwards. It captures from a distance if the intersection behind the opponent is free. Capture the baara with the Dhayma.';
 
   @override
   String get tutorialVictoryTitle => 'Winning';
 
   @override
   String get tutorialVictoryBody =>
-      'You win by capturing all the opponent\'s pieces, or when the opponent cannot move. Capture the last black piece.';
+      'You win when the opponent has nothing left on the board, or cannot move. Capture the last baara.';
 
   @override
   String get tutorialSpecialTitle => 'Special rules';
@@ -558,16 +531,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pieceWhitePawn => 'white pawn';
+  String get pieceWhitePawn => 'aoud';
 
   @override
-  String get pieceBlackPawn => 'black pawn';
+  String get pieceBlackPawn => 'baara';
 
   @override
-  String get pieceWhiteSultan => 'white Sultan';
+  String get pieceWhiteSultan => 'Laoudane Dhayma';
 
   @override
-  String get pieceBlackSultan => 'black Sultan';
+  String get pieceBlackSultan => 'Lebaar Dhayma';
 
   @override
   String get onlineTitle => 'Play online';

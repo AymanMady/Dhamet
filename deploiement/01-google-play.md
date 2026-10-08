@@ -74,8 +74,8 @@ Le serveur se déploie sur Render avec [render.yaml](../render.yaml) (voir
 Blueprint créé : vérifiez-la dans le tableau de bord Render. L'application
 exige HTTPS en release.
 
-Un joueur ne peut pas changer de serveur. En mode développeur
-(Paramètres → Avancé), un testeur peut saisir une autre adresse.
+L'application n'a aucun réglage de serveur : pour essayer un autre
+serveur, construisez une version avec une autre adresse `DHAMET_SERVER`.
 
 ## 3. Construire le bundle
 

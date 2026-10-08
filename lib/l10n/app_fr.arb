@@ -41,10 +41,16 @@
   "difficultyExpertDescription": "Réfléchit longtemps et joue fort",
   "sideTitle": "Votre camp",
   "sideRandom": "Au hasard",
-  "whiteStarts": "Les Blancs commencent.",
+  "whiteStarts": "Laoudane commence.",
   "startGame": "Commencer",
-  "playerWhite": "Blancs",
-  "playerBlack": "Noirs",
+  "playerWhite": "Laoudane",
+  "@playerWhite": {
+    "description": "Le camp des bâtonnets, العودان en hassaniya. Jamais « Blancs »."
+  },
+  "playerBlack": "Lebaar",
+  "@playerBlack": {
+    "description": "Le camp des crottes de chameau, لبعر en hassaniya. Jamais « Noirs »."
+  },
   "playerYou": "Vous",
   "playerAi": "IA · {level}",
   "@playerAi": {
@@ -54,7 +60,7 @@
       }
     }
   },
-  "turnOf": "Au tour des {player}",
+  "turnOf": "Au tour de {player}",
   "@turnOf": {
     "placeholders": {
       "player": {
@@ -65,17 +71,22 @@
   "yourTurn": "À vous de jouer",
   "aiThinking": "L'IA réfléchit…",
   "toMove": "Au trait",
-  "mustCapture": "Prise obligatoire : prenez le plus de pièces possible.",
-  "piecesCount": "{count, plural, =0{aucune pièce} =1{1 pièce} other{{count} pièces}}",
+  "mustCapture": "Prise obligatoire : jouez la plus longue rafle.",
+  "piecesCount": "{side, select, white{{count, plural, =0{aucun aoud} =1{1 aoud} other{{count} aouds}}} other{{count, plural, =0{aucune baara} =1{1 baara} other{{count} baaras}}}}",
   "@piecesCount": {
+    "description": "Ce qui reste à un camp : des aouds (عود) pour Laoudane, des baaras (بعرة) pour Lebaar. Jamais « pièce » ni « pion ».",
     "placeholders": {
+      "side": {
+        "type": "String"
+      },
       "count": {
         "type": "int"
       }
     }
   },
-  "sultansCount": "{count, plural, =0{aucun Sultan} =1{1 Sultan} other{{count} Sultans}}",
+  "sultansCount": "{count, plural, =0{aucune Dhayma} =1{1 Dhayma} other{{count} Dhaymas}}",
   "@sultansCount": {
+    "description": "La pièce promue s'appelle Dhayma (ظايمة), jamais « Sultan ».",
     "placeholders": {
       "count": {
         "type": "int"
@@ -119,7 +130,7 @@
   "resultVictory": "Victoire",
   "resultDefeat": "Défaite",
   "resultDraw": "Égalité",
-  "resultWinner": "Les {player} gagnent",
+  "resultWinner": "{player} gagne",
   "@resultWinner": {
     "placeholders": {
       "player": {
@@ -127,7 +138,7 @@
       }
     }
   },
-  "reasonElimination": "Toutes les pièces adverses ont été prises.",
+  "reasonElimination": "Le camp adverse n'a plus rien sur le plateau.",
   "reasonBlocked": "Le camp adverse ne peut plus jouer.",
   "reasonResignation": "Abandon.",
   "reasonTimeout": "Temps écoulé.",
@@ -166,7 +177,6 @@
   "settingsSectionGame": "Jeu",
   "settingsSectionDisplay": "Affichage",
   "settingsSectionPrivacy": "Confidentialité",
-  "settingsSectionAdvanced": "Avancé",
   "settingsLanguage": "Langue",
   "languageSystem": "Langue de l'appareil",
   "settingsTheme": "Thème",
@@ -183,38 +193,8 @@
   "settingsAnalyticsDescription": "Rien n'est envoyé sans votre accord.",
   "settingsPrivacyPolicy": "Politique de confidentialité",
   "privacyPolicyBody": "Dhametna ne contient ni publicité ni traceur, et ne demande aucune autorisation sensible.\n\nSur votre appareil : les parties locales et contre l'IA, l'historique, la partie en cours et vos réglages. Ils ne quittent pas l'appareil.\n\nEn ligne, seulement si vous jouez en ligne : le serveur de Dhametna conserve votre nom de joueur, votre mot de passe sous forme hachée (jamais en clair) ou un compte invité, vos parties en ligne, votre classement et vos tournois. Ces données servent uniquement au jeu ; elles ne sont ni vendues ni partagées. Les échanges sont chiffrés (HTTPS).\n\nLes statistiques d'usage, si vous les activez, restent sur l'appareil dans cette version.\n\nVous pouvez supprimer votre compte à tout moment : Jouer en ligne → Supprimer mon compte. Votre nom et votre mot de passe sont effacés ; vos parties passées restent dans l'historique de vos adversaires sous un nom anonyme.",
-  "settingsDeveloper": "Mode développeur",
-  "settingsDeveloperDescription": "Coordonnées, coups légaux, état de la partie, temps de l'IA.",
-  "settingsPerformanceOverlay": "Afficher les performances (FPS)",
-  "settingsServerUrl": "Adresse du serveur",
   "settingsAbout": "À propos",
   "aboutBody": "Dhametna fait vivre le Dhamet (ظامت), le jeu de dames traditionnel de Mauritanie. Les règles appliquées et leurs sources sont documentées ; certaines restent à confirmer auprès des joueurs.",
-  "devPanelTitle": "Développeur",
-  "devLegalMoves": "Coups légaux ({count})",
-  "@devLegalMoves": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "devAiTime": "Temps de l'IA : {milliseconds} ms",
-  "@devAiTime": {
-    "placeholders": {
-      "milliseconds": {
-        "type": "int"
-      }
-    }
-  },
-  "devPly": "Demi-coups joués : {ply}",
-  "@devPly": {
-    "placeholders": {
-      "ply": {
-        "type": "int"
-      }
-    }
-  },
-  "devState": "État de la partie (JSON)",
   "historyTitle": "Historique",
   "historyEmpty": "Aucune partie terminée pour l'instant.",
   "historyAgainstAi": "Contre l'IA · {level}",
@@ -238,8 +218,8 @@
   "statsLosses": "Défaites",
   "statsDraws": "Égalités",
   "statsWinRate": "Taux de victoire",
-  "statsPiecesCaptured": "Pièces prises",
-  "statsSultansCreated": "Sultans obtenus",
+  "statsPiecesCaptured": "Prises",
+  "statsSultansCreated": "Dhaymas obtenues",
   "statsLongestGame": "Plus longue partie",
   "tutorialTitle": "Comment jouer",
   "tutorialStep": "Étape {step} sur {total}",
@@ -261,20 +241,20 @@
   "tutorialReset": "Recommencer l'exercice",
   "tutorialBoardTitle": "Le plateau",
   "tutorialBoardBody": "Le Dhamet se joue sur les 81 intersections d'une grille de 9 × 9 lignes, tracée comme quatre plateaux d'alquerque. Les diagonales ne passent que par un point sur deux, les points « vastes ». Les autres points, « étroits », n'ont pas de diagonale.",
-  "tutorialPiecesTitle": "Les pièces",
-  "tutorialPiecesBody": "Chaque camp a 40 pièces ; seule l'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l'autre avec des crottes de chameau : ici, les Blancs sont des bâtonnets plantés dans le sable et les Noirs des cailloux.",
+  "tutorialPiecesTitle": "Laoudane et Lebaar",
+  "tutorialPiecesBody": "Deux camps s'affrontent : Laoudane joue avec des aouds, de petits bâtonnets plantés dans le sable, et Lebaar avec des baaras, des crottes de chameau. Chaque camp en a 40 ; seule l'intersection centrale est vide au départ.",
   "tutorialMoveTitle": "Le déplacement",
-  "tutorialMoveBody": "Un pion avance d'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Il ne recule jamais et ne se déplace pas sur le côté. Avancez le pion blanc.",
+  "tutorialMoveBody": "Un aoud ou une baara avance d'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Jamais en arrière, jamais sur le côté. Avancez l'aoud.",
   "tutorialCaptureTitle": "La prise",
-  "tutorialCaptureBody": "On prend en sautant par-dessus une pièce adverse voisine, vers l'intersection libre juste derrière, dans toutes les directions, même en arrière. Prendre est obligatoire. Prenez le pion noir.",
+  "tutorialCaptureBody": "On prend en sautant par-dessus un adversaire voisin, vers l'intersection libre juste derrière lui, dans toutes les directions, même en arrière. Prendre est obligatoire. Prenez la baara.",
   "tutorialRafleTitle": "La rafle",
-  "tutorialRafleBody": "Si le pion peut encore prendre après une prise, il continue : c'est une rafle. Les pièces prises sont retirées aussitôt, et il faut toujours jouer la rafle qui prend le plus de pièces. Réalisez la rafle de cinq pièces.",
+  "tutorialRafleBody": "Si l'aoud peut encore prendre après une prise, il continue : c'est une rafle. Ce qui est pris est retiré aussitôt, et il faut toujours jouer la rafle qui prend le plus. Prenez les cinq baaras d'un seul coup.",
   "tutorialPromotionTitle": "La promotion",
-  "tutorialPromotionBody": "Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Comme sur le sable, on lui ajoute une seconde pièce : deux bâtonnets croisés, ou un caillou clair posé sur le sombre. Menez le pion jusqu'à la dernière rangée.",
-  "tutorialSultanTitle": "Le Sultan",
-  "tutorialSultanBody": "Le Sultan se déplace d'autant d'intersections qu'il veut le long d'une ligne, en avant comme en arrière. Il prend une pièce à distance si l'intersection derrière elle est libre. Prenez le pion noir avec le Sultan.",
+  "tutorialPromotionBody": "Un aoud ou une baara qui termine son coup sur la dernière rangée adverse devient Dhayma. Comme sur le sable, on la double : deux aouds croisés, ou une seconde baara, plus claire, posée sur la première. Menez l'aoud jusqu'à la dernière rangée.",
+  "tutorialSultanTitle": "La Dhayma",
+  "tutorialSultanBody": "La Dhayma se déplace d'autant d'intersections qu'elle veut le long d'une ligne, en avant comme en arrière. Elle prend à distance si l'intersection derrière l'adversaire est libre. Prenez la baara avec la Dhayma.",
   "tutorialVictoryTitle": "La victoire",
-  "tutorialVictoryBody": "On gagne en prenant toutes les pièces adverses, ou quand l'adversaire ne peut plus jouer. Prenez la dernière pièce noire.",
+  "tutorialVictoryBody": "On gagne quand l'adversaire n'a plus rien sur le plateau, ou quand il ne peut plus jouer. Prenez la dernière baara.",
   "tutorialSpecialTitle": "Règles particulières",
   "tutorialSpecialBody": "Quand plusieurs prises sont possibles, la plus longue est obligatoire. Dans la tradition, une rafle incomplète peut être « soufflée » par l'adversaire ; ici, l'application impose directement le bon coup. Quelques règles restent à confirmer et sont réglables. Jouez la prise la plus longue.",
   "semanticsIntersection": "{position}",
@@ -304,10 +284,10 @@
       }
     }
   },
-  "pieceWhitePawn": "pion blanc",
-  "pieceBlackPawn": "pion noir",
-  "pieceWhiteSultan": "Sultan blanc",
-  "pieceBlackSultan": "Sultan noir",
+  "pieceWhitePawn": "aoud",
+  "pieceBlackPawn": "baara",
+  "pieceWhiteSultan": "Dhayma de Laoudane",
+  "pieceBlackSultan": "Dhayma de Lebaar",
   "onlineTitle": "Jouer en ligne",
   "onlineSignInTitle": "Connexion",
   "onlineUsername": "Nom d'utilisateur",

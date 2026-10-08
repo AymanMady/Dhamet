@@ -31,8 +31,6 @@ class DhametApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      showPerformanceOverlay:
-          settings.developerMode && settings.showPerformanceOverlay,
     );
   }
 }

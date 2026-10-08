@@ -215,17 +215,17 @@ class _OnlineScreenState extends ConsumerState<OnlineScreen> {
           ButtonSegment(
             value: Player.white,
             icon: const PieceIcon(Piece.whitePawn, size: 22),
-            label: Text(l10n.playerWhite),
+            label: OneLineLabel(l10n.playerWhite),
           ),
           ButtonSegment(
             value: Player.black,
             icon: const PieceIcon(Piece.blackPawn, size: 22),
-            label: Text(l10n.playerBlack),
+            label: OneLineLabel(l10n.playerBlack),
           ),
           ButtonSegment(
             value: null,
             icon: const Icon(Icons.shuffle),
-            label: Text(l10n.sideRandom),
+            label: OneLineLabel(l10n.sideRandom),
           ),
         ],
         selected: {_color},

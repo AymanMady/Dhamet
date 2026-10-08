@@ -29,11 +29,6 @@ class SettingsRepository {
       animationsEnabled: flag('animationsEnabled', defaults.animationsEnabled),
       showCoordinates: flag('showCoordinates', defaults.showCoordinates),
       showMoveHints: flag('showMoveHints', defaults.showMoveHints),
-      developerMode: flag('developerMode', defaults.developerMode),
-      showPerformanceOverlay: flag(
-        'showPerformanceOverlay',
-        defaults.showPerformanceOverlay,
-      ),
       analyticsConsent: flag('analyticsConsent', defaults.analyticsConsent),
       serverUrl:
           _preferences.getString('${_prefix}serverUrl') ?? defaults.serverUrl,
@@ -57,15 +52,13 @@ class SettingsRepository {
       'animationsEnabled': settings.animationsEnabled,
       'showCoordinates': settings.showCoordinates,
       'showMoveHints': settings.showMoveHints,
-      'developerMode': settings.developerMode,
-      'showPerformanceOverlay': settings.showPerformanceOverlay,
       'analyticsConsent': settings.analyticsConsent,
     };
     for (final entry in flags.entries) {
       await _preferences.setBool('$_prefix${entry.key}', entry.value);
     }
-    // Only an address chosen by the user is kept: the build's default may
-    // change with an update (a release without a server, then one with).
+    // Only an address other than the build's default is kept: the default
+    // may change with an update (a release without a server, then one with).
     if (settings.serverUrl == AppSettings.defaultServerUrl) {
       await _preferences.remove('${_prefix}serverUrl');
     } else {

@@ -35,13 +35,53 @@ void main() {
 
   test('Arabic plural forms', () {
     final ar = lookupAppLocalizations(const Locale('ar'));
-    expect(ar.piecesCount(0), 'لا قطع');
-    expect(ar.piecesCount(1), 'قطعة واحدة');
-    expect(ar.piecesCount(2), 'قطعتان');
-    expect(ar.piecesCount(3), '3 قطع');
-    expect(ar.piecesCount(11), '11 قطعة');
-    expect(ar.piecesCount(40), '40 قطعة');
-    expect(ar.piecesCount(100), '100 قطعة');
+    expect(ar.piecesCount('white', 0), 'لا عود');
+    expect(ar.piecesCount('white', 1), 'عود واحد');
+    expect(ar.piecesCount('white', 2), 'عودان');
+    expect(ar.piecesCount('white', 3), '3 عودان');
+    expect(ar.piecesCount('white', 11), '11 عودًا');
+    expect(ar.piecesCount('white', 100), '100 عود');
+    expect(ar.piecesCount('black', 0), 'لا بعرة');
+    expect(ar.piecesCount('black', 1), 'بعرة واحدة');
+    expect(ar.piecesCount('black', 2), 'بعرتان');
+    expect(ar.piecesCount('black', 3), '3 بعرات');
+    expect(ar.piecesCount('black', 40), '40 بعرة');
+    expect(ar.sultansCount(2), 'ظايمتان');
+  });
+
+  test('the sides and pieces keep their traditional names', () {
+    final ar = lookupAppLocalizations(const Locale('ar'));
+    expect(ar.playerWhite, 'العودان');
+    expect(ar.playerBlack, 'لبعر');
+    expect(ar.pieceWhitePawn, 'عود');
+    expect(ar.pieceBlackPawn, 'بعرة');
+    expect(ar.pieceWhiteSultan, 'ظايمة العودان');
+    final fr = lookupAppLocalizations(const Locale('fr'));
+    expect(fr.playerWhite, 'Laoudane');
+    expect(fr.playerBlack, 'Lebaar');
+    expect(fr.pieceBlackSultan, 'Dhayma de Lebaar');
+    const banned = [
+      'Blanc', 'Noir', 'pièce', 'pion', 'Sultan', 'soldat', //
+      'White', 'Black', 'piece', 'pawn', //
+      'أبيض', 'أسود', 'قطعة', 'القطع', 'جندي', 'سلطان',
+    ];
+    for (final file in ['app_fr.arb', 'app_en.arb', 'app_ar.arb']) {
+      final json = jsonDecode(
+        File('lib/l10n/$file').readAsStringSync(),
+      ) as Map<String, Object?>;
+      for (final MapEntry(:key, :value) in json.entries) {
+        if (key.startsWith('@')) continue;
+        // Placeholders such as {piece} are names in the code, not words.
+        final text = (value! as String).replaceAll(RegExp(r'\{\w+\}'), '');
+        for (final word in banned) {
+          expect(
+            text.contains(word),
+            isFalse,
+            reason: '$file: $key still says "$word"',
+          );
+        }
+      }
+    }
   });
 
   test('French and English plurals', () {
@@ -51,8 +91,12 @@ void main() {
       '12 coups',
     );
     expect(
-      lookupAppLocalizations(const Locale('en')).piecesCount(1),
-      '1 piece',
+      lookupAppLocalizations(const Locale('en')).piecesCount('white', 1),
+      '1 aoud',
+    );
+    expect(
+      lookupAppLocalizations(const Locale('fr')).piecesCount('black', 12),
+      '12 baaras',
     );
   });
 
@@ -60,7 +104,7 @@ void main() {
     final hassaniya = lookupAppLocalizations(const Locale('ar', 'MR'));
     final arabic = lookupAppLocalizations(const Locale('ar'));
     expect(hassaniya.homeNewGame, arabic.homeNewGame);
-    expect(hassaniya.tutorialSultanTitle, 'الظايم (السلطان)');
+    expect(hassaniya.tutorialSultanTitle, 'الظايمة');
     expect(hassaniya.localeName, 'ar_MR');
   });
 

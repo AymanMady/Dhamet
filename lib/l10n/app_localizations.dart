@@ -272,7 +272,7 @@ abstract class AppLocalizations {
   /// No description provided for @whiteStarts.
   ///
   /// In fr, this message translates to:
-  /// **'Les Blancs commencent.'**
+  /// **'Laoudane commence.'**
   String get whiteStarts;
 
   /// No description provided for @startGame.
@@ -281,16 +281,16 @@ abstract class AppLocalizations {
   /// **'Commencer'**
   String get startGame;
 
-  /// No description provided for @playerWhite.
+  /// Le camp des bâtonnets, العودان en hassaniya. Jamais « Blancs ».
   ///
   /// In fr, this message translates to:
-  /// **'Blancs'**
+  /// **'Laoudane'**
   String get playerWhite;
 
-  /// No description provided for @playerBlack.
+  /// Le camp des crottes de chameau, لبعر en hassaniya. Jamais « Noirs ».
   ///
   /// In fr, this message translates to:
-  /// **'Noirs'**
+  /// **'Lebaar'**
   String get playerBlack;
 
   /// No description provided for @playerYou.
@@ -308,7 +308,7 @@ abstract class AppLocalizations {
   /// No description provided for @turnOf.
   ///
   /// In fr, this message translates to:
-  /// **'Au tour des {player}'**
+  /// **'Au tour de {player}'**
   String turnOf(String player);
 
   /// No description provided for @yourTurn.
@@ -332,19 +332,19 @@ abstract class AppLocalizations {
   /// No description provided for @mustCapture.
   ///
   /// In fr, this message translates to:
-  /// **'Prise obligatoire : prenez le plus de pièces possible.'**
+  /// **'Prise obligatoire : jouez la plus longue rafle.'**
   String get mustCapture;
 
-  /// No description provided for @piecesCount.
+  /// Ce qui reste à un camp : des aouds (عود) pour Laoudane, des baaras (بعرة) pour Lebaar. Jamais « pièce » ni « pion ».
   ///
   /// In fr, this message translates to:
-  /// **'{count, plural, =0{aucune pièce} =1{1 pièce} other{{count} pièces}}'**
-  String piecesCount(int count);
+  /// **'{side, select, white{{count, plural, =0{aucun aoud} =1{1 aoud} other{{count} aouds}}} other{{count, plural, =0{aucune baara} =1{1 baara} other{{count} baaras}}}}'**
+  String piecesCount(String side, int count);
 
-  /// No description provided for @sultansCount.
+  /// La pièce promue s'appelle Dhayma (ظايمة), jamais « Sultan ».
   ///
   /// In fr, this message translates to:
-  /// **'{count, plural, =0{aucun Sultan} =1{1 Sultan} other{{count} Sultans}}'**
+  /// **'{count, plural, =0{aucune Dhayma} =1{1 Dhayma} other{{count} Dhaymas}}'**
   String sultansCount(int count);
 
   /// No description provided for @lastMoveLabel.
@@ -452,13 +452,13 @@ abstract class AppLocalizations {
   /// No description provided for @resultWinner.
   ///
   /// In fr, this message translates to:
-  /// **'Les {player} gagnent'**
+  /// **'{player} gagne'**
   String resultWinner(String player);
 
   /// No description provided for @reasonElimination.
   ///
   /// In fr, this message translates to:
-  /// **'Toutes les pièces adverses ont été prises.'**
+  /// **'Le camp adverse n\'a plus rien sur le plateau.'**
   String get reasonElimination;
 
   /// No description provided for @reasonBlocked.
@@ -587,12 +587,6 @@ abstract class AppLocalizations {
   /// **'Confidentialité'**
   String get settingsSectionPrivacy;
 
-  /// No description provided for @settingsSectionAdvanced.
-  ///
-  /// In fr, this message translates to:
-  /// **'Avancé'**
-  String get settingsSectionAdvanced;
-
   /// No description provided for @settingsLanguage.
   ///
   /// In fr, this message translates to:
@@ -689,30 +683,6 @@ abstract class AppLocalizations {
   /// **'Dhametna ne contient ni publicité ni traceur, et ne demande aucune autorisation sensible.\n\nSur votre appareil : les parties locales et contre l\'IA, l\'historique, la partie en cours et vos réglages. Ils ne quittent pas l\'appareil.\n\nEn ligne, seulement si vous jouez en ligne : le serveur de Dhametna conserve votre nom de joueur, votre mot de passe sous forme hachée (jamais en clair) ou un compte invité, vos parties en ligne, votre classement et vos tournois. Ces données servent uniquement au jeu ; elles ne sont ni vendues ni partagées. Les échanges sont chiffrés (HTTPS).\n\nLes statistiques d\'usage, si vous les activez, restent sur l\'appareil dans cette version.\n\nVous pouvez supprimer votre compte à tout moment : Jouer en ligne → Supprimer mon compte. Votre nom et votre mot de passe sont effacés ; vos parties passées restent dans l\'historique de vos adversaires sous un nom anonyme.'**
   String get privacyPolicyBody;
 
-  /// No description provided for @settingsDeveloper.
-  ///
-  /// In fr, this message translates to:
-  /// **'Mode développeur'**
-  String get settingsDeveloper;
-
-  /// No description provided for @settingsDeveloperDescription.
-  ///
-  /// In fr, this message translates to:
-  /// **'Coordonnées, coups légaux, état de la partie, temps de l\'IA.'**
-  String get settingsDeveloperDescription;
-
-  /// No description provided for @settingsPerformanceOverlay.
-  ///
-  /// In fr, this message translates to:
-  /// **'Afficher les performances (FPS)'**
-  String get settingsPerformanceOverlay;
-
-  /// No description provided for @settingsServerUrl.
-  ///
-  /// In fr, this message translates to:
-  /// **'Adresse du serveur'**
-  String get settingsServerUrl;
-
   /// No description provided for @settingsAbout.
   ///
   /// In fr, this message translates to:
@@ -724,36 +694,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Dhametna fait vivre le Dhamet (ظامت), le jeu de dames traditionnel de Mauritanie. Les règles appliquées et leurs sources sont documentées ; certaines restent à confirmer auprès des joueurs.'**
   String get aboutBody;
-
-  /// No description provided for @devPanelTitle.
-  ///
-  /// In fr, this message translates to:
-  /// **'Développeur'**
-  String get devPanelTitle;
-
-  /// No description provided for @devLegalMoves.
-  ///
-  /// In fr, this message translates to:
-  /// **'Coups légaux ({count})'**
-  String devLegalMoves(int count);
-
-  /// No description provided for @devAiTime.
-  ///
-  /// In fr, this message translates to:
-  /// **'Temps de l\'IA : {milliseconds} ms'**
-  String devAiTime(int milliseconds);
-
-  /// No description provided for @devPly.
-  ///
-  /// In fr, this message translates to:
-  /// **'Demi-coups joués : {ply}'**
-  String devPly(int ply);
-
-  /// No description provided for @devState.
-  ///
-  /// In fr, this message translates to:
-  /// **'État de la partie (JSON)'**
-  String get devState;
 
   /// No description provided for @historyTitle.
   ///
@@ -854,13 +794,13 @@ abstract class AppLocalizations {
   /// No description provided for @statsPiecesCaptured.
   ///
   /// In fr, this message translates to:
-  /// **'Pièces prises'**
+  /// **'Prises'**
   String get statsPiecesCaptured;
 
   /// No description provided for @statsSultansCreated.
   ///
   /// In fr, this message translates to:
-  /// **'Sultans obtenus'**
+  /// **'Dhaymas obtenues'**
   String get statsSultansCreated;
 
   /// No description provided for @statsLongestGame.
@@ -932,13 +872,13 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialPiecesTitle.
   ///
   /// In fr, this message translates to:
-  /// **'Les pièces'**
+  /// **'Laoudane et Lebaar'**
   String get tutorialPiecesTitle;
 
   /// No description provided for @tutorialPiecesBody.
   ///
   /// In fr, this message translates to:
-  /// **'Chaque camp a 40 pièces ; seule l\'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l\'autre avec des crottes de chameau : ici, les Blancs sont des bâtonnets plantés dans le sable et les Noirs des cailloux.'**
+  /// **'Deux camps s\'affrontent : Laoudane joue avec des aouds, de petits bâtonnets plantés dans le sable, et Lebaar avec des baaras, des crottes de chameau. Chaque camp en a 40 ; seule l\'intersection centrale est vide au départ.'**
   String get tutorialPiecesBody;
 
   /// No description provided for @tutorialMoveTitle.
@@ -950,7 +890,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialMoveBody.
   ///
   /// In fr, this message translates to:
-  /// **'Un pion avance d\'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Il ne recule jamais et ne se déplace pas sur le côté. Avancez le pion blanc.'**
+  /// **'Un aoud ou une baara avance d\'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Jamais en arrière, jamais sur le côté. Avancez l\'aoud.'**
   String get tutorialMoveBody;
 
   /// No description provided for @tutorialCaptureTitle.
@@ -962,7 +902,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialCaptureBody.
   ///
   /// In fr, this message translates to:
-  /// **'On prend en sautant par-dessus une pièce adverse voisine, vers l\'intersection libre juste derrière, dans toutes les directions, même en arrière. Prendre est obligatoire. Prenez le pion noir.'**
+  /// **'On prend en sautant par-dessus un adversaire voisin, vers l\'intersection libre juste derrière lui, dans toutes les directions, même en arrière. Prendre est obligatoire. Prenez la baara.'**
   String get tutorialCaptureBody;
 
   /// No description provided for @tutorialRafleTitle.
@@ -974,7 +914,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialRafleBody.
   ///
   /// In fr, this message translates to:
-  /// **'Si le pion peut encore prendre après une prise, il continue : c\'est une rafle. Les pièces prises sont retirées aussitôt, et il faut toujours jouer la rafle qui prend le plus de pièces. Réalisez la rafle de cinq pièces.'**
+  /// **'Si l\'aoud peut encore prendre après une prise, il continue : c\'est une rafle. Ce qui est pris est retiré aussitôt, et il faut toujours jouer la rafle qui prend le plus. Prenez les cinq baaras d\'un seul coup.'**
   String get tutorialRafleBody;
 
   /// No description provided for @tutorialPromotionTitle.
@@ -986,19 +926,19 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialPromotionBody.
   ///
   /// In fr, this message translates to:
-  /// **'Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Comme sur le sable, on lui ajoute une seconde pièce : deux bâtonnets croisés, ou un caillou clair posé sur le sombre. Menez le pion jusqu\'à la dernière rangée.'**
+  /// **'Un aoud ou une baara qui termine son coup sur la dernière rangée adverse devient Dhayma. Comme sur le sable, on la double : deux aouds croisés, ou une seconde baara, plus claire, posée sur la première. Menez l\'aoud jusqu\'à la dernière rangée.'**
   String get tutorialPromotionBody;
 
   /// No description provided for @tutorialSultanTitle.
   ///
   /// In fr, this message translates to:
-  /// **'Le Sultan'**
+  /// **'La Dhayma'**
   String get tutorialSultanTitle;
 
   /// No description provided for @tutorialSultanBody.
   ///
   /// In fr, this message translates to:
-  /// **'Le Sultan se déplace d\'autant d\'intersections qu\'il veut le long d\'une ligne, en avant comme en arrière. Il prend une pièce à distance si l\'intersection derrière elle est libre. Prenez le pion noir avec le Sultan.'**
+  /// **'La Dhayma se déplace d\'autant d\'intersections qu\'elle veut le long d\'une ligne, en avant comme en arrière. Elle prend à distance si l\'intersection derrière l\'adversaire est libre. Prenez la baara avec la Dhayma.'**
   String get tutorialSultanBody;
 
   /// No description provided for @tutorialVictoryTitle.
@@ -1010,7 +950,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialVictoryBody.
   ///
   /// In fr, this message translates to:
-  /// **'On gagne en prenant toutes les pièces adverses, ou quand l\'adversaire ne peut plus jouer. Prenez la dernière pièce noire.'**
+  /// **'On gagne quand l\'adversaire n\'a plus rien sur le plateau, ou quand il ne peut plus jouer. Prenez la dernière baara.'**
   String get tutorialVictoryBody;
 
   /// No description provided for @tutorialSpecialTitle.
@@ -1046,25 +986,25 @@ abstract class AppLocalizations {
   /// No description provided for @pieceWhitePawn.
   ///
   /// In fr, this message translates to:
-  /// **'pion blanc'**
+  /// **'aoud'**
   String get pieceWhitePawn;
 
   /// No description provided for @pieceBlackPawn.
   ///
   /// In fr, this message translates to:
-  /// **'pion noir'**
+  /// **'baara'**
   String get pieceBlackPawn;
 
   /// No description provided for @pieceWhiteSultan.
   ///
   /// In fr, this message translates to:
-  /// **'Sultan blanc'**
+  /// **'Dhayma de Laoudane'**
   String get pieceWhiteSultan;
 
   /// No description provided for @pieceBlackSultan.
   ///
   /// In fr, this message translates to:
-  /// **'Sultan noir'**
+  /// **'Dhayma de Lebaar'**
   String get pieceBlackSultan;
 
   /// No description provided for @onlineTitle.

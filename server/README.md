@@ -204,8 +204,9 @@ Mise en ligne :
 3. Au premier démarrage, le serveur applique les migrations.
    `https://<service>.onrender.com/api/health` doit répondre
    `{"status":"ok"}`.
-4. Dans l'app : Paramètres → Adresse du serveur →
-   `https://<service>.onrender.com`. Le client en déduit `wss://…/ws`.
+4. Construire l'app avec
+   `--dart-define=DHAMET_SERVER=https://<service>.onrender.com`. Le client
+   en déduit `wss://…/ws`.
 
 Ensuite, Render redéploie à chaque commit qui touche `server/`,
 `packages/dhamet_engine/` ou `render.yaml` (`autoDeployTrigger: commit`).

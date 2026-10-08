@@ -58,17 +58,17 @@ class _AiSetupScreenState extends ConsumerState<AiSetupScreen> {
                 ButtonSegment(
                   value: _SideChoice.white,
                   icon: const PieceIcon(Piece.whitePawn, size: 22),
-                  label: Text(l10n.playerWhite),
+                  label: OneLineLabel(l10n.playerWhite),
                 ),
                 ButtonSegment(
                   value: _SideChoice.black,
                   icon: const PieceIcon(Piece.blackPawn, size: 22),
-                  label: Text(l10n.playerBlack),
+                  label: OneLineLabel(l10n.playerBlack),
                 ),
                 ButtonSegment(
                   value: _SideChoice.random,
                   icon: const Icon(Icons.shuffle),
-                  label: Text(l10n.sideRandom),
+                  label: OneLineLabel(l10n.sideRandom),
                 ),
               ],
               selected: {_side},

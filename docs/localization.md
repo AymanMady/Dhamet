@@ -32,10 +32,10 @@ Le hassaniya, arabe dialectal de Mauritanie, utilise la locale `ar_MR` :
 - sur un téléphone réglé en arabe (Mauritanie), l'application choisit
   d'elle-même le hassaniya.
 
-Seul le vocabulaire du jeu **attesté par les sources** est déjà traduit.
-C'est le cas de ظايم, le pion promu (voir `docs/rules.md` § 1). Aucune
-phrase n'a été inventée : la traduction de l'interface est à confier à des
-locuteurs natifs.
+Le vocabulaire traditionnel du jeu (العودان، لبعر، عود، بعرة، ظايمة) est
+déjà celui de l'arabe : `app_ar_MR.arb` n'a donc rien à redéfinir pour
+l'instant. Aucune phrase hassaniya n'a été inventée : la traduction du
+reste de l'interface est à confier à des locuteurs natifs.
 
 > La norme ISO 639-3 attribue au hassaniya le code `mey`, que Flutter ne
 > connaît pas. `ar_MR` offre un repli propre sur l'arabe, pour les textes
@@ -52,15 +52,24 @@ locuteurs natifs.
 | Point sans diagonale | point étroit | narrow point | نقطة ضيقة | الظيك |
 | Coin | coin | corner | زاوية | القرن / الكرن |
 | Centre, vide au départ | case de rencontre | meeting point | النقطة الوسطى | عين المورده |
-| Pion promu | Sultan | Sultan | سلطان | ظايم، سلطان |
+| Camp des bâtonnets | Laoudane | Laoudane | العودان | العودان |
+| Camp des crottes de chameau | Lebaar | Lebaar | لبعر | لبعر |
+| Bâtonnet (un) | aoud | aoud | عود | عود |
+| Crotte de chameau (une) | baara | baara | بعرة | بعرة |
+| Pièce promue | Dhayma | Dhayma | ظايمة | ظايمة |
 | Prendre | prendre | capture | أكل | — (à documenter) |
-| Pièces claires / foncées | bâtonnets / crottes | sticks / pellets | العيدان / البعر | العيدان / البعر |
 
-Aucune source ne dit quel camp joue avec les bâtonnets et quel camp joue
-avec les crottes. L'application nomme donc les camps **Blancs** et
-**Noirs**. Elle représente les Blancs par des bâtonnets plantés dans le
-sable et les Noirs par des cailloux, comme sur l'image de référence du
-design : c'est un choix visuel, pas une règle.
+L'application n'emploie que ces mots traditionnels : jamais Blancs, Noirs,
+pièce, pion, soldat (جندي, قطعة) ni Sultan (سلطان). Un message qui parle de
+l'un ou l'autre camp sans savoir lequel dit « عود أو بعرة », « un aoud ou
+une baara ». Le français et l'anglais écrivent les mots hassaniya en lettres
+latines, sans les traduire. `test/l10n/localization_test.dart` vérifie
+qu'aucun ancien mot ne revient.
+
+Aucune source ne dit quel camp commence ni lequel joue avec les bâtonnets.
+Dans le moteur, Laoudane est `Player.white` et Lebaar `Player.black` ;
+`piecesCount` reçoit le camp (`white` ou `black`) pour compter des عود ou
+des بعرة.
 
 ## Ajouter ou modifier un texte
 

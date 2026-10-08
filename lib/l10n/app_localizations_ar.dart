@@ -96,16 +96,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sideRandom => 'عشوائي';
 
   @override
-  String get whiteStarts => 'الأبيض يبدأ.';
+  String get whiteStarts => 'العودان تبدأ.';
 
   @override
   String get startGame => 'ابدأ';
 
   @override
-  String get playerWhite => 'الأبيض';
+  String get playerWhite => 'العودان';
 
   @override
-  String get playerBlack => 'الأسود';
+  String get playerBlack => 'لبعر';
 
   @override
   String get playerYou => 'أنت';
@@ -130,21 +130,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get toMove => 'الدور';
 
   @override
-  String get mustCapture => 'الأكل إجباري: خذ أكبر عدد ممكن من القطع.';
+  String get mustCapture => 'الأكل إجباري: كُل أكثر ما يمكن.';
 
   @override
-  String piecesCount(int count) {
+  String piecesCount(String side, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count قطعة',
-      many: '$count قطعة',
-      few: '$count قطع',
-      two: 'قطعتان',
-      one: 'قطعة واحدة',
-      zero: 'لا قطع',
+      other: '$count عود',
+      many: '$count عودًا',
+      few: '$count عودان',
+      two: 'عودان',
+      one: 'عود واحد',
+      zero: 'لا عود',
     );
-    return '$_temp0';
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count بعرة',
+      many: '$count بعرة',
+      few: '$count بعرات',
+      two: 'بعرتان',
+      one: 'بعرة واحدة',
+      zero: 'لا بعرة',
+    );
+    String _temp2 = intl.Intl.selectLogic(side, {
+      'white': '$_temp0',
+      'other': '$_temp1',
+    });
+    return '$_temp2';
   }
 
   @override
@@ -152,12 +166,12 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count سلطان',
-      many: '$count سلطانًا',
-      few: '$count سلاطين',
-      two: 'سلطانان',
-      one: 'سلطان واحد',
-      zero: 'لا سلطان',
+      other: '$count ظايمة',
+      many: '$count ظايمة',
+      few: '$count ظايمات',
+      two: 'ظايمتان',
+      one: 'ظايمة واحدة',
+      zero: 'لا ظايمة',
     );
     return '$_temp0';
   }
@@ -175,11 +189,11 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count قطعة',
-      many: '$count قطعة',
-      few: '$count قطع',
-      two: 'قطعتان',
-      one: 'قطعة واحدة',
+      other: '$count أكلة',
+      many: '$count أكلة',
+      few: '$count أكلات',
+      two: 'أكلتان',
+      one: 'أكلة واحدة',
       zero: 'بلا أكل',
     );
     return '$notation · $_temp0';
@@ -233,7 +247,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get reasonElimination => 'أُخذت كل قطع الخصم.';
+  String get reasonElimination => 'لم يبق للخصم شيء على الرقعة.';
 
   @override
   String get reasonBlocked => 'لم يعد لدى الخصم أي نقلة.';
@@ -313,9 +327,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsSectionPrivacy => 'الخصوصية';
 
   @override
-  String get settingsSectionAdvanced => 'متقدم';
-
-  @override
   String get settingsLanguage => 'اللغة';
 
   @override
@@ -365,45 +376,11 @@ class AppLocalizationsAr extends AppLocalizations {
       'ظامتنا لا تحتوي على إعلانات ولا على أدوات تتبّع، ولا تطلب أي إذن حساس.\n\nعلى جهازك: الألعاب المحلية والألعاب ضد الحاسوب، والسجل، واللعبة الجارية، وإعداداتك. لا تغادر هذه البيانات جهازك.\n\nعبر الإنترنت، فقط إذا لعبت عبر الإنترنت: يحتفظ خادم ظامتنا باسم اللاعب، وبكلمة المرور في صيغة مُجزَّأة (لا تُحفظ أبدًا كما هي) أو بحساب ضيف، وبألعابك عبر الإنترنت وترتيبك وبطولاتك. تُستخدم هذه البيانات للّعبة فقط، ولا تُباع ولا تُشارَك. الاتصالات مشفّرة (HTTPS).\n\nإحصاءات الاستخدام، إن فعّلتها، تبقى على الجهاز في هذا الإصدار.\n\nيمكنك حذف حسابك في أي وقت: اللعب عبر الإنترنت ← حذف حسابي. يُمحى اسمك وكلمة مرورك، وتبقى ألعابك السابقة في سجل خصومك باسم مجهول.';
 
   @override
-  String get settingsDeveloper => 'وضع المطوّر';
-
-  @override
-  String get settingsDeveloperDescription =>
-      'الإحداثيات والنقلات القانونية وحالة اللعبة ووقت الحاسوب.';
-
-  @override
-  String get settingsPerformanceOverlay => 'إظهار الأداء (FPS)';
-
-  @override
-  String get settingsServerUrl => 'عنوان الخادم';
-
-  @override
   String get settingsAbout => 'حول التطبيق';
 
   @override
   String get aboutBody =>
       'ظامتنا تتيح لك لعب ظامت، لعبة الداما التقليدية في موريتانيا. القواعد المطبقة ومصادرها موثقة، وبعضها ما زال بحاجة إلى تأكيد من اللاعبين.';
-
-  @override
-  String get devPanelTitle => 'المطوّر';
-
-  @override
-  String devLegalMoves(int count) {
-    return 'النقلات القانونية ($count)';
-  }
-
-  @override
-  String devAiTime(int milliseconds) {
-    return 'وقت الحاسوب: $milliseconds ms';
-  }
-
-  @override
-  String devPly(int ply) {
-    return 'أنصاف النقلات: $ply';
-  }
-
-  @override
-  String get devState => 'حالة اللعبة (JSON)';
 
   @override
   String get historyTitle => 'السجل';
@@ -456,10 +433,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get statsWinRate => 'نسبة الفوز';
 
   @override
-  String get statsPiecesCaptured => 'القطع المأخوذة';
+  String get statsPiecesCaptured => 'الأكلات';
 
   @override
-  String get statsSultansCreated => 'السلاطين المحصَّلون';
+  String get statsSultansCreated => 'الظايمات المحصَّلة';
 
   @override
   String get statsLongestGame => 'أطول لعبة';
@@ -498,60 +475,60 @@ class AppLocalizationsAr extends AppLocalizations {
       'تُلعب ظامت على النقاط الإحدى والثمانين لشبكة من 9 × 9 خطوط، مرسومة كأربع رقع من لعبة القِرْق. لا تمر الأقطار إلا بنقطة من كل نقطتين، وهي النقاط «الواسعة» (لوسع). أما النقاط «الضيقة» (الظيك) فليس لها قطر.';
 
   @override
-  String get tutorialPiecesTitle => 'القطع';
+  String get tutorialPiecesTitle => 'العودان ولبعر';
 
   @override
   String get tutorialPiecesBody =>
-      'لكل جانب 40 قطعة، ولا تبقى فارغة في البداية إلا النقطة الوسطى. تقليديًا يلعب جانب بالعيدان والآخر بالبعر: هنا الأبيض عيدان مغروسة في الرمل والأسود حصى.';
+      'يتواجه طرفان: العودان ولبعر. العود غصن صغير مغروس في الرمل، والبعرة من بعر الإبل. لكل طرف 40، ولا تبقى فارغة في البداية إلا النقطة الوسطى.';
 
   @override
   String get tutorialMoveTitle => 'التحرك';
 
   @override
   String get tutorialMoveBody =>
-      'يتقدم الجندي خطوة واحدة إلى نقطة فارغة، مستقيمًا أو قطريًا على خط مرسوم. لا يرجع إلى الخلف أبدًا ولا يتحرك جانبيًا. قدّم الجندي الأبيض.';
+      'يتقدم العود أو البعرة خطوة واحدة إلى نقطة فارغة، مستقيمًا أو قطريًا على خط مرسوم. لا يرجع إلى الخلف أبدًا ولا يتحرك جانبيًا. قدّم العود.';
 
   @override
   String get tutorialCaptureTitle => 'الأكل';
 
   @override
   String get tutorialCaptureBody =>
-      'يكون الأكل بالقفز فوق قطعة مجاورة للخصم إلى النقطة الفارغة خلفها مباشرة، في كل الاتجاهات، حتى إلى الخلف. والأكل إجباري. كُل الجندي الأسود.';
+      'يكون الأكل بالقفز فوق خصم مجاور إلى النقطة الفارغة خلفه مباشرة، في كل الاتجاهات، حتى إلى الخلف. والأكل إجباري. كُل البعرة.';
 
   @override
   String get tutorialRafleTitle => 'الأكل المتتالي';
 
   @override
   String get tutorialRafleBody =>
-      'إذا استطاع الجندي الأكل مجددًا بعد أكلة، فإنه يواصل. تُزال القطع المأكولة فورًا، ويجب دائمًا لعب السلسلة التي تأكل أكبر عدد من القطع. نفّذ أكل القطع الخمس.';
+      'إذا استطاع العود الأكل مجددًا بعد أكلة، فإنه يواصل. يُزال ما أُكل فورًا، ويجب دائمًا لعب السلسلة التي تأكل أكثر. كُل البعرات الخمس في نقلة واحدة.';
 
   @override
   String get tutorialPromotionTitle => 'الترقية';
 
   @override
   String get tutorialPromotionBody =>
-      'الجندي الذي ينهي نقلته على آخر صف للخصم يصبح سلطانًا (ظايم). وكما على الرمل، تُضاف إليه قطعة ثانية: عودان متقاطعان، أو حصاة فاتحة فوق الداكنة. أوصل الجندي إلى الصف الأخير.';
+      'العود أو البعرة إذا أنهى نقلته على آخر صف للخصم يصبح ظايمة. وكما على الرمل، تُضاعَف الظايمة: عودان متقاطعان، أو بعرة ثانية فاتحة فوق الأولى. أوصل العود إلى الصف الأخير.';
 
   @override
-  String get tutorialSultanTitle => 'السلطان';
+  String get tutorialSultanTitle => 'الظايمة';
 
   @override
   String get tutorialSultanBody =>
-      'يتحرك السلطان على طول الخط بأي عدد من النقاط، إلى الأمام أو إلى الخلف، ويأكل قطعة بعيدة إذا كانت النقطة خلفها فارغة. كُل الجندي الأسود بالسلطان.';
+      'تتحرك الظايمة على طول الخط بأي عدد من النقاط، إلى الأمام أو إلى الخلف، وتأكل من بعيد إذا كانت النقطة خلف الخصم فارغة. كُل البعرة بالظايمة.';
 
   @override
   String get tutorialVictoryTitle => 'الفوز';
 
   @override
   String get tutorialVictoryBody =>
-      'تفوز بأكل كل قطع الخصم، أو عندما لا يستطيع الخصم التحرك. كُل آخر قطعة سوداء.';
+      'تفوز عندما لا يبقى للخصم شيء على الرقعة، أو عندما لا يستطيع التحرك. كُل آخر بعرة.';
 
   @override
   String get tutorialSpecialTitle => 'قواعد خاصة';
 
   @override
   String get tutorialSpecialBody =>
-      'عندما تتعدد إمكانيات الأكل، يجب لعب أطولها. في التقليد يمكن للخصم «نفخ» القطعة التي لم تُكمل أكلها، أما هنا فيفرض التطبيق النقلة الصحيحة مباشرة. بعض القواعد ما زالت بحاجة إلى تأكيد وهي قابلة للضبط. العب أطول أكل.';
+      'عندما تتعدد إمكانيات الأكل، يجب لعب أطولها. في التقليد يمكن للخصم «نفخ» العود أو البعرة التي لم تُكمل أكلها، أما هنا فيفرض التطبيق النقلة الصحيحة مباشرة. بعض القواعد ما زالت بحاجة إلى تأكيد وهي قابلة للضبط. العب أطول أكل.';
 
   @override
   String semanticsIntersection(String position) {
@@ -569,16 +546,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get pieceWhitePawn => 'جندي أبيض';
+  String get pieceWhitePawn => 'عود';
 
   @override
-  String get pieceBlackPawn => 'جندي أسود';
+  String get pieceBlackPawn => 'بعرة';
 
   @override
-  String get pieceWhiteSultan => 'سلطان أبيض';
+  String get pieceWhiteSultan => 'ظايمة العودان';
 
   @override
-  String get pieceBlackSultan => 'سلطان أسود';
+  String get pieceBlackSultan => 'ظايمة لبعر';
 
   @override
   String get onlineTitle => 'اللعب عبر الإنترنت';
@@ -837,13 +814,4 @@ class AppLocalizationsAr extends AppLocalizations {
 /// The translations for Arabic, as used in Mauritania (`ar_MR`).
 class AppLocalizationsArMr extends AppLocalizationsAr {
   AppLocalizationsArMr() : super('ar_MR');
-
-  @override
-  String get tutorialSultanTitle => 'الظايم (السلطان)';
-
-  @override
-  String get pieceWhiteSultan => 'ظايم أبيض (سلطان)';
-
-  @override
-  String get pieceBlackSultan => 'ظايم أسود (سلطان)';
 }

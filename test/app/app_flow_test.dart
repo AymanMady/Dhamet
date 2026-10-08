@@ -61,7 +61,7 @@ void main() {
     await tester.tap(find.text('Play with a friend'));
     await tester.pumpAndSettle();
     expect(find.byType(DhametBoard), findsOneWidget);
-    expect(find.text('White to move'), findsOneWidget);
+    expect(find.text('Laoudane to move'), findsOneWidget);
 
     await tapBoard(tester, 'd4');
     await tapBoard(tester, 'e5');
@@ -148,7 +148,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
     expect(find.text('Victory'), findsOneWidget);
-    expect(find.textContaining('White wins'), findsOneWidget);
+    expect(find.textContaining('Laoudane wins'), findsOneWidget);
     expect(find.text('Play again'), findsOneWidget);
     expect(find.text('View the game'), findsOneWidget);
     expect(find.text('Back to home'), findsOneWidget);
@@ -227,7 +227,7 @@ void main() {
     await skipSplash(tester);
     await tester.tap(find.text('Play with a friend'));
     await tester.pumpAndSettle();
-    expect(find.semantics.byLabel('d4, white pawn'), findsOneWidget);
+    expect(find.semantics.byLabel('d4, aoud'), findsOneWidget);
     expect(find.semantics.byLabel('e5'), findsOneWidget);
     await tapBoard(tester, 'd4');
     expect(find.semantics.byLabel('e5, possible destination'), findsOneWidget);

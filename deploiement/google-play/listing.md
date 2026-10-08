@@ -58,7 +58,7 @@ Le jeu de dames de Mauritanie, sur le sable : contre l'IA ou à deux.
 **Description complète**
 
 ```text
-Dhametna vous fait jouer au Dhamet (ظامت), le jeu de dames traditionnel de Mauritanie, aussi appelé Srand. Comme au village, la partie se joue sur le sable : le plateau est tracé au doigt, les Blancs sont des bâtonnets plantés, les Noirs des cailloux.
+Dhametna vous fait jouer au Dhamet (ظامت), le jeu de dames traditionnel de Mauritanie, aussi appelé Srand. Comme au village, la partie se joue sur le sable : le plateau est tracé au doigt, Laoudane joue avec des bâtonnets plantés (aouds) et Lebaar avec des crottes de chameau (baaras).
 
 ★ Plusieurs façons de jouer
 • Contre l'ordinateur, avec 4 niveaux : Facile, Moyen, Difficile et Expert.
@@ -66,9 +66,9 @@ Dhametna vous fait jouer au Dhamet (ظامت), le jeu de dames traditionnel de M
 • En ligne avec un ami, dans une salle privée à code : partie classée ou amicale, avec ou sans pendule. [EN LIGNE]
 
 ★ Les vraies règles
-• Plateau de 9 × 9 intersections au tracé d'alquerque, 40 pièces par camp.
-• La prise est obligatoire, et il faut prendre le plus de pièces possible.
-• Le pion qui termine son coup sur la dernière rangée devient Sultan et se déplace à distance.
+• Plateau de 9 × 9 intersections au tracé d'alquerque, 40 aouds contre 40 baaras.
+• La prise est obligatoire, et il faut toujours jouer la plus longue rafle.
+• L'aoud ou la baara qui termine son coup sur la dernière rangée devient Dhayma (ظايمة) et se déplace à distance.
 Les règles appliquées et leurs sources sont documentées. Les points encore discutés entre joueurs sont signalés, jamais inventés.
 
 ★ Apprendre et progresser
@@ -111,7 +111,7 @@ Dhametna, « notre Dhamet » : le jeu traditionnel de Mauritanie, maintenant dan
 **الوصف الكامل**
 
 ```text
-ظامتنا تتيح لك لعب ظامت، لعبة الداما التقليدية في موريتانيا، وتُعرف أيضًا باسم اصرند. كما في القرية، تُلعب المباراة على الرمل: الرقعة مرسومة بالإصبع، والأبيض عيدان مغروسة، والأسود حصى.
+ظامتنا تتيح لك لعب ظامت، لعبة الداما التقليدية في موريتانيا، وتُعرف أيضًا باسم اصرند. كما في القرية، تُلعب المباراة على الرمل: الرقعة مرسومة بالإصبع، وتتواجه فيها العودان المغروسة في الرمل ولبعر.
 
 ★ طرق متعددة للعب
 • ضد الحاسوب، بأربعة مستويات: سهل، متوسط، صعب، خبير.
@@ -119,9 +119,9 @@ Dhametna, « notre Dhamet » : le jeu traditionnel de Mauritanie, maintenant dan
 • عبر الإنترنت مع صديق، في غرفة خاصة برمز: لعبة مصنَّفة أو ودية، مع ساعة أو بدونها. [EN LIGNE]
 
 ★ القواعد الحقيقية
-• رقعة من 9 × 9 نقاط على نمط القِرق، و40 قطعة لكل طرف.
-• الأكل إجباري، ويجب أكل أكبر عدد ممكن من القطع.
-• البيدق الذي ينهي نقلته على الصف الأخير يصبح سلطانًا (ظايم) ويتحرك عن بُعد.
+• رقعة من 9 × 9 نقاط على نمط القِرق، و40 عودًا مقابل 40 بعرة.
+• الأكل إجباري، ويجب أكل أكثر ما يمكن.
+• العود أو البعرة إذا أنهى نقلته على الصف الأخير يصبح ظايمة تتحرك عن بُعد.
 القواعد المطبقة ومصادرها موثقة. والنقاط التي ما زال اللاعبون يختلفون فيها مُشار إليها، ولا شيء منها مُختلَق.
 
 ★ تعلَّم وتقدَّم
@@ -164,7 +164,7 @@ Mauritania's draughts game, played on the sand: against the AI or two players.
 **Full description**
 
 ```text
-Dhametna lets you play Dhamet (ظامت), the traditional draughts game of Mauritania, also known as Srand. Just like in the village, the game is played on the sand: the board is drawn with a finger, White plays with planted sticks and Black with pebbles.
+Dhametna lets you play Dhamet (ظامت), the traditional draughts game of Mauritania, also known as Srand. Just like in the village, the game is played on the sand: the board is drawn with a finger, Laoudane plays with planted sticks (aouds) and Lebaar with camel-dung pellets (baaras).
 
 ★ Many ways to play
 • Against the computer, with 4 levels: Easy, Medium, Hard and Expert.
@@ -172,9 +172,9 @@ Dhametna lets you play Dhamet (ظامت), the traditional draughts game of Mauri
 • Online with a friend, in a private room with a code: rated or friendly, with or without a clock. [EN LIGNE]
 
 ★ The real rules
-• A 9 × 9 board of intersections with the alquerque pattern, 40 pieces per side.
-• Capturing is mandatory, and you must capture as many pieces as possible.
-• A pawn that ends its move on the last row becomes a Sultan and moves from afar.
+• A 9 × 9 board of intersections with the alquerque pattern, 40 aouds against 40 baaras.
+• Capturing is mandatory, and you must always play the longest capture sequence.
+• An aoud or a baara that ends its move on the last row becomes a Dhayma (ظايمة) and moves from afar.
 The rules applied and their sources are documented. Points still debated among players are flagged, never made up.
 
 ★ Learn and improve

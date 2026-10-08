@@ -10,22 +10,18 @@ import '../../../../core/widgets/wood_button.dart';
 import '../board/sand_marks.dart';
 
 /// What the player chose in the pause menu; closing it resumes the game.
-enum PauseAction { restart, settings, developer, leave }
+enum PauseAction { restart, settings, leave }
 
-Future<PauseAction?> showPauseMenu(
-  BuildContext context, {
-  required bool developerMode,
-}) => showDialog<PauseAction>(
-  context: context,
-  builder: (context) => PauseMenu(developerMode: developerMode),
-);
+Future<PauseAction?> showPauseMenu(BuildContext context) =>
+    showDialog<PauseAction>(
+      context: context,
+      builder: (context) => const PauseMenu(),
+    );
 
 /// The pause menu: a patch of sand framed with wood, with a plank for each
 /// choice.
 class PauseMenu extends StatelessWidget {
-  const PauseMenu({super.key, required this.developerMode});
-
-  final bool developerMode;
+  const PauseMenu({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -92,14 +88,6 @@ class PauseMenu extends StatelessWidget {
                       icon: Icons.settings_outlined,
                       onPressed: () => choose(PauseAction.settings),
                     ),
-                    if (developerMode) ...[
-                      gap,
-                      WoodButton(
-                        label: l10n.devPanelTitle,
-                        icon: Icons.developer_mode,
-                        onPressed: () => choose(PauseAction.developer),
-                      ),
-                    ],
                     gap,
                     WoodButton(
                       label: l10n.backHome,

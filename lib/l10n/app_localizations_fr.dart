@@ -96,16 +96,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sideRandom => 'Au hasard';
 
   @override
-  String get whiteStarts => 'Les Blancs commencent.';
+  String get whiteStarts => 'Laoudane commence.';
 
   @override
   String get startGame => 'Commencer';
 
   @override
-  String get playerWhite => 'Blancs';
+  String get playerWhite => 'Laoudane';
 
   @override
-  String get playerBlack => 'Noirs';
+  String get playerBlack => 'Lebaar';
 
   @override
   String get playerYou => 'Vous';
@@ -117,7 +117,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String turnOf(String player) {
-    return 'Au tour des $player';
+    return 'Au tour de $player';
   }
 
   @override
@@ -130,19 +130,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get toMove => 'Au trait';
 
   @override
-  String get mustCapture =>
-      'Prise obligatoire : prenez le plus de pièces possible.';
+  String get mustCapture => 'Prise obligatoire : jouez la plus longue rafle.';
 
   @override
-  String piecesCount(int count) {
+  String piecesCount(String side, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count pièces',
-      one: '1 pièce',
-      zero: 'aucune pièce',
+      other: '$count aouds',
+      one: '1 aoud',
+      zero: 'aucun aoud',
     );
-    return '$_temp0';
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count baaras',
+      one: '1 baara',
+      zero: 'aucune baara',
+    );
+    String _temp2 = intl.Intl.selectLogic(side, {
+      'white': '$_temp0',
+      'other': '$_temp1',
+    });
+    return '$_temp2';
   }
 
   @override
@@ -150,9 +160,9 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count Sultans',
-      one: '1 Sultan',
-      zero: 'aucun Sultan',
+      other: '$count Dhaymas',
+      one: '1 Dhayma',
+      zero: 'aucune Dhayma',
     );
     return '$_temp0';
   }
@@ -221,11 +231,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String resultWinner(String player) {
-    return 'Les $player gagnent';
+    return '$player gagne';
   }
 
   @override
-  String get reasonElimination => 'Toutes les pièces adverses ont été prises.';
+  String get reasonElimination =>
+      'Le camp adverse n\'a plus rien sur le plateau.';
 
   @override
   String get reasonBlocked => 'Le camp adverse ne peut plus jouer.';
@@ -302,9 +313,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsSectionPrivacy => 'Confidentialité';
 
   @override
-  String get settingsSectionAdvanced => 'Avancé';
-
-  @override
   String get settingsLanguage => 'Langue';
 
   @override
@@ -356,45 +364,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Dhametna ne contient ni publicité ni traceur, et ne demande aucune autorisation sensible.\n\nSur votre appareil : les parties locales et contre l\'IA, l\'historique, la partie en cours et vos réglages. Ils ne quittent pas l\'appareil.\n\nEn ligne, seulement si vous jouez en ligne : le serveur de Dhametna conserve votre nom de joueur, votre mot de passe sous forme hachée (jamais en clair) ou un compte invité, vos parties en ligne, votre classement et vos tournois. Ces données servent uniquement au jeu ; elles ne sont ni vendues ni partagées. Les échanges sont chiffrés (HTTPS).\n\nLes statistiques d\'usage, si vous les activez, restent sur l\'appareil dans cette version.\n\nVous pouvez supprimer votre compte à tout moment : Jouer en ligne → Supprimer mon compte. Votre nom et votre mot de passe sont effacés ; vos parties passées restent dans l\'historique de vos adversaires sous un nom anonyme.';
 
   @override
-  String get settingsDeveloper => 'Mode développeur';
-
-  @override
-  String get settingsDeveloperDescription =>
-      'Coordonnées, coups légaux, état de la partie, temps de l\'IA.';
-
-  @override
-  String get settingsPerformanceOverlay => 'Afficher les performances (FPS)';
-
-  @override
-  String get settingsServerUrl => 'Adresse du serveur';
-
-  @override
   String get settingsAbout => 'À propos';
 
   @override
   String get aboutBody =>
       'Dhametna fait vivre le Dhamet (ظامت), le jeu de dames traditionnel de Mauritanie. Les règles appliquées et leurs sources sont documentées ; certaines restent à confirmer auprès des joueurs.';
-
-  @override
-  String get devPanelTitle => 'Développeur';
-
-  @override
-  String devLegalMoves(int count) {
-    return 'Coups légaux ($count)';
-  }
-
-  @override
-  String devAiTime(int milliseconds) {
-    return 'Temps de l\'IA : $milliseconds ms';
-  }
-
-  @override
-  String devPly(int ply) {
-    return 'Demi-coups joués : $ply';
-  }
-
-  @override
-  String get devState => 'État de la partie (JSON)';
 
   @override
   String get historyTitle => 'Historique';
@@ -447,10 +421,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get statsWinRate => 'Taux de victoire';
 
   @override
-  String get statsPiecesCaptured => 'Pièces prises';
+  String get statsPiecesCaptured => 'Prises';
 
   @override
-  String get statsSultansCreated => 'Sultans obtenus';
+  String get statsSultansCreated => 'Dhaymas obtenues';
 
   @override
   String get statsLongestGame => 'Plus longue partie';
@@ -489,53 +463,53 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le Dhamet se joue sur les 81 intersections d\'une grille de 9 × 9 lignes, tracée comme quatre plateaux d\'alquerque. Les diagonales ne passent que par un point sur deux, les points « vastes ». Les autres points, « étroits », n\'ont pas de diagonale.';
 
   @override
-  String get tutorialPiecesTitle => 'Les pièces';
+  String get tutorialPiecesTitle => 'Laoudane et Lebaar';
 
   @override
   String get tutorialPiecesBody =>
-      'Chaque camp a 40 pièces ; seule l\'intersection centrale est vide au départ. Traditionnellement, un camp joue avec des bâtonnets et l\'autre avec des crottes de chameau : ici, les Blancs sont des bâtonnets plantés dans le sable et les Noirs des cailloux.';
+      'Deux camps s\'affrontent : Laoudane joue avec des aouds, de petits bâtonnets plantés dans le sable, et Lebaar avec des baaras, des crottes de chameau. Chaque camp en a 40 ; seule l\'intersection centrale est vide au départ.';
 
   @override
   String get tutorialMoveTitle => 'Le déplacement';
 
   @override
   String get tutorialMoveBody =>
-      'Un pion avance d\'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Il ne recule jamais et ne se déplace pas sur le côté. Avancez le pion blanc.';
+      'Un aoud ou une baara avance d\'un pas vers une intersection vide, tout droit ou en diagonale en suivant une ligne. Jamais en arrière, jamais sur le côté. Avancez l\'aoud.';
 
   @override
   String get tutorialCaptureTitle => 'La prise';
 
   @override
   String get tutorialCaptureBody =>
-      'On prend en sautant par-dessus une pièce adverse voisine, vers l\'intersection libre juste derrière, dans toutes les directions, même en arrière. Prendre est obligatoire. Prenez le pion noir.';
+      'On prend en sautant par-dessus un adversaire voisin, vers l\'intersection libre juste derrière lui, dans toutes les directions, même en arrière. Prendre est obligatoire. Prenez la baara.';
 
   @override
   String get tutorialRafleTitle => 'La rafle';
 
   @override
   String get tutorialRafleBody =>
-      'Si le pion peut encore prendre après une prise, il continue : c\'est une rafle. Les pièces prises sont retirées aussitôt, et il faut toujours jouer la rafle qui prend le plus de pièces. Réalisez la rafle de cinq pièces.';
+      'Si l\'aoud peut encore prendre après une prise, il continue : c\'est une rafle. Ce qui est pris est retiré aussitôt, et il faut toujours jouer la rafle qui prend le plus. Prenez les cinq baaras d\'un seul coup.';
 
   @override
   String get tutorialPromotionTitle => 'La promotion';
 
   @override
   String get tutorialPromotionBody =>
-      'Un pion qui termine son coup sur la dernière rangée adverse devient Sultan. Comme sur le sable, on lui ajoute une seconde pièce : deux bâtonnets croisés, ou un caillou clair posé sur le sombre. Menez le pion jusqu\'à la dernière rangée.';
+      'Un aoud ou une baara qui termine son coup sur la dernière rangée adverse devient Dhayma. Comme sur le sable, on la double : deux aouds croisés, ou une seconde baara, plus claire, posée sur la première. Menez l\'aoud jusqu\'à la dernière rangée.';
 
   @override
-  String get tutorialSultanTitle => 'Le Sultan';
+  String get tutorialSultanTitle => 'La Dhayma';
 
   @override
   String get tutorialSultanBody =>
-      'Le Sultan se déplace d\'autant d\'intersections qu\'il veut le long d\'une ligne, en avant comme en arrière. Il prend une pièce à distance si l\'intersection derrière elle est libre. Prenez le pion noir avec le Sultan.';
+      'La Dhayma se déplace d\'autant d\'intersections qu\'elle veut le long d\'une ligne, en avant comme en arrière. Elle prend à distance si l\'intersection derrière l\'adversaire est libre. Prenez la baara avec la Dhayma.';
 
   @override
   String get tutorialVictoryTitle => 'La victoire';
 
   @override
   String get tutorialVictoryBody =>
-      'On gagne en prenant toutes les pièces adverses, ou quand l\'adversaire ne peut plus jouer. Prenez la dernière pièce noire.';
+      'On gagne quand l\'adversaire n\'a plus rien sur le plateau, ou quand il ne peut plus jouer. Prenez la dernière baara.';
 
   @override
   String get tutorialSpecialTitle => 'Règles particulières';
@@ -560,16 +534,16 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get pieceWhitePawn => 'pion blanc';
+  String get pieceWhitePawn => 'aoud';
 
   @override
-  String get pieceBlackPawn => 'pion noir';
+  String get pieceBlackPawn => 'baara';
 
   @override
-  String get pieceWhiteSultan => 'Sultan blanc';
+  String get pieceWhiteSultan => 'Dhayma de Laoudane';
 
   @override
-  String get pieceBlackSultan => 'Sultan noir';
+  String get pieceBlackSultan => 'Dhayma de Lebaar';
 
   @override
   String get onlineTitle => 'Jouer en ligne';

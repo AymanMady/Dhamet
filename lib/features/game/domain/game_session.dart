@@ -16,7 +16,6 @@ class GameSession {
     this.selected,
     this.pendingChoices = const [],
     this.aiThinking = false,
-    this.lastAiDuration,
   });
 
   final String id;
@@ -32,9 +31,6 @@ class GameSession {
   final List<Move> pendingChoices;
 
   final bool aiThinking;
-
-  /// Time the AI took for its last move (developer mode).
-  final Duration? lastAiDuration;
 
   GameState get state => game.state;
 
@@ -69,7 +65,6 @@ class GameSession {
     Position? Function()? selected,
     List<Move>? pendingChoices,
     bool? aiThinking,
-    Duration? Function()? lastAiDuration,
   }) => GameSession(
     id: id,
     mode: mode,
@@ -78,8 +73,5 @@ class GameSession {
     selected: selected == null ? this.selected : selected(),
     pendingChoices: pendingChoices ?? this.pendingChoices,
     aiThinking: aiThinking ?? this.aiThinking,
-    lastAiDuration: lastAiDuration == null
-        ? this.lastAiDuration
-        : lastAiDuration(),
   );
 }

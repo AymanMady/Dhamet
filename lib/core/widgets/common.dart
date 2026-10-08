@@ -23,6 +23,20 @@ class ScreenFrame extends StatelessWidget {
   );
 }
 
+/// A label kept on one line, shrunk rather than cut when space is short:
+/// names such as Laoudane must not break in the middle.
+class OneLineLabel extends StatelessWidget {
+  const OneLineLabel(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Text(text, maxLines: 1, softWrap: false),
+  );
+}
+
 /// A large, clearly labelled menu entry.
 class MenuButton extends StatelessWidget {
   const MenuButton({

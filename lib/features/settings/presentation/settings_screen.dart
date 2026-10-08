@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -117,34 +116,6 @@ class SettingsScreen extends ConsumerWidget {
               title: Text(l10n.settingsPrivacyPolicy),
               onTap: () => _showPrivacyPolicy(context),
             ),
-            _Section(l10n.settingsSectionAdvanced),
-            // Players use the server of the build; testers may pick another.
-            if (!kReleaseMode || settings.developerMode)
-              ListTile(
-                leading: const Icon(Icons.dns_outlined),
-                title: Text(l10n.settingsServerUrl),
-                subtitle: Text(
-                  settings.serverUrl,
-                  textDirection: TextDirection.ltr,
-                ),
-                onTap: () => _editServerUrl(context, ref, settings.serverUrl),
-              ),
-            SwitchListTile(
-              secondary: const Icon(Icons.developer_mode),
-              title: Text(l10n.settingsDeveloper),
-              subtitle: Text(l10n.settingsDeveloperDescription),
-              value: settings.developerMode,
-              onChanged: (value) =>
-                  update((s) => s.copyWith(developerMode: value)),
-            ),
-            if (settings.developerMode)
-              SwitchListTile(
-                secondary: const Icon(Icons.speed),
-                title: Text(l10n.settingsPerformanceOverlay),
-                value: settings.showPerformanceOverlay,
-                onChanged: (value) =>
-                    update((s) => s.copyWith(showPerformanceOverlay: value)),
-              ),
             ListTile(
               leading: const Icon(Icons.info_outline),
               title: Text(l10n.settingsAbout),
@@ -211,42 +182,6 @@ class SettingsScreen extends ConsumerWidget {
     await ref
         .read(settingsProvider.notifier)
         .update((s) => s.copyWith(language: () => chosen.$1));
-  }
-
-  Future<void> _editServerUrl(
-    BuildContext context,
-    WidgetRef ref,
-    String current,
-  ) async {
-    final l10n = context.l10n;
-    final controller = TextEditingController(text: current);
-    final value = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.settingsServerUrl),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.url,
-          textDirection: TextDirection.ltr,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: Text(l10n.confirm),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (value == null || value.isEmpty) return;
-    await ref
-        .read(settingsProvider.notifier)
-        .update((s) => s.copyWith(serverUrl: value));
   }
 }
 

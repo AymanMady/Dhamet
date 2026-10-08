@@ -10,7 +10,6 @@ import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../../core/widgets/sand/sand_background.dart';
 import '../../../../core/widgets/wood_button.dart';
-import '../../../settings/domain/app_settings.dart';
 import '../../../settings/presentation/settings_controller.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/game_session.dart';
@@ -35,7 +34,6 @@ class GameScreen extends ConsumerStatefulWidget {
 
 class _GameScreenState extends ConsumerState<GameScreen> {
   Move? _focusedChoice;
-  bool _showDeveloperPanel = true;
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +87,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               focusedMove: _focusedChoice,
               onTap: controller.tap,
               flipped: flipped,
-              showCoordinates:
-                  settings.showCoordinates || settings.developerMode,
+              showCoordinates: settings.showCoordinates,
               showHints: settings.showMoveHints,
               animate: animate,
               intersectionLabel: (position, piece, {required isTarget}) {
@@ -161,12 +158,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final pause = WoodButton.icon(
       icon: Icons.pause,
       tooltip: l10n.pause,
-      onPressed: () => _openPauseMenu(controller, settings),
+      onPressed: () => _openPauseMenu(controller),
     );
-
-    final developer = settings.developerMode && _showDeveloperPanel
-        ? DeveloperPanel(state: state, aiDuration: session.lastAiDuration)
-        : null;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: Theme.of(context).brightness == Brightness.dark
@@ -202,10 +195,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                             panel(topPlayer.opponent),
                             const SizedBox(height: AppSpacing.md),
                             actions,
-                            if (developer != null) ...[
-                              const SizedBox(height: AppSpacing.md),
-                              developer,
-                            ],
                           ],
                         ),
                       ),
@@ -264,16 +253,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                         ),
                         child: actions,
                       ),
-                      if (developer != null)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.md,
-                            0,
-                            AppSpacing.md,
-                            AppSpacing.md,
-                          ),
-                          child: developer,
-                        ),
                     ],
                   ),
                 );
@@ -327,14 +306,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     if (confirmed) controller.resign();
   }
 
-  Future<void> _openPauseMenu(
-    GameController controller,
-    AppSettings settings,
-  ) async {
-    final action = await showPauseMenu(
-      context,
-      developerMode: settings.developerMode,
-    );
+  Future<void> _openPauseMenu(GameController controller) async {
+    final action = await showPauseMenu(context);
     if (!mounted) return;
     final l10n = context.l10n;
     switch (action) {
@@ -351,8 +324,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         if (confirmed) controller.restart();
       case PauseAction.settings:
         await context.push(AppRoutes.settings);
-      case PauseAction.developer:
-        setState(() => _showDeveloperPanel = !_showDeveloperPanel);
       case PauseAction.leave:
         _leave();
     }

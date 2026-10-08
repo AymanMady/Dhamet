@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dhamet_engine/dhamet_engine.dart';
 import 'package:flutter/material.dart';
 
@@ -94,7 +92,8 @@ class PlayerPanel extends StatelessWidget {
               ),
               Semantics(
                 label:
-                    '${l10n.piecesCount(pieces)} · ${l10n.sultansCount(sultans)}',
+                    '${l10n.piecesCount(player.name, pieces)} · '
+                    '${l10n.sultansCount(sultans)}',
                 child: ExcludeSemantics(
                   child: Row(
                     children: [
@@ -211,53 +210,6 @@ class CaptureChoicePanel extends StatelessWidget {
                 onPressed: focused == null ? null : onConfirm,
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Developer information: plies, AI timing, legal moves and the state JSON.
-class DeveloperPanel extends StatelessWidget {
-  const DeveloperPanel({super.key, required this.state, this.aiDuration});
-
-  final GameState state;
-  final Duration? aiDuration;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final mono = Theme.of(context).textTheme.bodySmall
-        ?.copyWith(fontFamily: 'monospace');
-    return Card(
-      margin: EdgeInsets.zero,
-      child: ExpansionTile(
-        title: Text(l10n.devPanelTitle),
-        childrenPadding: const EdgeInsets.all(AppSpacing.sm),
-        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l10n.devPly(state.plyCount)),
-          if (aiDuration != null)
-            Text(l10n.devAiTime(aiDuration!.inMilliseconds)),
-          const SizedBox(height: AppSpacing.sm),
-          Text(l10n.devLegalMoves(state.legalMoves.length)),
-          SelectableText(
-            state.legalMoves.map((m) => m.toString()).join('  '),
-            style: mono,
-            textDirection: TextDirection.ltr,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(l10n.devState),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 160),
-            child: SingleChildScrollView(
-              child: SelectableText(
-                const JsonEncoder.withIndent('  ').convert(state.toJson()),
-                style: mono,
-                textDirection: TextDirection.ltr,
-              ),
-            ),
           ),
         ],
       ),

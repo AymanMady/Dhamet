@@ -230,7 +230,6 @@ class GameController extends Notifier<GameSession?> {
     }
     final request = ++_aiRequest;
     state = session.copyWith(aiThinking: true);
-    final stopwatch = Stopwatch()..start();
     final Move move;
     try {
       move = await ref
@@ -252,7 +251,6 @@ class GameController extends Notifier<GameSession?> {
       selected: () => null,
       pendingChoices: const [],
       aiThinking: false,
-      lastAiDuration: () => stopwatch.elapsed,
     );
     _feedbackFor(move);
     _afterMove();
