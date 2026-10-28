@@ -97,11 +97,14 @@ dhamet/
 │                        design.md
 ├── deploiement/         Guides de publication (Google Play, serveur sur Vercel) et
 │                        fiche Play Store : textes, visuels, captures, questionnaires
+├── marketing/           Plan Facebook (Page, calendrier, publicité), visuels de la
+│                        Page et vidéo de démonstration en arabe
 ├── Dockerfile.vercel    Le serveur sur Vercel (avec vercel.json)
 └── tool/
     ├── brand/           generate_brand_assets.py (logo et toutes les icônes)
     ├── release/         create_upload_key.sh, build_release.sh
     ├── store/           screenshots.sh (captures de la fiche Play Store)
+    ├── marketing/       render.sh (vidéo de démonstration et visuels Facebook)
     └──                  l10n_status.dart, cut_design_assets.py (découpe de l'image du design)
 ```
 
@@ -148,6 +151,7 @@ dart run tool/l10n_status.dart      # état des traductions
 | IA | `cd packages/dhamet_ai && dart test` | 71 tests : légalité, rafle maximale, positions tactiques prouvées par recherche exhaustive, temps, isolate |
 | App | `flutter test` | 104 tests : interaction, contrôleurs, sauvegarde sur disque, réglages, parcours d'écrans, accessibilité, RTL, localisation, client en ligne contre un faux serveur, suppression de compte |
 | Captures Play Store | `tool/store/screenshots.sh` | Rend les captures de la fiche avec la vraie application (voir [deploiement/01-google-play.md](deploiement/01-google-play.md)) |
+| Vidéo et visuels Facebook | `tool/marketing/render.sh` | Filme la vraie application, monte la vidéo en arabe et dessine les images de la Page (voir [marketing/05-video.md](marketing/05-video.md)) |
 | App + serveur réel | `flutter test test/integration --dart-define=DHAMET_SERVER=http://localhost:3999` | Deux clients jouent une partie classée à travers le serveur (voir l'en-tête du fichier) |
 | Serveur | `cd server && npm test && npm run test:e2e` | 86 tests unitaires et 79 tests de bout en bout, dont 4 avec deux instances sur une vraie base PostgreSQL (`E2E_DATABASE_URL`, voir [server/README.md](server/README.md#tests)) |
 
